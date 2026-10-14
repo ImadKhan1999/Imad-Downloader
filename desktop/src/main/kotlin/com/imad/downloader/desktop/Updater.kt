@@ -63,7 +63,9 @@ class DesktopUpdater(
     }
 
     fun download(release: ReleaseInfo) {
-        if (job?.isActive == true) return
+        // A finished check may still be wrapping up; only a running download blocks a new one.
+        if (_state.value is UpdateState.Downloading || _state.value == UpdateState.Verifying) return
+        job?.cancel()
         _state.value = UpdateState.Downloading(release, 0, release.size)
         job = scope.launch {
             _state.value = runCatching {
