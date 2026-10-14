@@ -93,4 +93,4 @@ New-Item -ItemType Directory -Force update | Out-Null
 git add update/version.json
 git commit -q -m "Publish update manifest for $version"
 git push -q
-"Released $version: $($rel.html_url)"
+"Released ${version}: $($rel.html_url)"
