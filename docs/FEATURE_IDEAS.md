@@ -6,7 +6,7 @@ S = a day or less, M = a few days, L = a week or more. ★ = recommended, ✅ = 
 | # | Feature | Where | Effort | Why it matters |
 | --- | --- | --- | --- | --- |
 | 1 ✅ | **Video quality picker** (1080p / 720p / 480p) for streaming videos instead of always the best | Both | M | 1DM and IDM both offer it; saves data on phones |
-| 2 ✅ | **DASH streams and merging video + audio** (sites that send them separately), using ffmpeg | Both | L | Many big video sites use DASH; today only HLS works |
+| 2 ✅ | **DASH streams and merging video + audio** (sites that send them separately), joined without ffmpeg | Both | L | Many big video sites use DASH; today only HLS works |
 | 3 ✗ | **Send to PC / send to phone** (dropped on request): pair the Android and Windows apps on the same Wi-Fi (QR code) and push links between them | Both | M | Find a file on the phone, download it on the PC |
 | 4 ★ | **Auto-update**: check GitHub releases and offer the new version | Both | S | Users stay on the latest fixes without visiting GitHub |
 | 5 | **Torrent and magnet links** | Both | L | 1DM supports them; a common request |
