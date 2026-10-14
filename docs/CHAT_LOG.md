@@ -37,3 +37,8 @@ Pushed to GitHub and reported in the thread.
 
 Milestones 2 and 3 (Windows app, browser extension) finished. The PC was locked, so the UI
 was checked through headless renders saved in `docs/screenshots/`.
+
+**Later, Claude**
+
+Milestone 4 (Android app with built-in browser) finished and tested on an emulator; v1.0.0
+released on GitHub with the Windows installers, the APK and the extension.

@@ -22,6 +22,8 @@ class TestServer : AutoCloseable {
     val requests = AtomicInteger(0)
     val rangeRequests = AtomicInteger(0)
     private val dropCounters = ConcurrentHashMap<String, AtomicInteger>()
+    private val busyCounters = ConcurrentHashMap<String, AtomicInteger>()
+    private val active = ConcurrentHashMap<String, AtomicInteger>()
     /** Extra routes: path -> bytes (served with full Range support). */
     val static = ConcurrentHashMap<String, Pair<ByteArray, String>>()
 
@@ -51,7 +53,16 @@ class TestServer : AutoCloseable {
             }
             path.startsWith("/file/") -> {
                 val size = query["size"]?.toInt() ?: 1024
-                serve(ex, content(size), "application/octet-stream", query, path)
+                // busy=K: first K requests get 429; limit=N: more than N parallel requests get 429.
+                val busy = query["busy"]?.toInt() ?: 0
+                if (busy > 0 && busyCounters.computeIfAbsent(path) { AtomicInteger(0) }.incrementAndGet() <= busy) {
+                    ex.sendResponseHeaders(429, -1); return
+                }
+                val running = active.computeIfAbsent(path) { AtomicInteger(0) }
+                val limit = query["limit"]?.toInt()
+                if (limit != null && running.get() >= limit) { ex.sendResponseHeaders(429, -1); return }
+                running.incrementAndGet()
+                try { serve(ex, content(size), "application/octet-stream", query, path) } finally { running.decrementAndGet() }
             }
             static.containsKey(path) -> {
                 val (bytes, type) = static.getValue(path)

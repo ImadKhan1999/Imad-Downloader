@@ -448,6 +448,7 @@ class DownloadEngine(
             404 -> "File not found on server (404)"
             410 -> "Link expired (410). Refresh the address."
             416 -> "Server rejected the byte range (416)"
+            429 -> "Server is busy or limits connections (429). Try again later or use fewer connections."
             in 500..599 -> "Server error (${e.code})"
             else -> e.message ?: "HTTP ${e.code}"
         }

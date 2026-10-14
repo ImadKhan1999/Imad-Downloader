@@ -140,6 +140,24 @@ class EngineTest {
         assertContentEquals(TestServer.content(size), File(dir, "flaky.bin").readBytes())
     }
 
+    @Test fun `busy server answering 429 is retried`() {
+        val size = 300_000
+        val e = engine()
+        val item = e.add(DownloadRequest(server.url("busy.bin", size, "busy" to 3)))
+        val done = e.awaitDone(item.id)
+        assertEquals(DownloadStatus.COMPLETED, done.status, done.error)
+        assertContentEquals(TestServer.content(size), File(dir, "busy.bin").readBytes())
+    }
+
+    @Test fun `connection limit makes extra connections step back`() {
+        val size = 2_000_000
+        val e = engine()
+        val item = e.add(DownloadRequest(server.url("limited2.bin", size, "limit" to 2, "bps" to 2_000_000), maxConnections = 8))
+        val done = e.awaitDone(item.id, 60_000)
+        assertEquals(DownloadStatus.COMPLETED, done.status, done.error)
+        assertContentEquals(TestServer.content(size), File(dir, "limited2.bin").readBytes())
+    }
+
     @Test fun `missing file fails with a readable error`() {
         val e = engine()
         val item = e.add(DownloadRequest("${server.base}/status/404"))

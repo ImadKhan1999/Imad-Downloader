@@ -84,3 +84,23 @@ Each decision records what was chosen, the alternatives and why. New ones go at 
 `jpackage` through the Compose plugin builds both an `.msi` and an `.exe` (WiX 3 downloaded
 by the build). Per-user install, Start menu group, desktop shortcut, folder choice. The Java
 runtime is bundled, so users install nothing else.
+
+## D-007 Busy servers (2026-10-14)
+
+Found on the emulator: a public test server answered `429 Too Many Requests` and the download
+failed at once. Now the first request retries with backoff like data connections, and when a
+connection gets 429/503 while others are still working it steps back and hands its range to
+them, so the download continues with fewer connections. The error text explains 429 plainly.
+
+## D-008 Android app (2026-10-14)
+
+- Bottom navigation: Downloads, Browser, Settings. Downloads use cards with progress, speed and
+  time left, filter chips by state and category, a details sheet with the connection map.
+- Files go to `Download/Imad Downloader/<Category>` (public, visible in file managers, no
+  storage permission needed on Android 10+; Android 8-9 ask for it).
+- A foreground service with a progress notification runs only while something downloads.
+- Browser on Android System WebView: downloads a page starts open the add sheet with cookies,
+  referrer and user agent; video/audio requests are detected (floating button with count);
+  long-press on links offers download; host-based ad blocking; incognito tabs keep no history or
+  cache (cookies are shared with normal tabs, a WebView limit).
+- Release builds use R8; APK is 1.9 MB. Signing key lives in `keystore/` (git-ignored).

@@ -73,6 +73,7 @@ internal class HttpDownloadTask(
     private val itemLimiter = SpeedLimiter(initial.speedLimit)
     private val meter = SpeedMeter()
     private val connections = AtomicInteger(0)
+    private val liveWorkers = AtomicInteger(0)
     @Volatile private var total: Long = initial.totalBytes
 
     fun setSpeedLimit(bps: Long) { itemLimiter.bytesPerSecond = bps }
@@ -86,7 +87,7 @@ internal class HttpDownloadTask(
 
     override suspend fun run(): DownloadItem {
         val dir = File(item.saveDir).apply { mkdirs() }
-        val probe = Prober.probe(client, item.url, item.headers, item.referer, userAgent())
+        val probe = probeWithRetry()
         val fresh = item.segments.isEmpty() || item.totalBytes != probe.totalBytes || !item.resumable ||
             !probe.resumable || changedOnServer(probe)
 
@@ -154,6 +155,34 @@ internal class HttpDownloadTask(
         )
     }
 
+    /** Busy servers (429, 5xx) and flaky networks get the same backoff as data connections. */
+    private suspend fun probeWithRetry(): ProbeResult {
+        var attempt = 0
+        while (true) {
+            try {
+                return Prober.probe(client, item.url, item.headers, item.referer, userAgent())
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: HttpStatusException) {
+                if (e.code in FATAL_CODES) throw e
+                attempt = retryOrThrow(e, attempt, false)
+            } catch (e: IOException) {
+                attempt = retryOrThrow(e, attempt, false)
+            }
+        }
+    }
+
+    /** Lets a connection drop out when the server limits connections, as long as one keeps going. */
+    private fun tryRetire(): Boolean {
+        while (true) {
+            val n = liveWorkers.get()
+            if (n <= 1) return false
+            if (liveWorkers.compareAndSet(n, n - 1)) return true
+        }
+    }
+
+    private class Retired : RuntimeException()
+
     private suspend fun transfer(part: File) {
         RandomAccessFile(part, "rw").use { raf ->
             if (total > 0 && raf.length() != total) raf.setLength(total)
@@ -209,13 +238,22 @@ internal class HttpDownloadTask(
     }
 
     private suspend fun workerLoop(channel: FileChannel) {
-        while (coroutineContext.isActive) {
-            val seg = nextSegment() ?: return
-            try {
-                fetchWithRetry(seg, channel)
-            } finally {
-                synchronized(segments) { if (!seg.done) seg.assigned = false }
+        liveWorkers.incrementAndGet()
+        var retired = false
+        try {
+            while (coroutineContext.isActive) {
+                val seg = nextSegment() ?: return
+                try {
+                    fetchWithRetry(seg, channel)
+                } catch (_: Retired) {
+                    retired = true
+                    return
+                } finally {
+                    synchronized(segments) { if (!seg.done) seg.assigned = false }
+                }
             }
+        } finally {
+            if (!retired) liveWorkers.decrementAndGet()
         }
     }
 
@@ -233,6 +271,8 @@ internal class HttpDownloadTask(
                 throw e
             } catch (e: HttpStatusException) {
                 if (e.code in FATAL_CODES) throw e
+                // Too many connections for this server: hand the range to the others.
+                if ((e.code == 429 || e.code == 503) && tryRetire()) throw Retired()
                 attempt = retryOrThrow(e, attempt, seg.pos > before)
             } catch (e: IOException) {
                 attempt = retryOrThrow(e, attempt, seg.pos > before)

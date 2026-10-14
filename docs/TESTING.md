@@ -38,3 +38,16 @@ throttling, dropped connections, redirects, Content-Disposition and servers with
 | BatchUrlsTest | 3 | `[001-100]` and `[a-z]` expansion, link extraction |
 | SchedulerTest | 2 | Start/stop window once per day, weekdays |
 | Others | 6 | Categories, segment planner, checksums, formatting, JSON store with corrupt-file fallback, HLS parser |
+
+## 2026-10-14 Milestone 4: Android app (final pass, all suites)
+
+| Suite | Result |
+| --- | --- |
+| `:core:test` | 38 tests, 0 failures (adds 429 retry and connection-limit tests) |
+| `:desktop:test` | 14 tests, 0 failures |
+| `:androidApp:testDebugUnitTest` | 6 tests, 0 failures: address bar input, media detection, ad blocker, settings |
+| `:androidApp:connectedDebugAndroidTest` on Pixel 7 emulator, Android 14 | 4 tests, 0 failures: 8-connection download on device byte-identical; pause/resume on device; app list shows a download until Completed; browser loads a page, detects its video, catches the page's download, sheet starts it, file completes with the page as referrer |
+| Extension e2e against the rebuilt packaged app | PASS |
+| Manual on emulator (release APK) | Shared a GitHub link, downloaded and completed; w3schools video page showed 2 detected media, the mp4 downloaded named after the page title |
+
+Screens are in `docs/screenshots/android-*.png` (captured from the emulator).

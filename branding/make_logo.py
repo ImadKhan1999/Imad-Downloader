@@ -1,4 +1,4 @@
-﻿"""Renders the Imad Downloader logo into every size the apps and the extension need.
+"""Renders the Imad Downloader logo into every size the apps and the extension need.
 
 Run from the repo root:  python branding/make_logo.py
 The same shapes are drawn as vectors in branding/logo.svg and the Android adaptive icon XML.
@@ -92,6 +92,7 @@ def main():
     for d, s in densities.items():
         save(fg, android / f"mipmap-{d}/ic_launcher_foreground.png", int(s * 108 / 48))
     save(logo, ROOT / "androidApp/src/main/ic_launcher-playstore.png", 512)
+    save(logo, android / "drawable-nodpi/logo.png", 512)
     print("logo assets written")
 
 
