@@ -51,6 +51,8 @@ class IntegrationServer(
     private val onLinks: (CapturedLinks) -> Unit,
     private val onShow: () -> Unit,
     private val ping: () -> PingReply,
+    /** Called with the browser family (chrome, edge, firefox, ...) each time an extension talks to the app. */
+    private val onSeen: (String) -> Unit = {},
 ) : AutoCloseable {
     private var server: HttpServer? = null
     var port: Int = -1
@@ -82,6 +84,7 @@ class IntegrationServer(
         }
         if (ex.requestMethod == "OPTIONS") return reply(ex, 204, null)
         if (ex.requestHeaders.getFirst("X-Imad-Client").isNullOrBlank()) return reply(ex, 400, """{"error":"missing client header"}""")
+        if (origin != null) BrowserSetup.familyOf(ex.requestHeaders.getFirst("User-Agent"), origin)?.let { runCatching { onSeen(it) } }
         val body = ex.requestBody.readBytes().toString(Charsets.UTF_8)
         when (ex.requestURI.path) {
             "/api/ping" -> reply(ex, 200, json.encodeToString(PingReply.serializer(), ping()))

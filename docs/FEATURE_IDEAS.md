@@ -12,7 +12,7 @@ S = a day or less, M = a few days, L = a week or more. ★ = recommended, ✅ = 
 | 5 | **Torrent and magnet links** | Both | L | 1DM supports them; a common request |
 | 6 | **Site grabber** (IDM): download every file of chosen types from a site, following links to a set depth | Windows | M | Bulk downloads of image galleries, docs, courses |
 | 7 ✅ | **Queues and scheduler screen on Android** (the engine already supports them, only the screen is missing) | Android | S | Night-time downloads on Wi-Fi |
-| 8 | **Firefox extension** | Windows | S | Same features as the Chrome/Edge one |
+| 8 | **Firefox extension** ✅ 1.3.0 | Windows | S | Same features as the Chrome/Edge one |
 | 9 | **Virus scan after download** with Windows Defender | Windows | S | IDM has it; safer for .exe and .zip files |
 | 10 | **Auto-extract archives** (.zip, .7z, .rar) after download, optional delete of the archive | Both | M | One step less for users |
 | 11 | **Speed graph and statistics** (today / month, per site) | Both | S | Nice dashboard, shows where data goes |

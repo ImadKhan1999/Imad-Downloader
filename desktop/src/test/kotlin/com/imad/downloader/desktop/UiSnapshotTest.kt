@@ -70,7 +70,13 @@ class UiSnapshotTest {
         val settingsFile = Files.createTempFile("settings", ".json").toFile().apply { delete() }
         val store = SettingsStore(settingsFile)
         store.save(DesktopSettings(theme = theme, saveDir = "C:\\Users\\Imad\\Downloads\\Imad Downloader"))
-        return AppState(store, InMemoryStore(sample()), preview = true)
+        return AppState(store, InMemoryStore(sample()), preview = true, detectBrowsers = {
+            listOf(
+                InstalledBrowser("chrome", "Google Chrome", "chrome.exe", BrowserFamily.CHROMIUM, "chrome://extensions", null, null),
+                InstalledBrowser("edge", "Microsoft Edge", "msedge.exe", BrowserFamily.CHROMIUM, "edge://extensions", null, null),
+                InstalledBrowser("firefox", "Mozilla Firefox", "firefox.exe", BrowserFamily.FIREFOX, "about:debugging", null, null),
+            )
+        })
     }
 
     private fun snap(name: String, width: Int, height: Int, content: @Composable () -> Unit) {
@@ -165,5 +171,12 @@ class UiSnapshotTest {
                 46_000_000, 100_000_000,
             )
         snap("windows-update", 480, 330) { AllDialogs(a) }
+    }
+
+    @Test fun `browser setup dialog`() {
+        val a = app()
+        a.updateSettings(a.settings.copy(connectedBrowsers = mapOf("chrome" to 1_760_500_000_000L)))
+        a.browserSetupOpen = true
+        snap("windows-browser-setup", 640, 520) { AllDialogs(a) }
     }
 }

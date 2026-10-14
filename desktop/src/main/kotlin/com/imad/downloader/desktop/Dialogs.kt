@@ -64,6 +64,7 @@ fun AllDialogs(app: AppState) {
     if (app.batchOpen) BatchDialog(app, theme)
     if (app.aboutOpen) AboutDialog(app, theme)
     UpdateDialog(app)
+    BrowserSetupDialog(app)
     app.propertiesFor?.let { PropertiesDialog(app, it, theme) }
     app.linksDialog?.let { LinksDialog(app, it, theme) }
     app.confirmDelete?.let { ConfirmDeleteDialog(app, it, theme) }

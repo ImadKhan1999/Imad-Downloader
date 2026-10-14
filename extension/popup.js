@@ -1,3 +1,6 @@
+// Firefox exposes promise-based APIs as browser.*, Chromium as chrome.*.
+const ext = globalThis.browser ?? globalThis.chrome;
+
 const $ = (id) => document.getElementById(id);
 
 function size(n) {
@@ -9,7 +12,7 @@ function size(n) {
 }
 
 async function init() {
-  const status = await chrome.runtime.sendMessage({ type: "status" });
+  const status = await ext.runtime.sendMessage({ type: "status" });
   const el = $("status");
   if (status.app) {
     el.textContent = `Connected (version ${status.app.version})`;
@@ -23,8 +26,8 @@ async function init() {
   $("capture").addEventListener("change", save);
   $("skip").addEventListener("change", save);
 
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const { items } = await chrome.runtime.sendMessage({ type: "media", tabId: tab.id });
+  const [tab] = await ext.tabs.query({ active: true, currentWindow: true });
+  const { items } = await ext.runtime.sendMessage({ type: "media", tabId: tab.id });
   const list = $("media");
   if (items.length) {
     list.innerHTML = "";
@@ -40,7 +43,7 @@ async function init() {
       const btn = document.createElement("button");
       btn.textContent = "Download";
       btn.addEventListener("click", async () => {
-        const res = await chrome.runtime.sendMessage({ type: "download", url: m.url, referer: tab.url, mime: m.mime, size: m.size });
+        const res = await ext.runtime.sendMessage({ type: "download", url: m.url, referer: tab.url, mime: m.mime, size: m.size });
         btn.textContent = res.ok ? "Sent" : "Failed";
       });
       li.append(name, sz, btn);
@@ -49,7 +52,7 @@ async function init() {
   }
 
   $("all").addEventListener("click", async () => {
-    const [res] = await chrome.scripting.executeScript({
+    const [res] = await ext.scripting.executeScript({
       target: { tabId: tab.id },
       func: () => {
         const seen = new Set();
@@ -74,7 +77,7 @@ async function init() {
 }
 
 function save() {
-  chrome.runtime.sendMessage({ type: "save-settings", settings: { capture: $("capture").checked, skipTypes: $("skip").value } });
+  ext.runtime.sendMessage({ type: "save-settings", settings: { capture: $("capture").checked, skipTypes: $("skip").value } });
 }
 
 init();

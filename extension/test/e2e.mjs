@@ -8,6 +8,16 @@
 // Run from the repo root:  node extension/test/e2e.mjs
 import { chromium } from "playwright-core";
 import { spawn } from "node:child_process";
+import { idmRunning, stopIdm } from "./stop-idm.mjs";
+
+// IDM injects itself into chrome.exe and wakes up from there; run a copy under a neutral name.
+function chromePath() {
+  const exe = process.env.CHROME_PATH;
+  if (!exe) return undefined;
+  const copy = path.join(path.dirname(exe), "cr-imadtest.exe");
+  if (!fs.existsSync(copy)) fs.copyFileSync(exe, copy);
+  return copy;
+}
 import crypto from "node:crypto";
 import fs from "node:fs";
 import http from "node:http";
@@ -79,6 +89,7 @@ async function waitFor(fn, ms, what) {
 }
 
 try {
+  stopIdm();
   if (await ping()) throw new Error("Another Imad Downloader is already running; close it first.");
   log("starting app...");
   // APP_EXE runs the packaged app instead of the Gradle dev build.
@@ -91,9 +102,11 @@ try {
   const port = await waitFor(ping, 240_000, "app to start");
   log("app is listening on port", port);
 
-  const ext = path.join(root, "extension");
+  const ext = path.join(root, "extension", "dist", "chromium");
+  // Chromium cannot run under another name (side-by-side manifest), so IDM is only stopped and
+  // checked: if IDM restarts itself during the test, the test fails loudly below.
   browser = await chromium.launchPersistentContext(path.join(work, "profile"), {
-    executablePath: process.env.CHROME_PATH || undefined,
+    executablePath: chromePath(),
     headless: false,
     args: [`--disable-extensions-except=${ext}`, `--load-extension=${ext}`],
   });
@@ -135,7 +148,9 @@ try {
   const menuItem = st2.downloads.find((d) => d.fileName === "menu-pick.zip");
   if (menuItem?.referer !== `${base}/`) throw new Error("referer was not passed from the browser");
   log("context menu download saved with referer", menuItem.referer);
-  log("PASS: browser download captured and completed by Imad Downloader");
+  const idm = idmRunning();
+  if (idm.length) throw new Error("IDM started during the test: " + idm.join(", "));
+  log("PASS: browser download captured and completed by Imad Downloader (IDM stayed closed)");
 } catch (e) {
   failed = true;
   console.error("[e2e] FAIL:", e.message);

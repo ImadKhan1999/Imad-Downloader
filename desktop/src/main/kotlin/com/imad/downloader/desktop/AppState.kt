@@ -87,6 +87,7 @@ class AppState(
     store: DownloadStore = JsonFileStore(AppDirs.downloadsFile),
     /** Previews and UI tests show the stored state exactly as given. */
     preview: Boolean = false,
+    detectBrowsers: () -> List<InstalledBrowser> = BrowserSetup::detect,
 ) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -149,11 +150,28 @@ class AppState(
         ping = {
             PingReply("Imad Downloader", APP_VERSION, settings.browserIntegration, settings.clipboardTypeSet.toList())
         },
+        onSeen = { family ->
+            scope.launch {
+                val last = settings.connectedBrowsers[family] ?: 0
+                if (System.currentTimeMillis() - last > 60_000) updateSettings(settings.copy(connectedBrowsers = settings.connectedBrowsers + (family to System.currentTimeMillis())))
+            }
+        },
     )
+
+    var browserSetupOpen by mutableStateOf(false)
+    val browsers by lazy(detectBrowsers)
 
     fun start() {
         integration.start()
         ioScope.launch { runCatching { ytDlp.updateIfDue() } }
+        // First run: offer to add the extension to the browsers on this PC (once).
+        if (!settings.browserSetupShown) ioScope.launch {
+            val found = browsers
+            scope.launch {
+                if (found.isNotEmpty() && settings.connectedBrowsers.isEmpty()) browserSetupOpen = true
+                updateSettings(settings.copy(browserSetupShown = true))
+            }
+        }
         if (settings.autoUpdate && System.currentTimeMillis() - settings.lastUpdateCheck > 24 * 3_600_000L) {
             updateSettings(settings.copy(lastUpdateCheck = System.currentTimeMillis()))
             updater.check { updateDialogOpen = true }

@@ -4,7 +4,7 @@
     powershell -ExecutionPolicy Bypass -File release.ps1 -Changelog "What changed"
 
   Steps: every test suite (engine, Windows, Android unit and emulator device tests, browser
-  extension end-to-end, installed-app HTTPS smoke test) -> MSI/EXE/APK/extension zip ->
+  extension end-to-end, installed-app HTTPS smoke test) -> MSI/EXE/APK/extension zips (Chromium + Firefox) ->
   GitHub release with the files -> update/version.json (versions, URLs, SHA-256) pushed to main,
   which is what the apps' "Check for updates" reads. Nothing is published if a test fails.
   The GitHub token comes from Git's credential manager; it is never written anywhere.
@@ -30,6 +30,8 @@ function Step($name, [scriptblock]$block) {
 }
 
 # ---------------------------------------------------------------- tests and builds
+# The real IDM on this PC grabs browser downloads and would break the tests: close it (not uninstall).
+Stop-Process -Name IDMan, IEMonitor, IDMMsgHost, idmBroker, IDMGrHlp, IDMIntegrator64, MediumILStart -Force -ErrorAction SilentlyContinue
 if (-not $SkipDeviceTests) {
     $booted = (& $adb shell getprop sys.boot_completed 2>$null) -eq "1"
     if (-not $booted) {
@@ -43,17 +45,23 @@ $tasks = @(":core:test", ":desktop:test", ":androidApp:testDebugUnitTest", ":des
 if (-not $SkipDeviceTests) { $tasks += ":androidApp:connectedDebugAndroidTest" }
 Step "Gradle tests and builds" { & .\gradlew.bat @tasks --console=plain }
 $exe = "desktop\build\compose\binaries\main\app\Imad Downloader\Imad Downloader.exe"
-Step "Browser extension end-to-end" { $env:APP_EXE = (Resolve-Path $exe).Path; node extension\test\e2e.mjs; Remove-Item Env:APP_EXE }
+# Chrome for Testing (accepts unpacked extensions) and a Firefox copy, both kept in E:\TestTools.
+$env:APP_EXE = (Resolve-Path $exe).Path
+if (-not $env:CHROME_PATH -and (Test-Path "E:\TestTools\chrome-win64\chrome.exe")) { $env:CHROME_PATH = "E:\TestTools\chrome-win64\chrome.exe" }
+Step "Browser extension end-to-end (Chromium: Chrome, Edge, Brave, Opera, Vivaldi)" { node extension\test\e2e.mjs }
+Step "Browser extension end-to-end (Firefox)" { node extension\test\e2e-firefox.mjs }
+Remove-Item Env:APP_EXE
 Step "Installed app HTTPS smoke test" { powershell -NoProfile -ExecutionPolicy Bypass -File desktop\test-installed.ps1 -Exe (Resolve-Path $exe).Path -Url "https://proof.ovh.net/files/10Mb.dat" }
 
 # ---------------------------------------------------------------- release files
 New-Item -ItemType Directory -Force dist | Out-Null
 Get-ChildItem dist -File | ForEach-Object { [IO.File]::Delete($_.FullName) }
-$msiName = "Imad.Downloader-$version.msi"; $exeName = "Imad.Downloader-$version.exe"; $apkName = "ImadDownloader-$version.apk"; $zipName = "ImadDownloader-extension-$version.zip"
+$msiName = "Imad.Downloader-$version.msi"; $exeName = "Imad.Downloader-$version.exe"; $apkName = "ImadDownloader-$version.apk"; $zipNames = "imad-downloader-chromium-$version.zip", "imad-downloader-firefox-$version.zip"
 Copy-Item "desktop\build\compose\binaries\main\msi\Imad Downloader-$version.msi" "dist\$msiName"
 Copy-Item "desktop\build\compose\binaries\main\exe\Imad Downloader-$version.exe" "dist\$exeName"
 Copy-Item "androidApp\build\outputs\apk\release\androidApp-release.apk" "dist\$apkName"
-Compress-Archive -Path extension\manifest.json, extension\background.js, extension\content.js, extension\content.css, extension\popup.html, extension\popup.css, extension\popup.js, extension\icons -DestinationPath "dist\$zipName" -Force
+# extension\build.mjs (run by the Gradle build) makes the store-ready zip for each browser family.
+foreach ($z in $zipNames) { Copy-Item "extension\dist\$z" "dist\$z" }
 
 # ---------------------------------------------------------------- GitHub release
 $tmp = [IO.Path]::GetTempFileName(); [IO.File]::WriteAllText($tmp, "protocol=https`nhost=github.com`n`n")

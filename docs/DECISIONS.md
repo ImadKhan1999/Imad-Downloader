@@ -170,3 +170,26 @@ Imad asked for YouTube and other sites with quality choice, using yt-dlp if need
 - `release.ps1` does a whole release: all tests (including emulator device tests and the
   browser end-to-end test), installers, GitHub release, then writes and pushes version.json last
   so apps never see an update before its files exist.
+
+## D-014 One extension for every browser, added by the app (2026-10-15)
+
+- Imad asked for the extension to be "auto installed" in Chrome, Edge, Firefox and others.
+- One source, two builds (`extension/build.mjs`): `dist/chromium` (Chrome, Edge, Brave, Opera,
+  Vivaldi) and `dist/firefox` (background scripts instead of a service worker, gecko id). The
+  code uses `browser.*` when present, else `chrome.*`.
+- Browsers do not let a program silently install an extension that is not in their store
+  (Chrome and Edge ignore registry installs of non-store extensions; Firefox needs signed add-ons).
+  So the Windows app does what is allowed: it finds the installed browsers (App Paths registry and
+  usual folders), and on first start and from Help > Connect browsers... shows each one with an
+  "Add extension" button. That copies the extension to a fixed folder in the user profile, puts the
+  path on the clipboard, opens the browser's extensions page and shows the 2-3 clicks needed. A row
+  turns green as soon as that browser's extension talks to the app.
+- Store listings make this one click (and permanent in Firefox). The code is ready
+  (`ExtensionStores` ids + HKCU external-extension registration); it needs Imad's developer
+  accounts (Chrome Web Store has a one-time 5 USD fee; Edge Add-ons and Firefox AMO are free). The
+  release uploads store-ready zips for both families.
+- Testing: the real IDM on Imad's PC grabs browser downloads and restarts itself from processes
+  named chrome.exe/firefox.exe. Tests close IDM (not uninstalled, settings untouched; it stays
+  closed until reopened) and run browsers under neutral names (Chrome for Testing as
+  `cr-imadtest.exe`, Firefox as `ff-imadtest.exe`). Branded Chrome no longer accepts
+  `--load-extension`, so the Chromium test uses Chrome for Testing.

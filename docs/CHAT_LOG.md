@@ -84,3 +84,34 @@ rule). Ran them: 46 + 14 + 9 + 7 tests pass, extension e2e and HTTPS smoke test 
 
 Built YouTube and other-site support on yt-dlp with a quality picker on both apps (D-012), and
 in-app updates modelled on Imad Tunnel's (D-013). Released 1.2.0 through the new release script.
+
+**Imad**
+
+> also make sure the browser extension for pc is auto installed in pc browsers and supports like
+> multiple browsers like chrome edge firefox etc
+
+**Claude**
+
+Explained that browsers only auto-install store-listed extensions, and offered store publishing or
+a guided install. Imad replied "continue", so the guided install was built with the store path
+ready in code (D-014).
+
+**Imad**
+
+> continue
+
+> before testing jsut stop idm which is grabbing downloads
+
+> still idm is grabbing
+
+**Claude**
+
+Tests now close every IDM process first and run the test browsers under names IDM does not hook.
+IDM is not uninstalled and its settings are untouched; it stays closed until reopened.
+
+## 2026-10-15
+
+**Claude**
+
+Finished 1.3.0: Firefox build of the extension, the app finds Chrome, Edge, Brave, Opera, Vivaldi
+and Firefox and walks through adding the extension, both browsers tested end to end.

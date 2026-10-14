@@ -1,5 +1,7 @@
 // Shows IDM-style "Download this video" button over playing videos.
 (() => {
+  // Firefox exposes promise-based APIs as browser.*, Chromium as chrome.*.
+  const ext = globalThis.browser ?? globalThis.chrome;
   if (window.__imadDownloader) return;
   window.__imadDownloader = true;
 
@@ -18,7 +20,7 @@
       e.stopPropagation();
       const src = target && (target.currentSrc || target.src);
       button.classList.add("imad-dl-busy");
-      const res = await chrome.runtime.sendMessage({ type: "download-best", src, title: document.title });
+      const res = await ext.runtime.sendMessage({ type: "download-best", src, title: document.title });
       button.classList.remove("imad-dl-busy");
       flash(res?.ok ? "Sent to Imad Downloader" : res?.found === false ? "No video found yet - press play first" : "Imad Downloader is not running");
     });
@@ -74,7 +76,7 @@
   );
   window.addEventListener("scroll", () => target && button?.classList.contains("imad-dl-visible") && place(target), { passive: true });
 
-  chrome.runtime.onMessage.addListener((msg) => {
+  ext.runtime.onMessage.addListener((msg) => {
     if (msg.type === "imad-media") mediaCount = msg.count;
   });
 })();

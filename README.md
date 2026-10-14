@@ -42,8 +42,10 @@ with a built-in browser). Both apps share one Kotlin download engine.
 
 See the [Releases](https://github.com/ImadKhan1999/Imad-Downloader/releases) page:
 `Imad Downloader-<version>.exe` or `.msi` for Windows, `ImadDownloader-<version>.apk` for
-Android, `ImadDownloader-extension-<version>.zip` for Chrome/Edge (also inside the Windows app
-folder; Options > Browser Integration shows where).
+Android, `imad-downloader-chromium-<version>.zip` (Chrome, Edge, Brave, Opera, Vivaldi) and
+`imad-downloader-firefox-<version>.zip` for the browser extension. The Windows app ships both and
+adds them for you: it finds the browsers on the PC on first start (and in Help > Connect
+browsers...) and walks through adding the extension to each one.
 
 ## Build and test
 
@@ -53,7 +55,9 @@ Requires JDK 17 and the Android SDK.
 gradlew.bat :core:test :desktop:test :androidApp:testDebugUnitTest
 gradlew.bat :androidApp:connectedDebugAndroidTest     (with an emulator running)
 gradlew.bat :desktop:packageMsi :desktop:packageExe :androidApp:assembleRelease
-node extension\test\e2e.mjs                          (after npm install in extension\test)
+node extension\build.mjs                             (Chromium + Firefox builds in extension\dist)
+node extension\test\e2e.mjs                          (CHROME_PATH = Chrome for Testing; npm install in extension\test first)
+node extension\test\e2e-firefox.mjs                  (real Firefox through geckodriver)
 ```
 
 | Folder | What it is |

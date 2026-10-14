@@ -183,7 +183,7 @@ private fun androidx.compose.ui.window.FrameWindowScope.AppMenuBar(app: AppState
             Item("Open download folder", onClick = { File(app.settings.saveDir).mkdirs(); Platform.showInFolder(app.settings.saveDir) })
         }
         Menu("Help", mnemonic = 'H') {
-            Item("Browser integration...", onClick = { app.optionsOpen = true })
+            Item("Connect browsers...", onClick = { app.browserSetupOpen = true })
             Item("Project page", onClick = { Platform.browse("https://github.com/ImadKhan1999/Imad-Downloader") })
             Item("Check for updates...", onClick = { app.checkForUpdates() })
             Item("About Imad Downloader", onClick = { app.aboutOpen = true })

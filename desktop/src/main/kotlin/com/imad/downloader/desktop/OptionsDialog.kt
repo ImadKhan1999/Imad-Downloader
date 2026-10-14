@@ -146,28 +146,12 @@ fun OptionsDialog(app: AppState) {
                         FormRow("Password", 130.dp) { Field(proxy.password.orEmpty(), { s = s.copy(proxy = proxy.copy(password = it)) }, Modifier.fillMaxWidth(), password = true) }
                     }
                     OptionsPage.BROWSER -> {
-                        CheckRow("Take over downloads from Chrome and Edge", s.browserIntegration) { s = s.copy(browserIntegration = it) }
-                        VSpace()
+                        CheckRow("Take over downloads from my browsers", s.browserIntegration) { s = s.copy(browserIntegration = it) }
                         val port = app.integration.port
-                        Text(if (port > 0) "Integration service is running on port $port." else "Integration service is not running.",
-                            fontSize = 13.sp, color = if (port > 0) LocalPalette.current.complete else LocalPalette.current.error)
+                        Hint(if (port > 0) "Integration service is running on port $port." else "Integration service is not running.")
                         VSpace()
-                        Text("Install the extension", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                        Hint("1. Open chrome://extensions (or edge://extensions) and turn on Developer mode.")
-                        Hint("2. Click \"Load unpacked\" and pick the folder below.")
-                        Hint("3. Downloads, video links and \"Download with Imad Downloader\" in the right-click menu now come here.")
-                        val ext = extensionFolder()
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Field(ext ?: "Extension folder not found", {}, Modifier.weight(1f), readOnly = true)
-                            Spacer(Modifier.width(6.dp))
-                            OutlinedButton({ ext?.let(Platform::showInFolder) }, enabled = ext != null) { Text("Open") }
-                        }
-                        VSpace()
-                        Row {
-                            OutlinedButton({ Platform.browse("chrome://extensions") }) { Text("Chrome extensions") }
-                            Spacer(Modifier.width(8.dp))
-                            OutlinedButton({ Platform.browse("edge://extensions") }) { Text("Edge extensions") }
-                        }
+                        Text("Browsers on this PC", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                        BrowserConnectPanel(app)
                     }
                     OptionsPage.VIDEO -> {
                         Hint("YouTube and over a thousand other sites work through yt-dlp, a free open-source tool the app downloads from github.com/yt-dlp and keeps up to date.")
@@ -216,17 +200,6 @@ fun OptionsDialog(app: AppState) {
             Button({ app.updateSettings(s); app.optionsOpen = false }) { Text("OK") }
         }
     }
-}
-
-/** The unpacked extension ships next to the app (installed) or in the repo (development). */
-fun extensionFolder(): String? {
-    val candidates = buildList {
-        System.getProperty("compose.application.resources.dir")?.let { add(java.io.File(it, "extension")) }
-        System.getProperty("jpackage.app-path")?.let { add(java.io.File(it).parentFile.resolve("app/resources/extension")) }
-        add(java.io.File("extension"))
-        add(java.io.File("../extension"))
-    }
-    return candidates.firstOrNull { java.io.File(it, "manifest.json").exists() }?.canonicalPath
 }
 
 // ------------------------------------------------------------------ Scheduler

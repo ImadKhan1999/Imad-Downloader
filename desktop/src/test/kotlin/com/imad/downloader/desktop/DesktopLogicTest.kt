@@ -112,3 +112,26 @@ class IntegrationServerTest {
         assertTrue(downloads.isEmpty())
     }
 }
+
+class BrowserSetupTest {
+    @Test fun `tells browsers apart by user agent`() {
+        val chrome = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+        assertEquals("chrome", BrowserSetup.familyOf(chrome, "chrome-extension://abc"))
+        assertEquals("edge", BrowserSetup.familyOf("$chrome Edg/141.0.0.0", null))
+        assertEquals("opera", BrowserSetup.familyOf("$chrome OPR/120.0.0.0", null))
+        assertEquals("firefox", BrowserSetup.familyOf("Mozilla/5.0 (Windows NT 10.0; rv:144.0) Gecko/20100101 Firefox/144.0", null))
+        assertEquals("firefox", BrowserSetup.familyOf(null, "moz-extension://1234"))
+        assertNull(BrowserSetup.familyOf(null, null))
+    }
+
+    @Test fun `no store listing means guided install`() {
+        val b = InstalledBrowser("chrome", "Google Chrome", "chrome.exe", BrowserFamily.CHROMIUM, "chrome://extensions", "k", "u")
+        assertNull(ExtensionStores.storePage(b))
+        assertEquals(false, BrowserSetup.registerFromStore(b))
+    }
+
+    @Test fun `both extension builds are found`() {
+        assertTrue(BrowserSetup.packagedExtension(BrowserFamily.CHROMIUM) != null, "run node extension/build.mjs")
+        assertTrue(BrowserSetup.packagedExtension(BrowserFamily.FIREFOX) != null)
+    }
+}

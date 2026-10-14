@@ -58,6 +58,9 @@ data class DesktopSettings(
     val theme: ThemeMode = ThemeMode.SYSTEM,
     val browserIntegration: Boolean = true,
     val autoUpdate: Boolean = true,
+    /** Browser id (chrome, edge, firefox, ...) -> last time its extension talked to the app. */
+    val connectedBrowsers: Map<String, Long> = emptyMap(),
+    val browserSetupShown: Boolean = false,
     val lastUpdateCheck: Long = 0,
     /** Browser whose cookies yt-dlp may read ("firefox", "edge", "chrome", "brave"), empty = none. */
     val videoCookiesBrowser: String = "",

@@ -25,6 +25,7 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    dependsOn("buildExtension") // tests check the packaged extension builds
     systemProperty("snapshotDir", rootProject.file("docs/screenshots").path)
     systemProperty("realNetwork", (project.findProperty("realNetwork") ?: "false").toString())
     testLogging.showStandardStreams = true
@@ -44,9 +45,17 @@ val generateVersion by tasks.registering {
 }
 kotlin.sourceSets.main { kotlin.srcDir(generateVersion) }
 
-// The unpacked browser extension ships inside the app so Options > Browser Integration can point at it.
+// The browser extension (Chromium and Firefox builds) ships inside the app; the app copies it
+// into the user profile when it adds it to a browser.
+val buildExtension by tasks.registering(Exec::class) {
+    workingDir = rootProject.projectDir
+    commandLine("node", "extension/build.mjs")
+    inputs.files(fileTree(rootProject.file("extension")) { exclude("dist/**", "test/**") })
+    outputs.dir(rootProject.file("extension/dist"))
+}
 val syncExtension by tasks.registering(Sync::class) {
-    from(rootProject.file("extension")) { exclude("test/**", "node_modules/**", "package*.json") }
+    dependsOn(buildExtension)
+    from(rootProject.file("extension/dist")) { exclude("*.zip") }
     into(layout.buildDirectory.dir("appResources/common/extension"))
 }
 tasks.matching { it.name == "prepareAppResources" }.configureEach { dependsOn(syncExtension) }
