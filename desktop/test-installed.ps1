@@ -40,4 +40,6 @@ try {
     "PASS: $($item.fileName) $((Get-Item $file).Length) bytes over HTTPS via the packaged app"
 } finally {
     Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 1
+    [IO.Directory]::Delete($work, $true)
 }

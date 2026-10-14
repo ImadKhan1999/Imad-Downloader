@@ -156,6 +156,7 @@ fun AddDownloadSheet(
                         error != null -> Text(error!!, fontSize = 13.sp, color = MaterialTheme.colorScheme.error, maxLines = 2)
                         probe != null -> Text(
                             buildString {
+                                if (probe!!.isStream) { append("Video stream"); if (qualities.size > 1) append("  •  ${qualities.size} qualities"); return@buildString }
                                 append(if (probe!!.totalBytes >= 0) Format.bytes(probe!!.totalBytes) else "Unknown size")
                                 append("  •  ")
                                 append(if (probe!!.isStream) "Video stream" else if (probe!!.resumable) "Resumable" else "Not resumable")

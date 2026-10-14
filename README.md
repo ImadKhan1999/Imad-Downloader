@@ -18,7 +18,7 @@ with a built-in browser). Both apps share one Kotlin download engine.
 - Pause and resume, also after closing the app or a crash
 - Automatic retries; busy servers (429/503) get fewer connections instead of failing
 - Speed limiter (global and per download), queues, daily scheduler
-- HLS video streams (`.m3u8`) including AES-128 encryption
+- HLS (`.m3u8`) and DASH (`.mpd`) video streams with a quality picker; separate video and audio are joined into one MP4; AES-128 HLS supported
 - Batch downloads (`file[001-100].jpg`), checksums, smart file names, category folders
 
 **Windows**
@@ -34,6 +34,7 @@ with a built-in browser). Both apps share one Kotlin download engine.
 - Built-in browser with tabs, incognito, bookmarks, history, desktop mode, find in page, ad blocker
 - Detects videos and audio on pages (floating button with count) and catches page downloads
 - Long-press links to download, share links from any app, copied-link offer, Wi-Fi only mode
+- Queues and schedule screen; scheduled queues start even when the app is closed
 
 ## Download
 

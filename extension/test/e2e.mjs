@@ -143,6 +143,7 @@ try {
 } finally {
   await browser?.close().catch(() => {});
   server.close();
+  setTimeout(() => fs.rmSync(work, { recursive: true, force: true, maxRetries: 5 }), 1000);
   if (app) spawn("taskkill", ["/pid", String(app.pid), "/t", "/f"], { stdio: "ignore" });
   setTimeout(() => process.exit(failed ? 1 : 0), 1500);
 }

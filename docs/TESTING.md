@@ -51,11 +51,15 @@ throttling, dropped connections, redirects, Content-Disposition and servers with
 | Manual on emulator (release APK) | Shared a GitHub link, downloaded and completed; w3schools video page showed 2 detected media, the mp4 downloaded named after the page title |
 
 Screens are in `docs/screenshots/android-*.png` (captured from the emulator).
-## 2026-10-14 Features 1, 2 and 5 (PC-side results)
+## 2026-10-14 Features 1, 2 and 5, release 1.1.0
 
 | Suite | Result |
 | --- | --- |
 | `:core:test` | 46 tests, 0 failures. New: DASH parser (templates, timelines, lists, single files, live refused), quality pick, MP4 merger (two tracks, interleaving, refuses non-fragmented), DASH download at 360p with merged audio, HLS with separate fMP4 audio merged |
 | `:desktop:test` | 14 tests, 0 failures |
 | `:androidApp:testDebugUnitTest` | 9 tests, 0 failures. New: next alarm time (today/tomorrow/chosen weekdays), schedule summary text |
-| Android device tests (`FeatureTests`: queues screen, quality picker, real Apple HLS stream merge) | Written, not run yet: the emulator run was stopped on request |
+| Android device tests on the Pixel 7 emulator (Android 14) | **7 tests, 0 failures**: earlier 4 plus queues screen starts a queue and both files finish; quality picker downloads exactly the 360p stream; real Apple HEVC test stream with separate audio downloaded and merged into one MP4 (40.3 MB) that Android's MediaExtractor opens with video and audio tracks || Extension e2e against the packaged 1.1.0 app | PASS |
+| Packaged 1.1.0 app, real HTTPS download (10 MB) | PASS |
+| Release APK 1.1.0 on the emulator | Opens a real DASH stream (Akamai Big Buck Bunny) and lists 8 qualities; queues screen opens |
+
+Note: the emulator moved to `E:\AndroidAvd` because drive C had under 2 GB free.

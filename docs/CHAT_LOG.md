@@ -66,3 +66,11 @@ Started features 1 (quality picker), 2 (DASH and video+audio merging), 3 (phone/
 **Claude**
 
 Removed the pairing code completely (D-011). Kept features 1, 2 and 5.
+**13:52, Imad**
+
+> TEST ALWAYS
+
+**Claude**
+
+Every release now runs all suites including the emulator device tests (also saved as a standing
+rule). Ran them: 46 + 14 + 9 + 7 tests pass, extension e2e and HTTPS smoke test pass. Released 1.1.0.
