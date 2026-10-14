@@ -1,19 +1,19 @@
 {
     "android":  {
-                    "version":  "1.2.0",
-                    "versionCode":  3,
-                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.2.0/ImadDownloader-1.2.0.apk",
-                    "sha256":  "ca3fe5c56ac2545ed0d63225a4240e6554ca3ee47c262af5836a01a3d0c444a2",
+                    "version":  "1.3.0",
+                    "versionCode":  4,
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.3.0/ImadDownloader-1.3.0.apk",
+                    "sha256":  "fdeefe678ad3675f97243434a7d9140ac4fd5514dbcb2f57510077d0657daeac",
                     "size":  41102412,
-                    "changelog":  "YouTube and 1000+ other video sites with a quality list (video and audio joined into one MP4). In-app updates: the app now tells you about new versions, downloads them with a progress bar and installs them.",
+                    "changelog":  "Browser extension for Firefox as well as Chrome, Edge, Brave, Opera and Vivaldi. The app now finds the browsers on your PC and walks you through adding the extension to each (Help \u003e Connect browsers...).",
                     "mandatory":  false
                 },
     "windows":  {
-                    "version":  "1.2.0",
-                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.2.0/Imad.Downloader-1.2.0.msi",
-                    "sha256":  "4a69225eabca391372777c23d752abc594d5ac6e9979e03fb0489974afb75d7f",
-                    "size":  100643580,
-                    "changelog":  "YouTube and 1000+ other video sites with a quality list (video and audio joined into one MP4). In-app updates: the app now tells you about new versions, downloads them with a progress bar and installs them.",
+                    "version":  "1.3.0",
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.3.0/Imad.Downloader-1.3.0.msi",
+                    "sha256":  "83a0b46c5f9c48bbf0664b73fa19e523386f09d86d2b3b7a4e2dfe2cc25f75f0",
+                    "size":  100693000,
+                    "changelog":  "Browser extension for Firefox as well as Chrome, Edge, Brave, Opera and Vivaldi. The app now finds the browsers on your PC and walks you through adding the extension to each (Help \u003e Connect browsers...).",
                     "mandatory":  false
                 }
 }
