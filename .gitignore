@@ -1,0 +1,22 @@
+# Gradle / Kotlin
+.gradle/
+build/
+**/build/
+.kotlin/
+local.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Logs / captures
+*.log
+captures/
+*.hprof
+
+# Release outputs (attached to GitHub releases, not committed)
+dist/
+keystore/*.jks
+keystore/release.properties
