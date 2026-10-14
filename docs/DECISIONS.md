@@ -51,3 +51,36 @@ Each decision records what was chosen, the alternatives and why. New ones go at 
 
 `minSdk 26` (Android 8.0). It covers over 95% of active devices and lets the shared engine use
 `java.nio.file` without desugaring.
+
+## D-004 Windows UI (2026-10-14)
+
+- Layout copies IDM: menu bar (Tasks, File, Downloads, View, Help), big-icon toolbar (Add URL,
+  Resume, Stop, Stop All, Delete, Delete Completed, Options, Scheduler, Start/Stop Queue, Speed
+  Limit), category tree on the left, sortable and resizable download table, status bar.
+- IDM dialogs reproduced: "Download File Info" (category, Save As, Download Later into a queue),
+  per-download progress window (status, segment map, connections table, speed limiter tab),
+  "Download complete" (Open / Open with / Open folder), Options, Scheduler, batch download,
+  "Download selected links", Properties, Refresh download address.
+- Closing the window keeps the app in the system tray (optional); notifications use the tray.
+- Light and dark themes; the system setting is followed by default.
+- Data lives in `%APPDATA%\Imad Downloader` (`settings.json`, `downloads.json`). `IMAD_DATA_DIR`
+  overrides it for tests.
+
+## D-005 Browser integration protocol (2026-10-14)
+
+- The app listens on `127.0.0.1:9614` (falls back to 9615-9617). Endpoints: `/api/ping`,
+  `/api/download`, `/api/links`, `/api/show`.
+- Web pages cannot call it: every request needs an `X-Imad-Client` header (forces a CORS
+  preflight) and only `chrome-extension://` / `moz-extension://` origins are allowed.
+- The same port gives single-instance behaviour: a second launch hands its URL to the running app.
+- The extension takes over downloads whose type is in the app's list (IDM's default list),
+  adds right-click menu items, sniffs media per tab and shows a "Download this video" button
+  over players. Blob/data URLs stay in the browser.
+- The unpacked extension ships inside the installer (`app\resources\extension`). Branded Chrome and
+  Edge no longer accept `--load-extension`, so the automated test uses Playwright's Chromium.
+
+## D-006 Installers (2026-10-14)
+
+`jpackage` through the Compose plugin builds both an `.msi` and an `.exe` (WiX 3 downloaded
+by the build). Per-user install, Start menu group, desktop shortcut, folder choice. The Java
+runtime is bundled, so users install nothing else.

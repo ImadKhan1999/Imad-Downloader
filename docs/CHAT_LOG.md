@@ -31,3 +31,9 @@ Started in `E:\Imad Downloader` (existed, empty). Chose Kotlin for everything; s
 **08:50, Claude**
 
 Milestone 1 (core engine) finished: 36 tests pass. See [TESTING.md](TESTING.md).
+Pushed to GitHub and reported in the thread.
+
+**Later, Claude**
+
+Milestones 2 and 3 (Windows app, browser extension) finished. The PC was locked, so the UI
+was checked through headless renders saved in `docs/screenshots/`.

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Imad Downloader</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>
+    <img src="icons/icon48.png" alt="" width="32" height="32" />
+    <div>
+      <h1>Imad Downloader</h1>
+      <p id="status" class="muted">Checking...</p>
+    </div>
+  </header>
+
+  <section>
+    <label class="row"><input type="checkbox" id="capture" /> Take over browser downloads</label>
+    <label class="row">Skip these types <input type="text" id="skip" placeholder="e.g. pdf txt" /></label>
+  </section>
+
+  <section>
+    <h2>Media on this page</h2>
+    <ul id="media"><li class="muted">Play a video or song to detect it.</li></ul>
+  </section>
+
+  <footer>
+    <button id="all">Download all links on page</button>
+  </footer>
+  <script src="popup.js"></script>
+</body>
+</html>

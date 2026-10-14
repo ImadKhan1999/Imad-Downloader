@@ -32,6 +32,8 @@ class DownloadEngine(
     private val store: DownloadStore,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
     client: OkHttpClient? = null,
+    /** Turn interrupted downloads into PAUSED on load. Only previews and tests switch this off. */
+    recoverOnLoad: Boolean = true,
 ) {
     @Volatile var config: EngineConfig = config
         private set
@@ -40,7 +42,7 @@ class DownloadEngine(
     private val clientProvided = client != null
     private val globalLimiter = SpeedLimiter(config.globalSpeedLimit)
 
-    private val _state = MutableStateFlow(recover(store.load()))
+    private val _state = MutableStateFlow(store.load().let { if (recoverOnLoad) recover(it) else it })
     val state: StateFlow<EngineState> = _state.asStateFlow()
 
     private val _events = MutableSharedFlow<EngineEvent>(extraBufferCapacity = 64)
