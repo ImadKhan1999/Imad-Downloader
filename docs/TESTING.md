@@ -74,3 +74,23 @@ Note: the emulator moved to `E:\AndroidAvd` because drive C had under 2 GB free.
 | Android device tests (Pixel 7 emulator, Android 14) | 11 tests, 0 failures. New: yt-dlp runs inside the app; SoundCloud audio and archive.org video downloaded on the phone; YouTube bot check explained; updater downloads, verifies signature and prepares Android's installer; tampered APK refused |
 | Windows installer | 1.2.0 MSI installs per-user without admin (exit 0), installed app starts and answers, uninstall clean |
 | Release APK on emulator | Shared an archive.org video page: options 720p/360p/300p with sizes |
+
+## 2026-10-15 Release 1.3.0: extension for every browser
+
+IDM closed before every run (not uninstalled; it stays closed until reopened).
+
+| Suite | Result |
+| --- | --- |
+| `:core:test` | 57 tests, 0 failures |
+| `:desktop:test` | 22 tests, 0 failures. New: browser told apart by user agent (Chrome, Edge, Opera, Firefox), no store listing means guided install, both extension builds ship with the app, render of the "Connect your browsers" dialog |
+| `:desktop:test -PrealNetwork=true` (real yt-dlp.exe) | SoundCloud audio, archive.org video, Dailymotion HLS pass; YouTube refused this PC's network with the bot check and the app shows the sign-in explanation |
+| Android unit tests | 9 tests, 0 failures |
+| Android device tests (Pixel 7 emulator, Android 14) | 11 tests, 0 failures, real-site tests included |
+| Extension e2e, Chromium (Chrome for Testing 155, packaged 1.3.0 app) | PASS: link download taken over by the app, right-click "Download with Imad Downloader" keeps the referer, no browser copy, IDM stayed closed |
+| Extension e2e, Firefox (real Firefox through geckodriver, packaged app) | PASS: download taken over, Firefox kept no copy, IDM stayed closed |
+| Packaged 1.3.0 app, real HTTPS download (10 MB) | PASS |
+
+Notes: the Android SDK's build tools and platform had been deleted from drive C; they were
+reinstalled (build-tools 35, android-36) before the run. The release script now always runs the
+real-site device tests.
+

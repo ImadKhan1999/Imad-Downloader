@@ -42,7 +42,7 @@ if (-not $SkipDeviceTests) {
     }
 }
 $tasks = @(":core:test", ":desktop:test", ":androidApp:testDebugUnitTest", ":desktop:packageMsi", ":desktop:packageExe", ":desktop:createDistributable", ":androidApp:assembleRelease")
-if (-not $SkipDeviceTests) { $tasks += ":androidApp:connectedDebugAndroidTest" }
+if (-not $SkipDeviceTests) { $tasks += ":androidApp:connectedDebugAndroidTest", "-Pandroid.testInstrumentationRunnerArguments.realNetwork=true" }
 Step "Gradle tests and builds" { & .\gradlew.bat @tasks --console=plain }
 $exe = "desktop\build\compose\binaries\main\app\Imad Downloader\Imad Downloader.exe"
 # Chrome for Testing (accepts unpacked extensions) and a Firefox copy, both kept in E:\TestTools.
