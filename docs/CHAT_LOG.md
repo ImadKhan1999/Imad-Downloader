@@ -42,3 +42,10 @@ was checked through headless renders saved in `docs/screenshots/`.
 
 Milestone 4 (Android app with built-in browser) finished and tested on an emulator; v1.0.0
 released on GitHub with the Windows installers, the APK and the extension.
+**13:24, Imad**
+
+> tell me 20 features that I can add
+
+**Claude**
+
+Listed 20 ideas with effort and a recommended first five in [FEATURE_IDEAS.md](FEATURE_IDEAS.md).
