@@ -1,5 +1,5 @@
 [versions]
-app = "1.1.0"
+app = "1.2.0"
 agp = "8.13.2"
 kotlin = "2.3.21"
 coroutines = "1.10.2"
@@ -45,3 +45,4 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
+chaquopy = { id = "com.chaquo.python", version = "17.0.0" }

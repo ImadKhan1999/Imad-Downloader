@@ -63,3 +63,14 @@ Screens are in `docs/screenshots/android-*.png` (captured from the emulator).
 | Release APK 1.1.0 on the emulator | Opens a real DASH stream (Akamai Big Buck Bunny) and lists 8 qualities; queues screen opens |
 
 Note: the emulator moved to `E:\AndroidAvd` because drive C had under 2 GB free.
+## 2026-10-14 Release 1.2.0: video sites and in-app updates
+
+| Suite | Result |
+| --- | --- |
+| `:core:test` | 57 tests, 0 failures. New: yt-dlp JSON parsing, quality list (merged MP4, HLS, progressive, audio), pick on resume, video page download with joined audio, pause/resume re-fetching links, audio only, update manifest, verified download with progress, tampered download refused |
+| `:desktop:test` | 16 tests pass (+2 UI renders: video page dialog, update dialog); 4 real-site tests run separately |
+| `:desktop:test -PrealNetwork=true` (real yt-dlp.exe) | SoundCloud audio, archive.org video, Dailymotion HLS video downloaded; YouTube refused this PC's network with the bot check and the app shows the sign-in explanation |
+| Android unit tests | 9 tests, 0 failures |
+| Android device tests (Pixel 7 emulator, Android 14) | 11 tests, 0 failures. New: yt-dlp runs inside the app; SoundCloud audio and archive.org video downloaded on the phone; YouTube bot check explained; updater downloads, verifies signature and prepares Android's installer; tampered APK refused |
+| Windows installer | 1.2.0 MSI installs per-user without admin (exit 0), installed app starts and answers, uninstall clean |
+| Release APK on emulator | Shared an archive.org video page: options 720p/360p/300p with sizes |

@@ -8,6 +8,7 @@
 | 4. Android app with built-in browser (1DM style) | Done 2026-10-14, 6 unit + 4 device tests passing, release APK 1.9 MB |
 | 5. Release v1.0.0 on GitHub | Done 2026-10-14 |
 | 6. v1.1.0: quality picker, DASH + merging, Android queues and schedule | Done 2026-10-14 (phone/PC pairing dropped on request) |
+| 7. v1.2.0: YouTube and other sites (yt-dlp), in-app updates, release script | Done 2026-10-14 |
 
 ## Log
 

@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.chaquopy)
 }
 
 // Release signing: keystore/release.properties + keystore/*.jks when present (never committed),
@@ -23,10 +24,12 @@ android {
         applicationId = "com.imad.downloader"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
+        versionCode = 3
         versionName = libs.versions.app.get()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
+        // Python 3.13 (Chaquopy) for yt-dlp exists for 64-bit phones and the x86_64 emulator.
+        ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
     }
 
     signingConfigs {
@@ -64,6 +67,15 @@ android {
 }
 
 kotlin { jvmToolchain(17) }
+
+// yt-dlp runs in an embedded Python (Chaquopy, MIT). The app can later swap in a newer yt-dlp
+// downloaded from its official GitHub releases without an app update.
+chaquopy {
+    defaultConfig {
+        version = "3.13"
+        pip { install("yt-dlp") }
+    }
+}
 
 dependencies {
     implementation(project(":core"))

@@ -231,12 +231,13 @@ fun BrowserScreen(controller: BrowserController, data: BrowserData, onDownload: 
         }
 
         // Floating "videos found" button (1DM style).
-        if (tab.media.isNotEmpty() && !tab.isStartPage) {
+        val videoSite = com.imad.downloader.core.MediaChoice.isKnownSite(tab.url)
+        if ((tab.media.isNotEmpty() || videoSite) && !tab.isStartPage) {
             BadgedBox(
-                badge = { Badge(containerColor = Color(0xFF00C853)) { Text(tab.media.size.toString()) } },
+                badge = { if (!videoSite) Badge(containerColor = Color(0xFF00C853)) { Text(tab.media.size.toString()) } },
                 modifier = Modifier.align(Alignment.BottomEnd).padding(end = 18.dp, bottom = 72.dp),
             ) {
-                FloatingActionButton({ sheet = BrowserSheet.MEDIA }, containerColor = MaterialTheme.colorScheme.primary, modifier = Modifier.testTag("media-fab")) {
+                FloatingActionButton({ if (videoSite) onDownload(controller.requestFor(tab.url)) else sheet = BrowserSheet.MEDIA }, containerColor = MaterialTheme.colorScheme.primary, modifier = Modifier.testTag("media-fab")) {
                     Icon(Icons.Filled.Download, "Media found", tint = Color.White)
                 }
             }

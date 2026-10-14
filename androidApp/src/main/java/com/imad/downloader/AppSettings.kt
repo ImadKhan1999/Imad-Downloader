@@ -42,6 +42,8 @@ data class AppSettings(
     val saveHistory: Boolean = true,
     val blockPopups: Boolean = true,
     val userAgent: String = "",
+    val autoUpdate: Boolean = true,
+    val lastUpdateCheck: Long = 0,
 ) {
     fun toEngineConfig() = EngineConfig(
         defaultSaveDir = saveDir,

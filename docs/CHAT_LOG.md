@@ -74,3 +74,13 @@ Removed the pairing code completely (D-011). Kept features 1, 2 and 5.
 
 Every release now runs all suites including the emulator device tests (also saved as a standing
 rule). Ran them: 46 + 14 + 9 + 7 tests pass, extension e2e and HTTPS smoke test pass. Released 1.1.0.
+**17:28, Imad (project chat)**
+
+> make sure it supports youtube and other sites. quality choosing etc use ytdl if required, and how
+> would we update to users i want internal udpating system like updating UI and loading etc and
+> installing etc. can we use the updating system just like in my previous imad tunnel project
+
+**Claude**
+
+Built YouTube and other-site support on yt-dlp with a quality picker on both apps (D-012), and
+in-app updates modelled on Imad Tunnel's (D-013). Released 1.2.0 through the new release script.

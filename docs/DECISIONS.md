@@ -131,3 +131,42 @@ them, so the download continues with fewer connections. The error text explains 
 
 Feature 3 (send links between phone and PC over Wi-Fi) was built and then removed on Imad's
 request ("dont ADD Phone and PC pairing"). No pairing code ships.
+## D-012 YouTube and other video sites through yt-dlp (2026-10-14)
+
+Imad asked for YouTube and other sites with quality choice, using yt-dlp if needed.
+- yt-dlp only reads the page and lists formats (`-J`); the app's own multi-connection engine
+  downloads them (new `MEDIA` download kind), so pause/resume, speed limits and queues work as
+  usual. Links are fetched again on every start because sites' links expire; finished parts are
+  kept. Video-only MP4 + M4A audio are joined into one MP4 by `Mp4Merge` (no ffmpeg). WebM-only
+  4K/VP9 formats are not offered because they cannot be joined without ffmpeg; AV1/H.264 MP4 are.
+- Windows: the official `yt-dlp.exe` is downloaded on first use from github.com/yt-dlp
+  (checked against the release's SHA2-256SUMS) into `%APPDATA%\Imad Downloader\tools` and
+  updated with `yt-dlp -U` every 3 days. YouTube needs a JavaScript runtime: Node.js if
+  installed, otherwise the official Deno build is fetched (checksum verified).
+- Android: Python runs inside the app via Chaquopy (MIT) with yt-dlp bundled at build time; the
+  app swaps in the newest official yt-dlp from GitHub every 3 days (checksum verified). Chosen
+  over youtubedl-android because that library is GPL-3.0. Python 3.13 builds exist only for
+  64-bit devices, so the APK supports arm64-v8a (and x86_64 for emulators); 32-bit-only phones
+  are not supported. APK size grows to about 40 MB.
+- Sign-in: YouTube now asks some networks to "confirm you're not a bot" (it does so for this
+  PC's connection). The browser extension's "Download this video" sends the page with your
+  YouTube cookies, and the Android browser passes its cookies, so signed-in users get through.
+  Windows can also read a browser's cookies (Options > Video Sites; Firefox works best).
+- Limits found in testing: sites that need browser impersonation (e.g. Dailymotion) work on
+  Windows (yt-dlp.exe includes it) but not yet on Android, and Android has no JS runtime, so
+  some YouTube formats may be missing there.
+
+## D-013 In-app updates like Imad Tunnel (2026-10-14)
+
+- `update/version.json` in the repo lists the newest Android and Windows builds (version,
+  download URL on the GitHub release, SHA-256, size, changelog, mandatory flag). Both apps check
+  it once a day (can be turned off) and from Settings/Help > Check for updates.
+- The update dialog shows what's new, downloads with a progress bar, refuses anything whose
+  SHA-256 does not match, then installs:
+  - Android: also checks the APK is signed with the app's own certificate, then opens Android's
+    installer (asks once for "install unknown apps"), same as Imad Tunnel.
+  - Windows: closes the app, runs `msiexec /i <new msi> /passive` (per-user, no admin prompt,
+    the MSI upgrades in place) and starts the app again.
+- `release.ps1` does a whole release: all tests (including emulator device tests and the
+  browser end-to-end test), installers, GitHub release, then writes and pushes version.json last
+  so apps never see an update before its files exist.

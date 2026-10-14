@@ -26,6 +26,8 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
     systemProperty("snapshotDir", rootProject.file("docs/screenshots").path)
+    systemProperty("realNetwork", (project.findProperty("realNetwork") ?: "false").toString())
+    testLogging.showStandardStreams = true
     testLogging { events("passed", "failed"); exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL }
 }
 

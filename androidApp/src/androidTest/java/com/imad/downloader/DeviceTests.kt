@@ -86,7 +86,7 @@ class AppUiTest {
     @Before fun setUp() {
         server = MiniServer()
         app.engine.downloads.forEach { app.engine.remove(it.id, deleteFile = true) }
-        app.settings.update { it.copy(askBeforeDownload = true, clipboardMonitor = false, wifiOnly = false) }
+        app.settings.update { it.copy(askBeforeDownload = true, clipboardMonitor = false, wifiOnly = false, autoUpdate = false) }
     }
 
     @After fun tearDown() = server.close()

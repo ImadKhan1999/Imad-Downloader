@@ -48,6 +48,8 @@ internal interface TaskCallbacks {
     fun onMeta(item: DownloadItem): DownloadItem
     fun onProgress(progress: TaskProgress)
     fun onCheckpoint(progress: TaskProgress)
+    /** Saves task-owned fields (e.g. MEDIA parts) without announcing anything. */
+    fun onPersist(item: DownloadItem) {}
 }
 
 internal interface DownloadTask {

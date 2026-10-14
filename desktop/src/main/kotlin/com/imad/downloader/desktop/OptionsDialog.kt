@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.OndemandVideo
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SettingsEthernet
@@ -51,6 +52,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.imad.downloader.core.DownloadQueue
+import kotlinx.coroutines.launch
 import com.imad.downloader.core.EngineState
 import com.imad.downloader.core.Format
 import com.imad.downloader.core.ProxyConfig
@@ -63,6 +65,7 @@ private enum class OptionsPage(val title: String, val icon: ImageVector) {
     CONNECTION("Connection", Icons.Filled.SettingsEthernet),
     PROXY("Proxy / Socks", Icons.Filled.Public),
     BROWSER("Browser Integration", Icons.Filled.Extension),
+    VIDEO("Video Sites", Icons.Filled.OndemandVideo),
     NOTIFY("Notifications", Icons.Filled.Notifications),
     LOOK("Appearance", Icons.Filled.Palette),
 }
@@ -99,6 +102,7 @@ fun OptionsDialog(app: AppState) {
                         CheckRow("Show the file info dialog before downloading", s.showStartDialog) { s = s.copy(showStartDialog = it) }
                         CheckRow("Show the progress window when a download starts", s.showProgressWindow) { s = s.copy(showProgressWindow = it) }
                         CheckRow("Ask before deleting downloads", s.confirmDelete) { s = s.copy(confirmDelete = it) }
+                        CheckRow("Check for app updates automatically (once a day)", s.autoUpdate) { s = s.copy(autoUpdate = it) }
                         CheckRow("Overwrite files with the same name (otherwise rename)", s.overwriteExisting) { s = s.copy(overwriteExisting = it) }
                         VSpace()
                         Text("File types captured from the clipboard and browser", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
@@ -165,7 +169,36 @@ fun OptionsDialog(app: AppState) {
                             OutlinedButton({ Platform.browse("edge://extensions") }) { Text("Edge extensions") }
                         }
                     }
-                    OptionsPage.NOTIFY -> {
+                    OptionsPage.VIDEO -> {
+                        Hint("YouTube and over a thousand other sites work through yt-dlp, a free open-source tool the app downloads from github.com/yt-dlp and keeps up to date.")
+                        var version by remember { mutableStateOf<String?>(null) }
+                        var busy by remember { mutableStateOf(false) }
+                        val scope = androidx.compose.runtime.rememberCoroutineScope()
+                        androidx.compose.runtime.LaunchedEffect(Unit) {
+                            version = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { if (app.ytDlp.installed) app.ytDlp.version() else null }
+                        }
+                        Text(if (version != null) "yt-dlp $version is installed." else "yt-dlp is not installed yet; it is set up the first time you add a video page.", fontSize = 13.sp)
+                        VSpace(4.dp)
+                        OutlinedButton({
+                            busy = true
+                            scope.launch {
+                                version = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                    runCatching { app.ytDlp.ensure(); app.ytDlp.updateIfDue(0); app.ytDlp.version() }.getOrNull()
+                                }
+                                busy = false
+                            }
+                        }, enabled = !busy) { Text(if (busy) "Updating..." else if (version == null) "Install now" else "Update now") }
+                        VSpace()
+                        Text("Sign-in for video sites", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                        Hint("Some videos need a signed-in browser (YouTube may ask \"confirm you're not a bot\"). The extension's \"Download this video\" button sends your sign-in automatically. For links pasted here, yt-dlp can read cookies from a browser:")
+                        val browsers = listOf("", "firefox", "edge", "chrome", "brave")
+                        FormRow("Use cookies from", 130.dp) {
+                            Dropdown(s.videoCookiesBrowser, browsers, { if (it.isEmpty()) "No browser" else it.replaceFirstChar(Char::uppercase) }, Modifier.width(180.dp)) {
+                                s = s.copy(videoCookiesBrowser = it)
+                            }
+                        }
+                        Hint("Firefox works best; Chrome and Edge lock their cookies while they are open.")
+                    }                    OptionsPage.NOTIFY -> {
                         CheckRow("Show a notification when a download finishes", s.notifications) { s = s.copy(notifications = it) }
                         CheckRow("Show the download complete dialog", s.showCompleteDialog) { s = s.copy(showCompleteDialog = it) }
                         CheckRow("Play a sound when a download finishes", s.soundOnComplete) { s = s.copy(soundOnComplete = it) }

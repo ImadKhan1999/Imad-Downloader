@@ -36,6 +36,10 @@ class ImadApp : Application() {
         private set
     lateinit var notifications: Notifications
         private set
+    lateinit var ytDlp: AndroidYtDlp
+        private set
+    lateinit var updater: AppUpdater
+        private set
 
     /** Downloads this app paused because Wi-Fi went away (resumed when it comes back). */
     private val pausedForWifi = mutableSetOf<String>()
@@ -49,6 +53,14 @@ class ImadApp : Application() {
         engine = DownloadEngine(settings.value.toEngineConfig(), JsonFileStore(File(filesDir, "downloads.json")), CoroutineScope(SupervisorJob() + Dispatchers.IO))
         browserData = BrowserData(File(filesDir, "browser.json"))
         notifications = Notifications(this)
+        ytDlp = AndroidYtDlp(this)
+        updater = AppUpdater(this, scope)
+        engine.mediaExtractor = ytDlp
+        // Keep yt-dlp current so sites keep working between app updates.
+        scope.launch(Dispatchers.IO) {
+            runCatching { ytDlp.version() } // starts Python early so the first video lookup is quick
+            runCatching { ytDlp.updateIfDue() }
+        }
         QueueScheduler(engine).start(scope)
         QueueAlarms.reschedule(this, engine.queues)
         scope.launch {

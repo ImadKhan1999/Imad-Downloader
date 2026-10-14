@@ -51,7 +51,7 @@
 
   function hasSource(video) {
     const src = video.currentSrc || video.src || "";
-    return /^https?:/i.test(src) || mediaCount > 0;
+    return /^https?:/i.test(src) || mediaCount > 0 || /(^|\.)(youtube\.com|vimeo\.com|dailymotion\.com|facebook\.com|instagram\.com|x\.com|twitter\.com|tiktok\.com|twitch\.tv|reddit\.com|bilibili\.com)$/.test(location.hostname);
   }
 
   document.addEventListener(

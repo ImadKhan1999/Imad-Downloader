@@ -54,6 +54,14 @@ fun AppRoot(app: ImadApp, browser: BrowserController, activity: MainActivity) {
     var details by remember { mutableStateOf<String?>(null) }
     var batch by remember { mutableStateOf(false) }
     var queues by rememberSaveable { mutableStateOf(false) }
+    var showUpdate by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        val s = app.settings.value
+        if (s.autoUpdate && System.currentTimeMillis() - s.lastUpdateCheck > 24 * 3_600_000L) {
+            app.settings.update { it.copy(lastUpdateCheck = System.currentTimeMillis()) }
+            app.updater.check { showUpdate = true }
+        }
+    }
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current
@@ -140,7 +148,7 @@ fun AppRoot(app: ImadApp, browser: BrowserController, activity: MainActivity) {
                         canStart = canStart,
                         onQueues = { queues = true },
                     )
-                    Screen.SETTINGS -> SettingsScreen(app.settings, app.browserData)
+                    Screen.SETTINGS -> SettingsScreen(app.settings, app.browserData, onCheckUpdates = { showUpdate = true; app.updater.check() })
                 }
             }
         }
@@ -158,6 +166,7 @@ fun AppRoot(app: ImadApp, browser: BrowserController, activity: MainActivity) {
         }
         details?.let { id -> DetailsSheet(app.engine, id, onDismiss = { details = null }, canStart = canStart) }
         if (batch) BatchSheet(app.engine, onDismiss = { batch = false }, canStart = canStart)
+        if (showUpdate) UpdateDialog(app.updater) { showUpdate = false; app.updater.reset() }
         if (queues) androidx.compose.material3.Surface(Modifier.fillMaxSize()) { QueuesScreen(app.engine, onBack = { queues = false }, canStart = canStart) }
     }
 }

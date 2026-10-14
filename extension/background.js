@@ -9,6 +9,17 @@ const PORTS = [9614, 9615, 9616, 9617];
 const MEDIA_TYPES = /^(video\/|audio\/|application\/(vnd\.apple\.mpegurl|x-mpegurl|dash\+xml))/i;
 const MEDIA_EXT = /\.(mp4|m4v|webm|mkv|mov|flv|m3u8|mpd|mp3|m4a|aac|ogg|opus|wav|flac)(\?|$)/i;
 const MIN_MEDIA_BYTES = 300 * 1024;
+// Sites whose videos the app reads from the page itself (through yt-dlp) instead of sniffed streams.
+const VIDEO_SITES = ["youtube.com", "youtu.be", "vimeo.com", "dailymotion.com", "facebook.com", "fb.watch", "instagram.com", "x.com", "twitter.com", "tiktok.com", "twitch.tv", "soundcloud.com", "reddit.com", "bilibili.com", "streamable.com", "rumble.com", "ok.ru", "vk.com", "pinterest.com", "linkedin.com", "bandcamp.com"];
+
+function isVideoSite(url) {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    return VIDEO_SITES.some((s) => host === s || host.endsWith("." + s));
+  } catch (e) {
+    return false;
+  }
+}
 
 let appPort = null;
 let appInfo = null;
@@ -123,6 +134,7 @@ function buildMenus() {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({ id: "imad-link", title: "Download with Imad Downloader", contexts: ["link"] });
     chrome.contextMenus.create({ id: "imad-media", title: "Download this media with Imad Downloader", contexts: ["video", "audio", "image"] });
+    chrome.contextMenus.create({ id: "imad-page-video", title: "Download video from this page", contexts: ["page", "video"] });
     chrome.contextMenus.create({ id: "imad-all", title: "Download all links with Imad Downloader", contexts: ["page"] });
     chrome.contextMenus.create({ id: "imad-selection", title: "Download selected links with Imad Downloader", contexts: ["selection"] });
   });
@@ -139,7 +151,9 @@ chrome.runtime.onStartup.addListener(() => {
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   const referer = tab?.url;
-  if (info.menuItemId === "imad-link" && info.linkUrl) {
+  if (info.menuItemId === "imad-page-video" && tab?.url) {
+    await sendDownload({ url: tab.url, referer: tab.url });
+  } else if (info.menuItemId === "imad-link" && info.linkUrl) {
     await sendDownload({ url: info.linkUrl, referer });
   } else if (info.menuItemId === "imad-media" && info.srcUrl) {
     const src = /^https?:/i.test(info.srcUrl) ? info.srcUrl : bestMedia(tab?.id)?.url;
@@ -232,6 +246,11 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
         break;
       case "download-best": {
         const tabId = sender.tab?.id;
+        // Video sites: hand over the page; the app picks the quality (and your sign-in cookies go along).
+        if (sender.tab?.url && isVideoSite(sender.tab.url)) {
+          reply({ ok: await sendDownload({ url: sender.tab.url, referer: sender.tab.url }), found: true });
+          break;
+        }
         const best = msg.src && /^https?:/i.test(msg.src) ? { url: msg.src } : bestMedia(tabId);
         let fileName = null;
         if (best && msg.title) {

@@ -63,6 +63,7 @@ fun AllDialogs(app: AppState) {
     if (app.schedulerOpen) SchedulerDialog(app)
     if (app.batchOpen) BatchDialog(app, theme)
     if (app.aboutOpen) AboutDialog(app, theme)
+    UpdateDialog(app)
     app.propertiesFor?.let { PropertiesDialog(app, it, theme) }
     app.linksDialog?.let { LinksDialog(app, it, theme) }
     app.confirmDelete?.let { ConfirmDeleteDialog(app, it, theme) }
@@ -157,11 +158,29 @@ private fun FileInfoDialog(app: AppState, s: FileInfoState, theme: ThemeMode) {
                         }, Modifier.fillMaxWidth()) { h -> update { it.copy(streamHeight = h) } }
                     }
                 }
+                val opt = s.mediaOption
+                if (opt != null) {
+                    FormRow("Quality", 90.dp) {
+                        Dropdown(opt, s.mediaOptions, { o -> if (o.sizeEstimate > 0) "${o.label}  •  about ${Format.bytes(o.sizeEstimate)}" else o.label }, Modifier.fillMaxWidth()) { o ->
+                            update { it.withOption(o) }
+                        }
+                    }
+                }
             }
         }
         VSpace(6.dp)
         Row(verticalAlignment = Alignment.CenterVertically) {
             when {
+                s.extracting -> {
+                    CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                    Spacer(Modifier.width(8.dp))
+                    Text(s.extractNote ?: "Finding the video...", fontSize = 13.sp)
+                }
+                s.media != null -> {
+                    Text("${s.media.extractor.ifBlank { "Video" }}: ", fontSize = 13.sp)
+                    Text(s.media.title, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                    if (s.media.durationSeconds > 0) { Spacer(Modifier.width(12.dp)); Text(Format.duration(s.media.durationSeconds.toLong()), fontSize = 12.sp, color = LocalPalette.current.muted) }
+                }
                 s.probing -> {
                     CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
                     Spacer(Modifier.width(8.dp))
@@ -188,7 +207,7 @@ private fun FileInfoDialog(app: AppState, s: FileInfoState, theme: ThemeMode) {
             OutlinedButton({ app.confirmFileInfo(s, start = false, queueId = queue.id) }) { Text("Download Later") }
             Spacer(Modifier.weight(1f))
             TextButton({ app.fileInfo = null }) { Text("Cancel") }
-            Button({ app.confirmFileInfo(s, start = true) }, enabled = s.fileName.isNotBlank()) { Text("Start Download") }
+            Button({ app.confirmFileInfo(s, start = true) }, enabled = s.fileName.isNotBlank() && !s.extracting) { Text("Start Download") }
         }
     }
 }
@@ -414,6 +433,7 @@ private fun AboutDialog(app: AppState, theme: ThemeMode) {
         Spacer(Modifier.weight(1f))
         ButtonRow {
             TextButton({ Platform.browse("https://github.com/ImadKhan1999/Imad-Downloader") }) { Text("Website") }
+            TextButton({ app.aboutOpen = false; app.checkForUpdates() }) { Text("Check for updates") }
             Button({ app.aboutOpen = false }) { Text("Close") }
         }
     }

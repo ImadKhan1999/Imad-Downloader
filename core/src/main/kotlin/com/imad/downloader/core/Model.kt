@@ -22,9 +22,23 @@ enum class DownloadStatus {
 }
 
 @Serializable
-enum class DownloadKind { HTTP, HLS, DASH;
+enum class DownloadKind { HTTP, HLS, DASH,
+    /** A video page (YouTube etc.) resolved by a [MediaExtractor]; may be video + audio merged. */
+    MEDIA;
     val isStream: Boolean get() = this != HTTP
 }
+
+/** Resume state of one file a MEDIA download is made of (video part, audio part). */
+@Serializable
+data class PartState(
+    val formatId: String,
+    val fileName: String,
+    val totalBytes: Long = -1,
+    val downloadedBytes: Long = 0,
+    val resumable: Boolean = false,
+    val segments: List<SegmentState> = emptyList(),
+    val done: Boolean = false,
+)
 
 /** One byte range of a multi-connection download. [end] is inclusive; -1 means "until EOF". */
 @Serializable
@@ -70,6 +84,9 @@ data class DownloadItem(
     val nameLocked: Boolean = false,
     /** Streams: wanted video height (0 = best). */
     val streamHeight: Int = 0,
+    /** MEDIA only: yt-dlp style format choice, e.g. "137+140" or "18". */
+    val mediaFormat: String? = null,
+    val parts: List<PartState> = emptyList(),
     /** HLS only: pieces finished / total pieces. */
     val piecesDone: Int = 0,
     val piecesTotal: Int = 0,
@@ -106,6 +123,8 @@ data class DownloadRequest(
     val kind: DownloadKind? = null,
     /** Streams: wanted video height (0 = best). */
     val streamHeight: Int = 0,
+    /** MEDIA: format choice from [MediaOption.formatSpec]. */
+    val mediaFormat: String? = null,
     /** Known size from a previous probe, skips nothing but helps the UI. */
     val sizeHint: Long = -1,
 )

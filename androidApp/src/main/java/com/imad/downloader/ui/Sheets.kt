@@ -99,6 +99,11 @@ fun AddDownloadSheet(
     var qualities by remember { mutableStateOf<List<com.imad.downloader.core.StreamQuality>>(emptyList()) }
     var height by remember { mutableStateOf(initial.streamHeight) }
     var queueId by remember { mutableStateOf(initial.queueId ?: com.imad.downloader.core.EngineState.MAIN_QUEUE_ID) }
+    // Video pages (YouTube etc.) read through yt-dlp.
+    var extracting by remember { mutableStateOf(false) }
+    var media by remember { mutableStateOf<com.imad.downloader.core.MediaInfo?>(null) }
+    var mediaOptions by remember { mutableStateOf<List<com.imad.downloader.core.MediaOption>>(emptyList()) }
+    var mediaOption by remember { mutableStateOf<com.imad.downloader.core.MediaOption?>(null) }
     val valid = url.startsWith("http://", true) || url.startsWith("https://", true)
 
     LaunchedEffect(url) {
@@ -110,6 +115,23 @@ fun AddDownloadSheet(
             initial.cookies?.let { put("Cookie", it) }
             initial.userAgent?.let { put("User-Agent", it) }
         }
+        media = null; mediaOptions = emptyList(); mediaOption = null
+        suspend fun tryMedia(quiet: Boolean) {
+            extracting = true
+            val m = withContext(Dispatchers.IO) { runCatching { engine.extractMedia(url.trim(), headers) } }
+            extracting = false
+            m.onSuccess { info ->
+                val opts = com.imad.downloader.core.MediaChoice.options(info)
+                if (opts.isEmpty()) { if (!quiet) error = "No downloadable video found on this page"; return@onSuccess }
+                media = info; mediaOptions = opts; mediaOption = opts.first(); error = null
+                if (!nameEdited) name = com.imad.downloader.core.MediaChoice.safeTitle(info.title) + "." + opts.first().extension
+            }.onFailure { if (!quiet) error = it.message ?: "Could not read this video page" }
+        }
+        if (com.imad.downloader.core.MediaChoice.isKnownSite(url) && initial.mediaFormat == null) {
+            probing = false
+            tryMedia(quiet = false)
+            return@LaunchedEffect
+        }
         val r = withContext(Dispatchers.IO) { runCatching { engine.probe(url.trim(), headers, initial.referer) } }
         r.onSuccess { p -> probe = p; if (!nameEdited || name.isBlank()) name = p.fileName }
             .onFailure { error = it.message ?: "Could not reach the server" }
@@ -118,9 +140,15 @@ fun AddDownloadSheet(
         qualities = if (p != null && p.isStream) {
             withContext(Dispatchers.IO) { runCatching { engine.streamQualities(p.finalUrl, headers, initial.referer) }.getOrDefault(emptyList()) }
         } else emptyList()
+        // A web page instead of a file: maybe a video site yt-dlp knows.
+        if (p != null && !p.isStream && p.mimeType?.startsWith("text/html") == true) tryMedia(quiet = true)
     }
 
-    val category = if (probe?.isStream == true) Category.VIDEO else Category.detect(name, probe?.mimeType)
+    val category = when {
+        mediaOption?.audioOnly == true -> Category.MUSIC
+        media != null || probe?.isStream == true -> Category.VIDEO
+        else -> Category.detect(name, probe?.mimeType)
+    }
     val folder = engine.defaultDirFor(category)
     fun add(start: Boolean) {
         val req = initial.copy(
@@ -129,13 +157,15 @@ fun AddDownloadSheet(
             maxConnections = connections.toInt(),
             sizeHint = probe?.totalBytes ?: initial.sizeHint,
             kind = when {
+                mediaOption != null -> DownloadKind.MEDIA
                 probe?.isDash == true -> DownloadKind.DASH
                 probe?.isHls == true -> DownloadKind.HLS
                 else -> initial.kind
             },
-            streamHeight = height,
+            streamHeight = mediaOption?.height ?: height,
+            mediaFormat = mediaOption?.formatSpec,
             queueId = if (start) initial.queueId else queueId,
-        )
+        ).let { if (mediaOption != null) it.copy(fileName = name.trim(), sizeHint = mediaOption!!.sizeEstimate) else it }
         runCatching { engine.add(req, start = start && canStart()) }
             .onSuccess { onAdded(start) }
             .onFailure { error = it.message }
@@ -149,6 +179,14 @@ fun AddDownloadSheet(
                 Column(Modifier.weight(1f)) {
                     Text("New download", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
                     when {
+                        extracting -> Row(verticalAlignment = Alignment.CenterVertically) {
+                            CircularProgressIndicator(Modifier.size(14.dp), strokeWidth = 2.dp)
+                            Spacer(Modifier.width(8.dp)); Text("Finding the video...", fontSize = 13.sp)
+                        }
+                        media != null -> Text(
+                            "${media!!.extractor.ifBlank { "Video" }}  •  ${media!!.title}",
+                            fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                        )
                         probing -> Row(verticalAlignment = Alignment.CenterVertically) {
                             CircularProgressIndicator(Modifier.size(14.dp), strokeWidth = 2.dp)
                             Spacer(Modifier.width(8.dp)); Text("Checking link...", fontSize = 13.sp)
@@ -174,6 +212,20 @@ fun AddDownloadSheet(
             Text("Save to", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(folder, fontSize = 14.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(12.dp))
+            if (mediaOptions.isNotEmpty()) {
+                Text("Quality", fontSize = 14.sp)
+                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    mediaOptions.forEach { o ->
+                        FilterChip(mediaOption == o, {
+                            mediaOption = o
+                            name = name.substringBeforeLast('.') + "." + o.extension
+                        }, label = {
+                            Text(if (o.sizeEstimate > 0) "${o.label} · ${Format.bytes(o.sizeEstimate)}" else o.label)
+                        }, modifier = Modifier.testTag("media-${o.label}"))
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+            }
             if (qualities.size > 1) {
                 Text("Quality", fontSize = 14.sp)
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -198,7 +250,7 @@ fun AddDownloadSheet(
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedButton({ add(false) }, Modifier.weight(1f), enabled = valid) { Text("Later") }
-                Button({ add(true) }, Modifier.weight(1f).testTag("start-download"), enabled = valid && name.isNotBlank()) { Text("Download") }
+                Button({ add(true) }, Modifier.weight(1f).testTag("start-download"), enabled = valid && name.isNotBlank() && !extracting) { Text("Download") }
             }
         }
     }

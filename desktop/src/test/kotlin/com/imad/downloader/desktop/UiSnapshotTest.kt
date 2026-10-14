@@ -135,4 +135,35 @@ class UiSnapshotTest {
         val a = AppState(SettingsStore(settingsFile), InMemoryStore(), preview = true)
         snap("windows-empty", 1100, 600) { ImadTheme(ThemeMode.LIGHT) { MainContent(a) } }
     }
+
+    @Test fun `video page dialog`() {
+        val a = app()
+        val req = DownloadRequest("https://www.youtube.com/watch?v=abc")
+        val info = com.imad.downloader.core.MediaInfo(
+            "Big Buck Bunny (4K)", req.url, "Youtube", 596.0,
+            formats = listOf(
+                com.imad.downloader.core.MediaFormat("137", "mp4", "u", vcodec = "avc1", height = 1080, tbr = 4400.0),
+                com.imad.downloader.core.MediaFormat("136", "mp4", "u", vcodec = "avc1", height = 720, tbr = 2200.0),
+                com.imad.downloader.core.MediaFormat("18", "mp4", "u", vcodec = "avc1", acodec = "mp4a", height = 360, tbr = 600.0),
+                com.imad.downloader.core.MediaFormat("140", "m4a", "u", acodec = "mp4a", tbr = 129.0),
+            ),
+        )
+        val opts = com.imad.downloader.core.MediaChoice.options(info)
+        a.fileInfo = FileInfoState(req, probing = false, media = info, mediaOptions = opts, fileName = "Big Buck Bunny (4K).mp4",
+            saveDir = "C:\\Users\\Imad\\Downloads\\Imad Downloader\\Video").withOption(opts.first())
+        snap("windows-video-page", 620, 380) { AllDialogs(a) }
+    }
+
+    @Test fun `update dialog`() {
+        val a = app()
+        a.updateDialogOpen = true
+        val f = a.updater.javaClass.getDeclaredField("_state").apply { isAccessible = true }
+        @Suppress("UNCHECKED_CAST")
+        (f.get(a.updater) as kotlinx.coroutines.flow.MutableStateFlow<com.imad.downloader.core.UpdateState>).value =
+            com.imad.downloader.core.UpdateState.Downloading(
+                com.imad.downloader.core.ReleaseInfo("1.3.0", url = "u", sha256 = "", size = 100_000_000, changelog = "Faster YouTube downloads and a new look."),
+                46_000_000, 100_000_000,
+            )
+        snap("windows-update", 480, 330) { AllDialogs(a) }
+    }
 }

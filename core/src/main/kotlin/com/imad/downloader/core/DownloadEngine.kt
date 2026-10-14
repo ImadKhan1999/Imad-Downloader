@@ -34,6 +34,8 @@ class DownloadEngine(
     client: OkHttpClient? = null,
     /** Turn interrupted downloads into PAUSED on load. Only previews and tests switch this off. */
     recoverOnLoad: Boolean = true,
+    /** Resolves video pages (YouTube etc.); set by each app (yt-dlp). */
+    @Volatile var mediaExtractor: MediaExtractor? = null,
 ) {
     @Volatile var config: EngineConfig = config
         private set
@@ -92,6 +94,10 @@ class DownloadEngine(
     suspend fun probe(url: String, headers: Map<String, String> = emptyMap(), referer: String? = null): ProbeResult =
         Prober.probe(client, url, headers, referer, config.userAgent)
 
+    /** Video page info and qualities via [mediaExtractor] (yt-dlp). */
+    suspend fun extractMedia(url: String, headers: Map<String, String> = emptyMap()): MediaInfo =
+        (mediaExtractor ?: throw java.io.IOException("Video sites are not available")).extract(url, headers)
+
     /** Qualities offered by an HLS master playlist or DASH manifest (empty when there is no choice). */
     suspend fun streamQualities(url: String, headers: Map<String, String> = emptyMap(), referer: String? = null): List<StreamQuality> {
         val ua = headers.entries.firstOrNull { it.key.equals("User-Agent", true) }?.value ?: config.userAgent
@@ -106,6 +112,7 @@ class DownloadEngine(
         val url = request.url.trim()
         require(url.startsWith("http://", true) || url.startsWith("https://", true)) { "Only http and https links are supported" }
         val kind = request.kind ?: when {
+            request.mediaFormat != null -> DownloadKind.MEDIA
             looksLike(url, ".m3u8") -> DownloadKind.HLS
             looksLike(url, ".mpd") -> DownloadKind.DASH
             else -> DownloadKind.HTTP
@@ -136,6 +143,7 @@ class DownloadEngine(
             queueId = request.queueId,
             expectedChecksum = request.expectedChecksum,
             streamHeight = request.streamHeight,
+            mediaFormat = request.mediaFormat,
             nameLocked = request.fileName != null,
         )
         _state.update { it.copy(downloads = it.downloads + item) }
@@ -202,7 +210,7 @@ class DownloadEngine(
             deletePartials(item)
             mutate(id) {
                 it.copy(
-                    status = DownloadStatus.QUEUED, downloadedBytes = 0, segments = emptyList(), error = null,
+                    status = DownloadStatus.QUEUED, downloadedBytes = 0, segments = emptyList(), parts = emptyList(), error = null,
                     completedAt = 0, piecesDone = 0, speedBps = 0, etaSeconds = -1,
                 )
             }
@@ -385,10 +393,16 @@ class DownloadEngine(
                 applyProgress(id, progress)
                 requestSave()
             }
+
+            override fun onPersist(item: DownloadItem) {
+                mutate(id) { it.copy(parts = item.parts, mediaFormat = item.mediaFormat) }
+                requestSave()
+            }
         }
         val current = get(id) ?: return
         val task: DownloadTask = when (current.kind) {
             DownloadKind.HLS, DownloadKind.DASH -> StreamDownloadTask(current, config, client, globalLimiter, callbacks)
+            DownloadKind.MEDIA -> MediaDownloadTask(current, config, client, globalLimiter, callbacks, mediaExtractor ?: UnavailableExtractor)
             DownloadKind.HTTP -> HttpDownloadTask(current, config, client, globalLimiter, callbacks)
         }
         val job = scope.launch(Dispatchers.IO, start = kotlinx.coroutines.CoroutineStart.LAZY) {
@@ -454,6 +468,11 @@ class DownloadEngine(
                 requestSave()
             }
         }
+    }
+
+    private object UnavailableExtractor : MediaExtractor {
+        override suspend fun extract(url: String, headers: Map<String, String>): MediaInfo =
+            throw java.io.IOException("Video sites are not available in this app yet")
     }
 
     private fun describe(e: Throwable): String = when (e) {

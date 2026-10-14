@@ -57,6 +57,10 @@ data class DesktopSettings(
     val launchOnStartup: Boolean = false,
     val theme: ThemeMode = ThemeMode.SYSTEM,
     val browserIntegration: Boolean = true,
+    val autoUpdate: Boolean = true,
+    val lastUpdateCheck: Long = 0,
+    /** Browser whose cookies yt-dlp may read ("firefox", "edge", "chrome", "brave"), empty = none. */
+    val videoCookiesBrowser: String = "",
     val confirmDelete: Boolean = true,
     val queueCompletionAction: CompletionAction = CompletionAction.NOTHING,
     val columnWidths: Map<String, Float> = emptyMap(),

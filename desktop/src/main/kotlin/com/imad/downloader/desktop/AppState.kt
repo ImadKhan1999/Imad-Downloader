@@ -17,6 +17,9 @@ import com.imad.downloader.core.ProbeResult
 import com.imad.downloader.core.QueueScheduler
 import com.imad.downloader.core.StreamQuality
 import com.imad.downloader.core.DownloadKind
+import com.imad.downloader.core.MediaChoice
+import com.imad.downloader.core.MediaInfo
+import com.imad.downloader.core.MediaOption
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -65,7 +68,19 @@ data class FileInfoState(
     /** Stream qualities (HLS / DASH); empty for normal files. */
     val qualities: List<StreamQuality> = emptyList(),
     val streamHeight: Int = 0,
-)
+    /** Video pages (YouTube etc.) found through yt-dlp. */
+    val extracting: Boolean = false,
+    val extractNote: String? = null,
+    val media: MediaInfo? = null,
+    val mediaOptions: List<MediaOption> = emptyList(),
+    val mediaOption: MediaOption? = null,
+) {
+    fun withOption(o: MediaOption): FileInfoState = copy(
+        mediaOption = o,
+        fileName = fileName.substringBeforeLast('.') + "." + o.extension,
+        category = if (o.audioOnly) Category.MUSIC else Category.VIDEO,
+    )
+}
 
 class AppState(
     val settingsStore: SettingsStore = SettingsStore(),
@@ -79,7 +94,15 @@ class AppState(
     var settings by mutableStateOf(settingsStore.load())
         private set
 
-    val engine = DownloadEngine(settings.toEngineConfig(), store, ioScope, recoverOnLoad = !preview)
+    val ytDlp = YtDlpTool()
+    val engine = DownloadEngine(settings.toEngineConfig(), store, ioScope, recoverOnLoad = !preview).also { e ->
+        e.mediaExtractor = YtDlpExtractor(ytDlp, cookiesFromBrowser = { settings.videoCookiesBrowser.ifBlank { null } }) { done, total ->
+            scope.launch {
+                val pct = if (total > 0) " ${done * 100 / total}%" else ""
+                fileInfo = fileInfo?.copy(extractNote = "Setting up video support (yt-dlp, one time)$pct")
+            }
+        }
+    }
     val scheduler = QueueScheduler(engine)
 
     // ----- main window UI state
@@ -105,6 +128,11 @@ class AppState(
     var confirmDelete by mutableStateOf<List<String>?>(null)
     var refreshAddressFor by mutableStateOf<String?>(null)
     var message by mutableStateOf<String?>(null)
+    val updater = DesktopUpdater(scope)
+    var updateDialogOpen by mutableStateOf(false)
+
+    fun checkForUpdates() { updateDialogOpen = true; updater.check() }
+
     var notifier: ((title: String, text: String) -> Unit)? = null
     var exitApp: () -> Unit = {}
 
@@ -125,6 +153,11 @@ class AppState(
 
     fun start() {
         integration.start()
+        ioScope.launch { runCatching { ytDlp.updateIfDue() } }
+        if (settings.autoUpdate && System.currentTimeMillis() - settings.lastUpdateCheck > 24 * 3_600_000L) {
+            updateSettings(settings.copy(lastUpdateCheck = System.currentTimeMillis()))
+            updater.check { updateDialogOpen = true }
+        }
         clipboard.start(scope)
         scheduler.start(ioScope)
         scope.launch {
@@ -182,6 +215,10 @@ class AppState(
     fun showFileInfo(request: DownloadRequest) {
         val initial = FileInfoState(request)
         fileInfo = initial.copy(saveDir = engine.defaultDirFor(initial.category))
+        if (MediaChoice.isKnownSite(request.url) && request.mediaFormat == null) {
+            loadMedia(request, quiet = false)
+            return
+        }
         ioScope.launch {
             val result = runCatching { engine.probe(request.url, buildHeaders(request), request.referer) }
             scope.launch {
@@ -201,6 +238,35 @@ class AppState(
                 )
                 val p = result.getOrNull()
                 if (p != null && p.isStream) loadQualities(request, p.finalUrl)
+                // A web page instead of a file: maybe a video site yt-dlp knows.
+                if (p != null && !p.isStream && p.mimeType?.startsWith("text/html") == true) loadMedia(request, quiet = true)
+            }
+        }
+    }
+
+    /** Asks yt-dlp for the video behind a page. [quiet]: unknown sites keep the normal dialog on failure. */
+    private fun loadMedia(request: DownloadRequest, quiet: Boolean) {
+        fileInfo = fileInfo?.copy(extracting = true, probing = false, extractNote = "Finding the video...")
+        ioScope.launch {
+            val r = runCatching { engine.extractMedia(request.url, buildHeaders(request)) }
+            scope.launch {
+                val cur = fileInfo ?: return@launch
+                if (cur.request != request) return@launch
+                fileInfo = r.fold(
+                    onSuccess = { info ->
+                        val opts = MediaChoice.options(info)
+                        if (opts.isEmpty()) cur.copy(extracting = false, extractNote = null, error = "No downloadable video found on this page")
+                        else {
+                            val base = cur.copy(
+                                extracting = false, extractNote = null, error = null, media = info, mediaOptions = opts,
+                                fileName = MediaChoice.safeTitle(info.title) + ".mp4", description = cur.description.ifBlank { info.title },
+                                saveDir = engine.defaultDirFor(Category.VIDEO),
+                            )
+                            base.withOption(opts.first())
+                        }
+                    },
+                    onFailure = { e -> if (quiet) cur.copy(extracting = false, extractNote = null) else cur.copy(extracting = false, extractNote = null, error = e.message ?: "Could not read this video page") },
+                )
             }
         }
     }
@@ -229,9 +295,11 @@ class AppState(
                 saveDir = state.saveDir,
                 description = state.description,
                 queueId = queueId ?: state.request.queueId,
-                sizeHint = state.probe?.totalBytes ?: state.request.sizeHint,
-                streamHeight = state.streamHeight,
+                sizeHint = state.mediaOption?.sizeEstimate ?: state.probe?.totalBytes ?: state.request.sizeHint,
+                streamHeight = state.mediaOption?.height ?: state.streamHeight,
+                mediaFormat = state.mediaOption?.formatSpec,
                 kind = when {
+                    state.mediaOption != null -> DownloadKind.MEDIA
                     state.probe?.isDash == true -> DownloadKind.DASH
                     state.probe?.isHls == true -> DownloadKind.HLS
                     else -> state.request.kind
