@@ -23,6 +23,7 @@ data class CapturedDownload(
     val mime: String? = null,
     /** "ask" shows the file info dialog, "silent" starts at once, "later" adds paused. */
     val mode: String = "ask",
+    val streamHeight: Int = 0,
 )
 
 @Serializable

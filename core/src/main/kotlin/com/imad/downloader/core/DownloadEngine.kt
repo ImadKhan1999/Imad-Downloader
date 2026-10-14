@@ -85,19 +85,31 @@ class DownloadEngine(
         mutate(id) { it.copy(speedLimit = bps.coerceAtLeast(0)) }
         when (val t = running[id]?.task) {
             is HttpDownloadTask -> t.setSpeedLimit(bps)
-            is HlsDownloadTask -> t.setSpeedLimit(bps)
+            is StreamDownloadTask -> t.setSpeedLimit(bps)
         }
     }
 
     suspend fun probe(url: String, headers: Map<String, String> = emptyMap(), referer: String? = null): ProbeResult =
         Prober.probe(client, url, headers, referer, config.userAgent)
 
+    /** Qualities offered by an HLS master playlist or DASH manifest (empty when there is no choice). */
+    suspend fun streamQualities(url: String, headers: Map<String, String> = emptyMap(), referer: String? = null): List<StreamQuality> {
+        val ua = headers.entries.firstOrNull { it.key.equals("User-Agent", true) }?.value ?: config.userAgent
+        val text = StreamResolver.fetchText(client, url, headers, referer, ua)
+        return if (StreamResolver.isDash(url, text)) StreamResolver.qualitiesFromDash(Dash.parse(text, url))
+        else StreamResolver.qualitiesFromHls(text, url)
+    }
+
     // ---------------------------------------------------------------- adding
 
     fun add(request: DownloadRequest, start: Boolean = true): DownloadItem {
         val url = request.url.trim()
         require(url.startsWith("http://", true) || url.startsWith("https://", true)) { "Only http and https links are supported" }
-        val kind = request.kind ?: if (looksLikeHls(url)) DownloadKind.HLS else DownloadKind.HTTP
+        val kind = request.kind ?: when {
+            looksLike(url, ".m3u8") -> DownloadKind.HLS
+            looksLike(url, ".mpd") -> DownloadKind.DASH
+            else -> DownloadKind.HTTP
+        }
         val rawName = request.fileName?.takeIf { it.isNotBlank() }?.let(FileNames::sanitize)
             ?: FileNames.fromUrl(url)?.let(FileNames::sanitize) ?: "download"
         val category = Category.detect(rawName)
@@ -123,6 +135,7 @@ class DownloadEngine(
             description = request.description,
             queueId = request.queueId,
             expectedChecksum = request.expectedChecksum,
+            streamHeight = request.streamHeight,
             nameLocked = request.fileName != null,
         )
         _state.update { it.copy(downloads = it.downloads + item) }
@@ -321,7 +334,7 @@ class DownloadEngine(
         },
     )
 
-    private fun looksLikeHls(url: String) = url.substringBefore('?').substringBefore('#').endsWith(".m3u8", true)
+    private fun looksLike(url: String, ext: String) = url.substringBefore('?').substringBefore('#').endsWith(ext, true)
 
     private fun deletePartials(item: DownloadItem) {
         File(item.saveDir, item.fileName + FileNames.PART_SUFFIX).delete()
@@ -375,7 +388,7 @@ class DownloadEngine(
         }
         val current = get(id) ?: return
         val task: DownloadTask = when (current.kind) {
-            DownloadKind.HLS -> HlsDownloadTask(current, config, client, globalLimiter, callbacks)
+            DownloadKind.HLS, DownloadKind.DASH -> StreamDownloadTask(current, config, client, globalLimiter, callbacks)
             DownloadKind.HTTP -> HttpDownloadTask(current, config, client, globalLimiter, callbacks)
         }
         val job = scope.launch(Dispatchers.IO, start = kotlinx.coroutines.CoroutineStart.LAZY) {
@@ -384,7 +397,9 @@ class DownloadEngine(
                 mutate(id) { cur ->
                     finished.copy(
                         status = DownloadStatus.COMPLETED, completedAt = System.currentTimeMillis(), speedBps = 0,
-                        etaSeconds = 0, activeConnections = 0, error = null, description = cur.description, queueId = cur.queueId,
+                        etaSeconds = 0, activeConnections = 0, error = null, queueId = cur.queueId,
+                        // The task may add a note (e.g. audio saved separately); otherwise keep edits made meanwhile.
+                        description = if (finished.description != current.description) finished.description else cur.description,
                     )
                 }
                 get(id)?.let { _events.tryEmit(EngineEvent.Completed(it)) }
@@ -421,8 +436,8 @@ class DownloadEngine(
                 speedBps = p.speedBps,
                 etaSeconds = p.etaSeconds,
                 activeConnections = p.connections,
-                piecesDone = if (cur.kind == DownloadKind.HLS) p.piecesDone else cur.piecesDone,
-                piecesTotal = if (cur.kind == DownloadKind.HLS) p.piecesTotal else cur.piecesTotal,
+                piecesDone = if (cur.kind.isStream) p.piecesDone else cur.piecesDone,
+                piecesTotal = if (cur.kind.isStream) p.piecesTotal else cur.piecesTotal,
             )
         }
     }

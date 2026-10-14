@@ -32,6 +32,8 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -94,6 +96,9 @@ fun AddDownloadSheet(
     var probe by remember { mutableStateOf<ProbeResult?>(null) }
     var probing by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var qualities by remember { mutableStateOf<List<com.imad.downloader.core.StreamQuality>>(emptyList()) }
+    var height by remember { mutableStateOf(initial.streamHeight) }
+    var queueId by remember { mutableStateOf(initial.queueId ?: com.imad.downloader.core.EngineState.MAIN_QUEUE_ID) }
     val valid = url.startsWith("http://", true) || url.startsWith("https://", true)
 
     LaunchedEffect(url) {
@@ -109,9 +114,13 @@ fun AddDownloadSheet(
         r.onSuccess { p -> probe = p; if (!nameEdited || name.isBlank()) name = p.fileName }
             .onFailure { error = it.message ?: "Could not reach the server" }
         probing = false
+        val p = r.getOrNull()
+        qualities = if (p != null && p.isStream) {
+            withContext(Dispatchers.IO) { runCatching { engine.streamQualities(p.finalUrl, headers, initial.referer) }.getOrDefault(emptyList()) }
+        } else emptyList()
     }
 
-    val category = Category.detect(name, probe?.mimeType)
+    val category = if (probe?.isStream == true) Category.VIDEO else Category.detect(name, probe?.mimeType)
     val folder = engine.defaultDirFor(category)
     fun add(start: Boolean) {
         val req = initial.copy(
@@ -119,7 +128,13 @@ fun AddDownloadSheet(
             fileName = name.trim().ifBlank { null }?.takeIf { nameEdited || probe != null },
             maxConnections = connections.toInt(),
             sizeHint = probe?.totalBytes ?: initial.sizeHint,
-            kind = if (probe?.isHls == true) DownloadKind.HLS else initial.kind,
+            kind = when {
+                probe?.isDash == true -> DownloadKind.DASH
+                probe?.isHls == true -> DownloadKind.HLS
+                else -> initial.kind
+            },
+            streamHeight = height,
+            queueId = if (start) initial.queueId else queueId,
         )
         runCatching { engine.add(req, start = start && canStart()) }
             .onSuccess { onAdded(start) }
@@ -143,7 +158,7 @@ fun AddDownloadSheet(
                             buildString {
                                 append(if (probe!!.totalBytes >= 0) Format.bytes(probe!!.totalBytes) else "Unknown size")
                                 append("  •  ")
-                                append(if (probe!!.isHls) "Video stream" else if (probe!!.resumable) "Resumable" else "Not resumable")
+                                append(if (probe!!.isStream) "Video stream" else if (probe!!.resumable) "Resumable" else "Not resumable")
                             },
                             fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -158,6 +173,25 @@ fun AddDownloadSheet(
             Text("Save to", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(folder, fontSize = 14.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(12.dp))
+            if (qualities.size > 1) {
+                Text("Quality", fontSize = 14.sp)
+                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(height == 0, { height = 0 }, label = { Text("Best") }, modifier = Modifier.testTag("quality-best"))
+                    qualities.filter { it.height > 0 }.distinctBy { it.height }.forEach { q ->
+                        FilterChip(height == q.height, { height = q.height }, label = { Text(q.label) }, modifier = Modifier.testTag("quality-${q.height}"))
+                    }
+                }
+                if (qualities.any { it.separateAudio }) Text("Video and audio are joined into one file.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(12.dp))
+            }
+            val queues = engine.queues
+            if (queues.size > 1) {
+                Text("\"Later\" puts it in", fontSize = 14.sp)
+                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    queues.forEach { q -> FilterChip(queueId == q.id, { queueId = q.id }, label = { Text(q.name) }) }
+                }
+                Spacer(Modifier.height(12.dp))
+            }
             Text("Connections: ${connections.toInt()}", fontSize = 14.sp)
             Slider(connections, { connections = it }, valueRange = 1f..32f)
             Spacer(Modifier.height(8.dp))
@@ -227,6 +261,11 @@ fun DetailsSheet(engine: DownloadEngine, id: String, onDismiss: () -> Unit, canS
             InfoRow("Link", item.url)
             item.referer?.let { InfoRow("Page", it) }
             if (item.status != DownloadStatus.COMPLETED) {
+                Text("Queue", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp))
+                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    FilterChip(item.queueId == null, { engine.moveToQueue(listOf(id), null) }, label = { Text("None") })
+                    engine.queues.forEach { q -> FilterChip(item.queueId == q.id, { engine.moveToQueue(listOf(id), q.id) }, label = { Text(q.name) }) }
+                }
                 TextButton({ refresh = true }) { Icon(Icons.Filled.Link, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Refresh expired link") }
             }
         }

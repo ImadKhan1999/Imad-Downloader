@@ -49,3 +49,20 @@ released on GitHub with the Windows installers, the APK and the extension.
 **Claude**
 
 Listed 20 ideas with effort and a recommended first five in [FEATURE_IDEAS.md](FEATURE_IDEAS.md).
+
+**13:29, Imad**
+
+> Implrement 1235 features
+
+**Claude**
+
+Started features 1 (quality picker), 2 (DASH and video+audio merging), 3 (phone/PC pairing) and
+5 (Android queues and schedule). Imad stopped the emulator test run at 13:4x.
+
+**13:50, Imad**
+
+> dont ADD Phone and PC pairing over Wi-Fi, send links both ways
+
+**Claude**
+
+Removed the pairing code completely (D-011). Kept features 1, 2 and 5.

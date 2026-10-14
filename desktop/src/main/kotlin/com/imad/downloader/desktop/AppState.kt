@@ -15,6 +15,8 @@ import com.imad.downloader.core.FileNames
 import com.imad.downloader.core.JsonFileStore
 import com.imad.downloader.core.ProbeResult
 import com.imad.downloader.core.QueueScheduler
+import com.imad.downloader.core.StreamQuality
+import com.imad.downloader.core.DownloadKind
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -60,6 +62,9 @@ data class FileInfoState(
     val saveDir: String = "",
     val description: String = request.description,
     val rememberPath: Boolean = false,
+    /** Stream qualities (HLS / DASH); empty for normal files. */
+    val qualities: List<StreamQuality> = emptyList(),
+    val streamHeight: Int = 0,
 )
 
 class AppState(
@@ -164,6 +169,7 @@ class AppState(
             userAgent = d.userAgent,
             headers = d.headers,
             sizeHint = d.size,
+            streamHeight = d.streamHeight,
         )
         when {
             d.mode == "silent" || !settings.showStartDialog -> startDownload(req, start = true)
@@ -193,6 +199,18 @@ class AppState(
                     },
                     onFailure = { cur.copy(probing = false, error = it.message ?: "Could not reach the server") },
                 )
+                val p = result.getOrNull()
+                if (p != null && p.isStream) loadQualities(request, p.finalUrl)
+            }
+        }
+    }
+
+    private fun loadQualities(request: DownloadRequest, url: String) {
+        ioScope.launch {
+            val q = runCatching { engine.streamQualities(url, buildHeaders(request), request.referer) }.getOrDefault(emptyList())
+            scope.launch {
+                val cur = fileInfo ?: return@launch
+                if (cur.request == request) fileInfo = cur.copy(qualities = q, category = Category.VIDEO)
             }
         }
     }
@@ -212,6 +230,12 @@ class AppState(
                 description = state.description,
                 queueId = queueId ?: state.request.queueId,
                 sizeHint = state.probe?.totalBytes ?: state.request.sizeHint,
+                streamHeight = state.streamHeight,
+                kind = when {
+                    state.probe?.isDash == true -> DownloadKind.DASH
+                    state.probe?.isHls == true -> DownloadKind.HLS
+                    else -> state.request.kind
+                },
             ),
             start = start,
         )

@@ -148,6 +148,15 @@ private fun FileInfoDialog(app: AppState, s: FileInfoState, theme: ThemeMode) {
                 }
                 CheckRow("Remember this path as the default", s.rememberPath) { v -> update { it.copy(rememberPath = v) } }
                 FormRow("Description", 90.dp) { Field(s.description, { v -> update { it.copy(description = v) } }, Modifier.fillMaxWidth()) }
+                if (s.qualities.size > 1) {
+                    FormRow("Quality", 90.dp) {
+                        val options = listOf(0) + s.qualities.map { it.height }.filter { it > 0 }.distinct()
+                        Dropdown(s.streamHeight, options, { h ->
+                            if (h == 0) "Best available (${s.qualities.first().label})"
+                            else s.qualities.first { it.height == h }.let { q -> "${q.label}  •  ${Format.speed(q.bandwidth / 8)}" }
+                        }, Modifier.fillMaxWidth()) { h -> update { it.copy(streamHeight = h) } }
+                    }
+                }
             }
         }
         VSpace(6.dp)

@@ -50,6 +50,11 @@ class ImadApp : Application() {
         browserData = BrowserData(File(filesDir, "browser.json"))
         notifications = Notifications(this)
         QueueScheduler(engine).start(scope)
+        QueueAlarms.reschedule(this, engine.queues)
+        scope.launch {
+            engine.state.map { s -> s.queues.map { it.id to it.schedule } }.distinctUntilChanged().drop(1)
+                .collect { QueueAlarms.reschedule(this@ImadApp, engine.queues) }
+        }
 
         scope.launch { settings.settings.drop(1).collect { engine.updateConfig(it.toEngineConfig()) } }
 
@@ -77,6 +82,9 @@ class ImadApp : Application() {
 
     fun startDownloadService() {
         runCatching { ContextCompat.startForegroundService(this, Intent(this, DownloadService::class.java)) }
+            // Android may refuse to start it from the background (e.g. an inexact queue alarm):
+            // then ask the user to open the app, which starts it.
+            .onFailure { notifications.needsAttention("Scheduled downloads are waiting", "Tap to start them") }
     }
 
     /** Starts a download unless "Wi-Fi only" forbids it right now. Returns false when held back. */

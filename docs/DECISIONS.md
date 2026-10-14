@@ -104,3 +104,30 @@ them, so the download continues with fewer connections. The error text explains 
   long-press on links offers download; host-based ad blocking; incognito tabs keep no history or
   cache (cookies are shared with normal tabs, a WebView limit).
 - Release builds use R8; APK is 1.9 MB. Signing key lives in `keystore/` (git-ignored).
+## D-009 Stream quality picker and DASH (2026-10-14, features 1 and 2)
+
+- The engine reads HLS master playlists (including `EXT-X-MEDIA` audio groups) and DASH
+  manifests (`SegmentTemplate` with `$Number$`/`$Time$`/timelines, `SegmentList`, single-file
+  `BaseURL`) and lists the qualities. The add dialogs on Windows and Android show them; the chosen
+  height is stored with the download (`streamHeight`, 0 = best) so resume uses the same stream.
+- When video and audio come as separate fragmented-MP4 tracks, `Mp4Merge` joins them into one MP4
+  without re-encoding (pure Kotlin, no ffmpeg): audio gets the next track id, its `trak`/`trex` go
+  into the video `moov`, fragments are interleaved by decode time.
+- When the tracks cannot be joined that way (MPEG-TS audio, WebM) the audio is kept as a separate
+  file next to the video and the download's description says so.
+- Live streams are refused with a clear message.
+
+## D-010 Android queues and schedule (2026-10-14, feature 5)
+
+- New "Queues and schedule" screen (Downloads menu): create, rename, delete queues, files at the
+  same time, start/stop times, weekdays, start or stop now. "Later" in the add sheet and the
+  details sheet put downloads into a queue.
+- Alarms wake the app for scheduled starts and stops even when it is closed, and are set again
+  after a reboot. Exact alarms are used when the user allows them (Android 12+ setting, the
+  screen offers a button); otherwise Android may start a few minutes late. If Android refuses to
+  start the download service from the background, a notification asks the user to tap.
+
+## D-011 Phone and PC pairing dropped (2026-10-14)
+
+Feature 3 (send links between phone and PC over Wi-Fi) was built and then removed on Imad's
+request ("dont ADD Phone and PC pairing"). No pairing code ships.

@@ -53,6 +53,7 @@ fun AppRoot(app: ImadApp, browser: BrowserController, activity: MainActivity) {
     var addRequest by remember { mutableStateOf<DownloadRequest?>(null) }
     var details by remember { mutableStateOf<String?>(null) }
     var batch by remember { mutableStateOf(false) }
+    var queues by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current
@@ -137,6 +138,7 @@ fun AppRoot(app: ImadApp, browser: BrowserController, activity: MainActivity) {
                         onDetails = { details = it },
                         onBatch = { batch = true },
                         canStart = canStart,
+                        onQueues = { queues = true },
                     )
                     Screen.SETTINGS -> SettingsScreen(app.settings, app.browserData)
                 }
@@ -156,6 +158,7 @@ fun AppRoot(app: ImadApp, browser: BrowserController, activity: MainActivity) {
         }
         details?.let { id -> DetailsSheet(app.engine, id, onDismiss = { details = null }, canStart = canStart) }
         if (batch) BatchSheet(app.engine, onDismiss = { batch = false }, canStart = canStart)
+        if (queues) androidx.compose.material3.Surface(Modifier.fillMaxSize()) { QueuesScreen(app.engine, onBack = { queues = false }, canStart = canStart) }
     }
 }
 

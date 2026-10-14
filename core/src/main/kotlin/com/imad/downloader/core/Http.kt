@@ -84,7 +84,9 @@ data class ProbeResult(
     val etag: String?,
     val lastModified: String?,
     val isHls: Boolean,
+    val isDash: Boolean = false,
 ) {
+    val isStream: Boolean get() = isHls || isDash
     val category: Category get() = Category.detect(fileName, mimeType)
 }
 
@@ -127,6 +129,7 @@ object Prober {
             val name = FileNames.resolve(finalUrl, disposition, mime)
             val isHls = name.endsWith(".m3u8", ignoreCase = true) ||
                 mime?.lowercase()?.let { "mpegurl" in it } == true
+            val isDash = name.endsWith(".mpd", ignoreCase = true) || mime?.lowercase()?.contains("dash+xml") == true
             return ProbeResult(
                 finalUrl = finalUrl,
                 fileName = name,
@@ -136,6 +139,7 @@ object Prober {
                 etag = resp.header("ETag"),
                 lastModified = resp.header("Last-Modified"),
                 isHls = isHls,
+                isDash = isDash,
             )
         }
     }

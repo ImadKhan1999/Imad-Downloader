@@ -92,6 +92,19 @@ class Notifications(private val context: Context) {
         runCatching { manager.notify(item.id.hashCode(), n) }
     }
 
+    fun needsAttention(title: String, text: String) {
+        if (!allowed()) return
+        val n = NotificationCompat.Builder(context, CH_DONE)
+            .setSmallIcon(R.drawable.ic_stat_download)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setColor(0xFF1565C0.toInt())
+            .setAutoCancel(true)
+            .setContentIntent(openApp())
+            .build()
+        runCatching { manager.notify(ATTENTION_ID, n) }
+    }
+
     fun failed(item: DownloadItem) {
         if (!allowed()) return
         val n = NotificationCompat.Builder(context, CH_DONE)
@@ -111,6 +124,7 @@ class Notifications(private val context: Context) {
         const val CH_PROGRESS = "progress"
         const val CH_DONE = "done"
         const val PROGRESS_ID = 1001
+        const val ATTENTION_ID = 1002
         const val ACTION_PAUSE_ALL = "com.imad.downloader.PAUSE_ALL"
         const val ACTION_RESUME = "com.imad.downloader.RESUME"
         const val EXTRA_ID = "id"

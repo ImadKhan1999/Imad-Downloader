@@ -98,6 +98,7 @@ fun DownloadsScreen(
     onDetails: (String) -> Unit,
     onBatch: () -> Unit,
     canStart: () -> Boolean,
+    onQueues: () -> Unit = {},
 ) {
     val state by engine.state.collectAsState()
     var status by rememberSaveable { mutableStateOf(StatusFilter.ALL) }
@@ -155,6 +156,7 @@ fun DownloadsScreen(
                         DropdownMenuItem(text = { Text("Resume all") }, onClick = { if (canStart()) engine.startAll(); menu = false })
                         DropdownMenuItem(text = { Text("Pause all") }, onClick = { engine.pauseAll(); menu = false })
                         DropdownMenuItem(text = { Text("Batch download") }, onClick = { onBatch(); menu = false })
+                        DropdownMenuItem(text = { Text("Queues and schedule") }, onClick = { onQueues(); menu = false }, modifier = Modifier.testTag("menu-queues"))
                         DropdownMenuItem(text = { Text("Clear completed") }, onClick = { engine.clearCompleted(); menu = false })
                     }
                 },

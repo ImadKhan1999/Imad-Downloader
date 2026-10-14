@@ -22,7 +22,9 @@ enum class DownloadStatus {
 }
 
 @Serializable
-enum class DownloadKind { HTTP, HLS }
+enum class DownloadKind { HTTP, HLS, DASH;
+    val isStream: Boolean get() = this != HTTP
+}
 
 /** One byte range of a multi-connection download. [end] is inclusive; -1 means "until EOF". */
 @Serializable
@@ -66,6 +68,8 @@ data class DownloadItem(
     val expectedChecksum: String? = null,
     /** True when the user picked the name, so the server's Content-Disposition must not replace it. */
     val nameLocked: Boolean = false,
+    /** Streams: wanted video height (0 = best). */
+    val streamHeight: Int = 0,
     /** HLS only: pieces finished / total pieces. */
     val piecesDone: Int = 0,
     val piecesTotal: Int = 0,
@@ -100,6 +104,8 @@ data class DownloadRequest(
     val speedLimit: Long = 0,
     val expectedChecksum: String? = null,
     val kind: DownloadKind? = null,
+    /** Streams: wanted video height (0 = best). */
+    val streamHeight: Int = 0,
     /** Known size from a previous probe, skips nothing but helps the UI. */
     val sizeHint: Long = -1,
 )
