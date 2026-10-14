@@ -1,0 +1,19 @@
+{
+    "android":  {
+                    "version":  "1.2.0",
+                    "versionCode":  3,
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.2.0/ImadDownloader-1.2.0.apk",
+                    "sha256":  "ca3fe5c56ac2545ed0d63225a4240e6554ca3ee47c262af5836a01a3d0c444a2",
+                    "size":  41102412,
+                    "changelog":  "YouTube and 1000+ other video sites with a quality list (video and audio joined into one MP4). In-app updates: the app now tells you about new versions, downloads them with a progress bar and installs them.",
+                    "mandatory":  false
+                },
+    "windows":  {
+                    "version":  "1.2.0",
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.2.0/Imad.Downloader-1.2.0.msi",
+                    "sha256":  "4a69225eabca391372777c23d752abc594d5ac6e9979e03fb0489974afb75d7f",
+                    "size":  100643580,
+                    "changelog":  "YouTube and 1000+ other video sites with a quality list (video and audio joined into one MP4). In-app updates: the app now tells you about new versions, downloads them with a progress bar and installs them.",
+                    "mandatory":  false
+                }
+}
