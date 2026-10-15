@@ -1,19 +1,19 @@
 {
     "android":  {
-                    "version":  "1.3.0",
-                    "versionCode":  4,
-                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.3.0/ImadDownloader-1.3.0.apk",
-                    "sha256":  "fdeefe678ad3675f97243434a7d9140ac4fd5514dbcb2f57510077d0657daeac",
-                    "size":  41102412,
-                    "changelog":  "Browser extension for Firefox as well as Chrome, Edge, Brave, Opera and Vivaldi. The app now finds the browsers on your PC and walks you through adding the extension to each (Help \u003e Connect browsers...).",
+                    "version":  "1.4.0",
+                    "versionCode":  5,
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.4.0/HyperDownloader-1.4.0.apk",
+                    "sha256":  "878a3d1d460ca32af009a3103c1ebcd7534fcb0d0a7120c7b2d2a9a6991550d2",
+                    "size":  41118396,
+                    "changelog":  "Imad Downloader is now Hyper Downloader: new name, new logo and new colours. Your settings, download list and files carry over.",
                     "mandatory":  false
                 },
     "windows":  {
-                    "version":  "1.3.0",
-                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.3.0/Imad.Downloader-1.3.0.msi",
-                    "sha256":  "83a0b46c5f9c48bbf0664b73fa19e523386f09d86d2b3b7a4e2dfe2cc25f75f0",
-                    "size":  100693000,
-                    "changelog":  "Browser extension for Firefox as well as Chrome, Edge, Brave, Opera and Vivaldi. The app now finds the browsers on your PC and walks you through adding the extension to each (Help \u003e Connect browsers...).",
+                    "version":  "1.4.0",
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.4.0/Hyper.Downloader-1.4.0.msi",
+                    "sha256":  "6be87d5bf07654422456e0270ec04bdc358d2d6c8a9da0a60cbae3bc7c48c545",
+                    "size":  100787208,
+                    "changelog":  "Imad Downloader is now Hyper Downloader: new name, new logo and new colours. Your settings, download list and files carry over.",
                     "mandatory":  false
                 }
 }
