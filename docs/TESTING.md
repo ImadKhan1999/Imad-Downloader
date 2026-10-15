@@ -94,3 +94,18 @@ Notes: the Android SDK's build tools and platform had been deleted from drive C;
 reinstalled (build-tools 35, android-36) before the run. The release script now always runs the
 real-site device tests.
 
+## 2026-10-15 Release 1.4.0: renamed to Hyper Downloader
+
+IDM closed before every run. Android device tests now run on LDPlayer 14 (Android 14, x86_64,
+720x1280) instead of Android Studio's emulator, at Imad's request.
+
+| Suite | Result |
+| --- | --- |
+| `:core:test` | 57 tests, 0 failures |
+| `:desktop:test` | 22 tests, 0 failures; UI renders show the new name and colours |
+| Android unit tests | 9 tests, 0 failures |
+| Android device tests on LDPlayer (real-site tests included) | 11 tests, 0 failures |
+| Extension e2e, Chromium and Firefox, packaged 1.4.0 app | PASS both, IDM stayed closed |
+| Packaged 1.4.0 app, real HTTPS download (10 MB) | PASS |
+| Manual check on LDPlayer | New launcher icon, round splash icon, "Hyper Downloader" title, add-link sheet saving to Download/Hyper Downloader, live download, settings About shows 1.4.0 |
+
