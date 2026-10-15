@@ -18,7 +18,7 @@ async function init() {
     el.textContent = `Connected (version ${status.app.version})`;
     el.className = "ok";
   } else {
-    el.textContent = "Imad Downloader is not running";
+    el.textContent = "Hyper Downloader is not running";
     el.className = "bad";
   }
   $("capture").checked = status.settings.capture;
@@ -72,7 +72,7 @@ async function init() {
         if (r.ok) { $("all").textContent = `Sent ${links.length} links`; return; }
       } catch (e) { /* try next port */ }
     }
-    $("all").textContent = "Imad Downloader is not running";
+    $("all").textContent = "Hyper Downloader is not running";
   });
 }
 

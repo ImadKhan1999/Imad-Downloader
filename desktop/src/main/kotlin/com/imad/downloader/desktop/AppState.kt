@@ -148,7 +148,7 @@ class AppState(
         onLinks = { l -> scope.launch { linksDialog = l; showWindow() } },
         onShow = { scope.launch { showWindow() } },
         ping = {
-            PingReply("Imad Downloader", APP_VERSION, settings.browserIntegration, settings.clipboardTypeSet.toList())
+            PingReply("Hyper Downloader", APP_VERSION, settings.browserIntegration, settings.clipboardTypeSet.toList())
         },
         onSeen = { family ->
             scope.launch {

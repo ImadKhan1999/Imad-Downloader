@@ -115,3 +115,39 @@ IDM is not uninstalled and its settings are untouched; it stays closed until reo
 
 Finished 1.3.0: Firefox build of the extension, the app finds Chrome, Edge, Brave, Opera, Vivaldi
 and Firefox and walks through adding the extension, both browsers tested end to end.
+
+**08:09, Imad**
+
+> Lets rebrand it
+> Suggest me 35 Names
+
+**Claude**
+
+Suggested 35 names. Imad wanted names that sound like a downloader:
+
+> im seeking for of a Downloader kinda names
+
+**Claude**
+
+Suggested 35 downloader-style names (Swift Downloader recommended).
+
+**08:13, Imad**
+
+> Lets opt Hyper Downloader
+> make sure all logos/text/png everything is perfectly done and replace and also have great
+> image/logos genereated if requiried
+
+**Claude**
+
+Renamed everything to Hyper Downloader with a new logo and colours, released as 1.4.0 (D-015).
+
+**08:25, Imad**
+
+> for testing use ld player installed version dont use android studio from now on also stop any
+> android studio instance running
+
+**Claude**
+
+Stopped the Android Studio emulator. Android device tests now run on LDPlayer 14 (Android 14,
+x86_64); release.ps1 starts LDPlayer instead of the emulator.
+

@@ -46,27 +46,27 @@ data class Palette(
     val segmentActive: Color,
 )
 
-val Brand = Color(0xFF1565C0)
-val BrandLight = Color(0xFF1E88E5)
-val Accent = Color(0xFF00C853)
+val Brand = Color(0xFF4F46E5)
+val BrandLight = Color(0xFF6366F1)
+val Accent = Color(0xFF06B6D4)
 
 private val LightPalette = Palette(
-    window = Color(0xFFF4F7FB),
+    window = Color(0xFFF5F6FB),
     toolbar = Color(0xFFFFFFFF),
     toolbarBorder = Color(0xFFD9E1EC),
     sidebar = Color(0xFFFAFBFD),
     tableHeader = Color(0xFFEDF2F8),
     rowAlt = Color(0xFFF8FAFD),
-    rowSelected = Color(0xFFCFE5FF),
+    rowSelected = Color(0xFFE0E3FF),
     gridLine = Color(0xFFE3E8EF),
     progressTrack = Color(0xFFE1E7EF),
-    progress = Color(0xFF2E7DD7),
+    progress = Color(0xFF4F46E5),
     complete = Color(0xFF2E9D4F),
     error = Color(0xFFD32F2F),
     paused = Color(0xFFE09B12),
     muted = Color(0xFF6B7685),
-    segmentDone = Color(0xFF1E88E5),
-    segmentActive = Color(0xFF00C853),
+    segmentDone = Color(0xFF6366F1),
+    segmentActive = Color(0xFF06B6D4),
 )
 
 private val DarkPalette = Palette(
@@ -76,16 +76,16 @@ private val DarkPalette = Palette(
     sidebar = Color(0xFF202327),
     tableHeader = Color(0xFF2A2E34),
     rowAlt = Color(0xFF1F2226),
-    rowSelected = Color(0xFF1F4470),
+    rowSelected = Color(0xFF2D2B63),
     gridLine = Color(0xFF30343A),
     progressTrack = Color(0xFF353A42),
-    progress = Color(0xFF4A9BF0),
+    progress = Color(0xFF818CF8),
     complete = Color(0xFF4CC26D),
     error = Color(0xFFF26B6B),
     paused = Color(0xFFF0B43C),
     muted = Color(0xFF9AA4B2),
-    segmentDone = Color(0xFF4A9BF0),
-    segmentActive = Color(0xFF3DDC84),
+    segmentDone = Color(0xFF818CF8),
+    segmentActive = Color(0xFF22D3EE),
 )
 
 val LocalPalette = staticCompositionLocalOf { LightPalette }
@@ -93,8 +93,8 @@ val LocalPalette = staticCompositionLocalOf { LightPalette }
 private val lightScheme: ColorScheme = lightColorScheme(
     primary = Brand,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFD6E6FB),
-    secondary = Color(0xFF00897B),
+    primaryContainer = Color(0xFFE0E3FF),
+    secondary = Color(0xFF4338CA),
     tertiary = Accent,
     background = LightPalette.window,
     surface = Color.White,
@@ -104,10 +104,10 @@ private val lightScheme: ColorScheme = lightColorScheme(
 )
 
 private val darkScheme: ColorScheme = darkColorScheme(
-    primary = Color(0xFF64A8F5),
-    onPrimary = Color(0xFF00213F),
-    primaryContainer = Color(0xFF16406E),
-    secondary = Color(0xFF4DB6AC),
+    primary = Color(0xFFA5B4FC),
+    onPrimary = Color(0xFF1E1B4B),
+    primaryContainer = Color(0xFF312E81),
+    secondary = Color(0xFFA5B4FC),
     tertiary = Accent,
     background = DarkPalette.window,
     surface = Color(0xFF25282D),

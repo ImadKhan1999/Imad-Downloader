@@ -49,10 +49,10 @@ fun main(args: Array<String>) {
         Tray(
             icon = painterResource("icons/tray.png"),
             state = tray,
-            tooltip = "Imad Downloader",
+            tooltip = "Hyper Downloader",
             onAction = { app.showWindow() },
             menu = {
-                Item("Open Imad Downloader", onClick = { app.showWindow() })
+                Item("Open Hyper Downloader", onClick = { app.showWindow() })
                 Item("Add URL...", onClick = { app.showWindow(); app.addUrlOpen = Platform.clipboardText().orEmpty() })
                 Separator()
                 Item(if (app.settings.speedLimitEnabled) "Turn speed limiter off" else "Turn speed limiter on", onClick = {
@@ -73,7 +73,7 @@ fun main(args: Array<String>) {
             onCloseRequest = { if (app.settings.minimizeToTray) app.windowVisible = false else quit() },
             visible = app.windowVisible,
             state = windowState,
-            title = "Imad Downloader",
+            title = "Hyper Downloader",
             icon = painterResource("icons/app.png"),
             onPreviewKeyEvent = { e ->
                 if (e.type != KeyEventType.KeyDown) return@Window false
@@ -186,7 +186,7 @@ private fun androidx.compose.ui.window.FrameWindowScope.AppMenuBar(app: AppState
             Item("Connect browsers...", onClick = { app.browserSetupOpen = true })
             Item("Project page", onClick = { Platform.browse("https://github.com/ImadKhan1999/Imad-Downloader") })
             Item("Check for updates...", onClick = { app.checkForUpdates() })
-            Item("About Imad Downloader", onClick = { app.aboutOpen = true })
+            Item("About Hyper Downloader", onClick = { app.aboutOpen = true })
         }
     }
 }

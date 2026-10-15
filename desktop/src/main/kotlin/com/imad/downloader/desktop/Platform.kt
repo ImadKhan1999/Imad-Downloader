@@ -79,7 +79,8 @@ object Platform {
     fun beep() = runCatching { Toolkit.getDefaultToolkit().beep() }
 
     private const val RUN_KEY = "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
-    private const val RUN_VALUE = "Imad Downloader"
+    private const val RUN_VALUE = "Hyper Downloader"
+    private const val OLD_RUN_VALUE = "Imad Downloader" // before the rename
 
     /** The installed launcher (jpackage sets jpackage.app-path); null when running from Gradle. */
     private val launcherPath: String? get() = System.getProperty("jpackage.app-path")
@@ -87,6 +88,7 @@ object Platform {
     fun setLaunchOnStartup(enabled: Boolean): Boolean {
         if (!isWindows) return false
         val exe = launcherPath ?: return false
+        runCatching { ProcessBuilder("reg", "delete", RUN_KEY, "/v", OLD_RUN_VALUE, "/f").redirectErrorStream(true).start().waitFor() }
         val cmd = if (enabled) {
             listOf("reg", "add", RUN_KEY, "/v", RUN_VALUE, "/t", "REG_SZ", "/d", "\"$exe\" --tray", "/f")
         } else {
@@ -101,7 +103,7 @@ object Platform {
             CompletionAction.EXIT -> exitApp()
             CompletionAction.SLEEP -> if (isWindows) ProcessBuilder("rundll32.exe", "powrprof.dll,SetSuspendState", "0,1,0").start()
             CompletionAction.SHUTDOWN -> if (isWindows) {
-                ProcessBuilder("shutdown", "/s", "/t", "60", "/c", "Imad Downloader finished the queue. Shutting down in 60 seconds.").start()
+                ProcessBuilder("shutdown", "/s", "/t", "60", "/c", "Hyper Downloader finished the queue. Shutting down in 60 seconds.").start()
             }
         }
     }

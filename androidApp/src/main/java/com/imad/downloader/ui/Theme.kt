@@ -22,8 +22,8 @@ import androidx.core.view.WindowCompat
 import com.imad.downloader.ThemeMode
 import com.imad.downloader.core.Category
 
-val Brand = Color(0xFF1565C0)
-val BrandBright = Color(0xFF1E88E5)
+val Brand = Color(0xFF4F46E5)
+val BrandBright = Color(0xFF6366F1)
 val Success = Color(0xFF2E9D4F)
 val Warning = Color(0xFFE09B12)
 val Danger = Color(0xFFD32F2F)
@@ -31,11 +31,11 @@ val Danger = Color(0xFFD32F2F)
 private val Light = lightColorScheme(
     primary = Brand,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFD6E6FB),
-    onPrimaryContainer = Color(0xFF0A2D5C),
-    secondary = Color(0xFF00897B),
-    secondaryContainer = Color(0xFFCDEDE8),
-    tertiary = Color(0xFF00C853),
+    primaryContainer = Color(0xFFE0E3FF),
+    onPrimaryContainer = Color(0xFF1E1B4B),
+    secondary = Color(0xFF4338CA),
+    secondaryContainer = Color(0xFFE0E7FF),
+    tertiary = Color(0xFF06B6D4),
     background = Color(0xFFF5F7FA),
     surface = Color(0xFFF5F7FA),
     surfaceContainer = Color(0xFFFFFFFF),
@@ -47,12 +47,12 @@ private val Light = lightColorScheme(
 )
 
 private val Dark = darkColorScheme(
-    primary = Color(0xFF7DB5F7),
-    onPrimary = Color(0xFF00213F),
-    primaryContainer = Color(0xFF16406E),
-    onPrimaryContainer = Color(0xFFD6E6FB),
-    secondary = Color(0xFF4DB6AC),
-    tertiary = Color(0xFF3DDC84),
+    primary = Color(0xFFA5B4FC),
+    onPrimary = Color(0xFF1E1B4B),
+    primaryContainer = Color(0xFF312E81),
+    onPrimaryContainer = Color(0xFFE0E3FF),
+    secondary = Color(0xFFA5B4FC),
+    tertiary = Color(0xFF22D3EE),
     background = Color(0xFF111316),
     surface = Color(0xFF111316),
     surfaceContainer = Color(0xFF1B1E22),

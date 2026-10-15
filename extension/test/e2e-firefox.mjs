@@ -72,7 +72,7 @@ async function w(method, p, body) {
 let app, driver, session, failed = false;
 try {
   stopIdm();
-  if (await ping()) throw new Error("Another Imad Downloader is already running; close it first.");
+  if (await ping()) throw new Error("Another Hyper Downloader is already running; close it first.");
   const cmd = process.env.APP_EXE ? [process.env.APP_EXE, []] : ["cmd.exe", ["/d", "/c", path.join(root, "gradlew.bat"), ":desktop:run", "--console=plain", "-q"]];
   app = spawn(cmd[0], cmd[1], { cwd: root, env: { ...process.env, IMAD_DATA_DIR: dataDir }, stdio: "ignore" });
   await waitFor(ping, 240_000, "app to start");
@@ -111,7 +111,7 @@ try {
   if (fs.existsSync(browserCopy) && fs.statSync(browserCopy).size === payload.length) throw new Error("Firefox also kept its own copy; capture did not cancel it");
   const idm = idmRunning();
   if (idm.length) throw new Error("IDM started during the test: " + idm.join(", "));
-  log("PASS: Firefox download captured and completed by Imad Downloader (IDM stayed closed)");
+  log("PASS: Firefox download captured and completed by Hyper Downloader (IDM stayed closed)");
 } catch (e) {
   failed = true;
   console.error("[ff-e2e] FAIL:", e.message);

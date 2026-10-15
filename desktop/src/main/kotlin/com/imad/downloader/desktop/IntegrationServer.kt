@@ -136,7 +136,8 @@ class IntegrationServer(
             for (p in PORTS) {
                 val ok = runCatching {
                     val ping = post(p, "/api/ping", "{}") ?: return@runCatching false
-                    if (!ping.contains("Imad Downloader")) return@runCatching false
+                    // "Imad Downloader" is what versions before the rename answer.
+                    if (!ping.contains("Hyper Downloader") && !ping.contains("Imad Downloader")) return@runCatching false
                     val url = args.firstOrNull { it.startsWith("http://") || it.startsWith("https://") }
                     if (url != null) post(p, "/api/download", json.encodeToString(CapturedDownload.serializer(), CapturedDownload(url)))
                     else if ("--tray" !in args) post(p, "/api/show", "{}")

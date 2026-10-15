@@ -1,6 +1,6 @@
 # Feature ideas (asked 2026-10-14)
 
-Twenty features that Imad Downloader 1.0.0 does not have yet. Effort is a rough guess:
+Twenty features that Imad Downloader (now Hyper Downloader) 1.0.0 does not have yet. Effort is a rough guess:
 S = a day or less, M = a few days, L = a week or more. ★ = recommended, ✅ = built, ✗ = dropped.
 
 | # | Feature | Where | Effort | Why it matters |

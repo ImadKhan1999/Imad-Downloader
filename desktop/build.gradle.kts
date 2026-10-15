@@ -67,15 +67,15 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Msi, TargetFormat.Exe)
             appResourcesRootDir.set(layout.buildDirectory.dir("appResources"))
-            packageName = "Imad Downloader"
+            packageName = "Hyper Downloader"
             packageVersion = appVersion
-            description = "Imad Downloader - fast multi-connection download manager"
+            description = "Hyper Downloader - fast multi-connection download manager"
             vendor = "Imad Khan"
             copyright = "© 2026 Imad Khan"
             modules("java.naming", "java.net.http", "jdk.httpserver", "jdk.crypto.ec", "java.management", "jdk.unsupported")
             windows {
                 iconFile.set(project.file("src/main/resources/icons/app.ico"))
-                menuGroup = "Imad Downloader"
+                menuGroup = "Hyper Downloader"
                 shortcut = true
                 menu = true
                 dirChooser = true

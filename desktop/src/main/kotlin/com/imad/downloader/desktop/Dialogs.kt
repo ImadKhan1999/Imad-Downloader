@@ -70,7 +70,7 @@ fun AllDialogs(app: AppState) {
     app.confirmDelete?.let { ConfirmDeleteDialog(app, it, theme) }
     app.refreshAddressFor?.let { RefreshAddressDialog(app, it, theme) }
     app.message?.let { msg ->
-        AppDialog("Imad Downloader", 420.dp, 180.dp, theme, { app.message = null }) {
+        AppDialog("Hyper Downloader", 420.dp, 180.dp, theme, { app.message = null }) {
             Text(msg, fontSize = 14.sp, modifier = Modifier.weight(1f))
             ButtonRow { Button({ app.message = null }) { Text("OK") } }
         }
@@ -418,11 +418,11 @@ private fun LinksDialog(app: AppState, links: CapturedLinks, theme: ThemeMode) {
 
 @Composable
 private fun AboutDialog(app: AppState, theme: ThemeMode) {
-    AppDialog("About Imad Downloader", 440.dp, 330.dp, theme, { app.aboutOpen = false }) {
+    AppDialog("About Hyper Downloader", 440.dp, 330.dp, theme, { app.aboutOpen = false }) {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             Image(painterResource("icons/app.png"), null, Modifier.size(84.dp))
             VSpace(10.dp)
-            Text("Imad Downloader", style = MaterialTheme.typography.titleLarge)
+            Text("Hyper Downloader", style = MaterialTheme.typography.titleLarge)
             Text("Version $APP_VERSION", fontSize = 13.sp, color = LocalPalette.current.muted)
             VSpace(10.dp)
             Text("Fast multi-connection download manager for Windows and Android.", fontSize = 13.sp)

@@ -117,7 +117,7 @@ fun SettingsScreen(repo: SettingsRepository, browserData: BrowserData, onCheckUp
                 Image(painterResource(R.drawable.logo), null, Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)))
                 Spacer(Modifier.width(14.dp))
                 Column {
-                    Text("Imad Downloader ${BuildConfig.VERSION_NAME}", fontWeight = FontWeight.SemiBold)
+                    Text("Hyper Downloader ${BuildConfig.VERSION_NAME}", fontWeight = FontWeight.SemiBold)
                     Text("Multi-connection downloader with built-in browser", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
@@ -138,7 +138,7 @@ fun SettingsScreen(repo: SettingsRepository, browserData: BrowserData, onCheckUp
             text = {
                 Column {
                     OutlinedTextField(path, { path = it }, singleLine = false)
-                    TextButton({ path = AppSettings.defaultSaveDir() }) { Text("Use Download/Imad Downloader") }
+                    TextButton({ path = AppSettings.defaultSaveDir() }) { Text("Use Download/Hyper Downloader") }
                     TextButton({ path = context.getExternalFilesDir(null)?.path ?: path }) { Text("Use app storage (hidden from gallery)") }
                 }
             },

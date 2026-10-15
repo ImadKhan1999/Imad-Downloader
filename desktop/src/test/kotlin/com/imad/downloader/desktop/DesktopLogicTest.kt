@@ -75,7 +75,7 @@ class IntegrationServerTest {
         onDownload = { downloads += it },
         onLinks = {},
         onShow = {},
-        ping = { PingReply("Imad Downloader", "test", true, listOf("zip")) },
+        ping = { PingReply("Hyper Downloader", "test", true, listOf("zip")) },
     )
 
     @AfterTest fun stop() = server.close()
@@ -97,7 +97,7 @@ class IntegrationServerTest {
         assertTrue(server.start())
         val (code, text) = call("/api/ping", "{}", "chrome-extension://abcdef")
         assertEquals(200, code)
-        assertTrue(text.contains("Imad Downloader"))
+        assertTrue(text.contains("Hyper Downloader"))
         val (c2, _) = call("/api/download", """{"url":"https://x.com/a.zip","referer":"https://x.com/","mode":"silent"}""", "chrome-extension://abcdef")
         assertEquals(200, c2)
         assertEquals("https://x.com/a.zip", downloads.single().url)

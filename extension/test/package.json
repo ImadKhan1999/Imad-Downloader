@@ -1,5 +1,5 @@
 {
-  "name": "imad-downloader-extension-e2e",
+  "name": "hyper-downloader-extension-e2e",
   "private": true,
   "type": "module",
   "scripts": {

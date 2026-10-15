@@ -29,7 +29,7 @@ class UiSnapshotTest {
 
     private fun sample(): EngineState {
         val now = System.currentTimeMillis()
-        val dir = "C:\\Users\\Imad\\Downloads\\Imad Downloader"
+        val dir = "C:\\Users\\Imad\\Downloads\\Hyper Downloader"
         fun segs(total: Long, n: Int, frac: Double) = (0 until n).map { i ->
             val len = total / n
             SegmentState(i * len, if (i == n - 1) total - 1 else (i + 1) * len - 1, (len * (frac + (i % 3) * 0.08)).toLong().coerceAtMost(len))
@@ -69,7 +69,7 @@ class UiSnapshotTest {
     private fun app(theme: ThemeMode = ThemeMode.LIGHT): AppState {
         val settingsFile = Files.createTempFile("settings", ".json").toFile().apply { delete() }
         val store = SettingsStore(settingsFile)
-        store.save(DesktopSettings(theme = theme, saveDir = "C:\\Users\\Imad\\Downloads\\Imad Downloader"))
+        store.save(DesktopSettings(theme = theme, saveDir = "C:\\Users\\Imad\\Downloads\\Hyper Downloader"))
         return AppState(store, InMemoryStore(sample()), preview = true, detectBrowsers = {
             listOf(
                 InstalledBrowser("chrome", "Google Chrome", "chrome.exe", BrowserFamily.CHROMIUM, "chrome://extensions", null, null),
@@ -119,7 +119,7 @@ class UiSnapshotTest {
         a.fileInfo = FileInfoState(
             request = req, probing = false,
             probe = ProbeResult(req.url, "ubuntu-26.04-desktop-amd64.iso", 6_234_000_000, true, "application/x-iso9660-image", null, null, false),
-            category = Category.COMPRESSED, saveDir = "C:\\Users\\Imad\\Downloads\\Imad Downloader\\Compressed",
+            category = Category.COMPRESSED, saveDir = "C:\\Users\\Imad\\Downloads\\Hyper Downloader\\Compressed",
         )
         snap("windows-file-info", 620, 380) { AllDialogs(a) }
     }
@@ -156,7 +156,7 @@ class UiSnapshotTest {
         )
         val opts = com.imad.downloader.core.MediaChoice.options(info)
         a.fileInfo = FileInfoState(req, probing = false, media = info, mediaOptions = opts, fileName = "Big Buck Bunny (4K).mp4",
-            saveDir = "C:\\Users\\Imad\\Downloads\\Imad Downloader\\Video").withOption(opts.first())
+            saveDir = "C:\\Users\\Imad\\Downloads\\Hyper Downloader\\Video").withOption(opts.first())
         snap("windows-video-page", 620, 380) { AllDialogs(a) }
     }
 

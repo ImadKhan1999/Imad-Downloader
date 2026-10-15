@@ -69,7 +69,7 @@ class AndroidYtDlp(private val context: Context) : MediaExtractor {
         val last = stamp.takeIf { it.exists() }?.readText()?.trim()?.toLongOrNull() ?: 0
         if (System.currentTimeMillis() - last < everyMillis) return@withContext false
         val base = "https://github.com/yt-dlp/yt-dlp/releases/latest/download"
-        fun get(u: String) = http.newCall(Request.Builder().url(u).header("User-Agent", "ImadDownloader").build()).execute().also {
+        fun get(u: String) = http.newCall(Request.Builder().url(u).header("User-Agent", "HyperDownloader").build()).execute().also {
             if (!it.isSuccessful) { it.close(); throw IOException("yt-dlp update failed (${it.code})") }
         }
         val expected = get("$base/SHA2-256SUMS").use { r ->
@@ -92,7 +92,7 @@ class AndroidYtDlp(private val context: Context) : MediaExtractor {
             "not a bot" in line -> "YouTube wants you signed in for this. Open YouTube in the app's browser, sign in, then use the download button there."
             "Sign in" in line || "logged-in" in line -> "This site needs you to be signed in. Sign in using the app's browser, then try again from there."
             "Private video" in line -> "This video is private"
-            "impersonat" in line -> "This site blocks apps that are not a desktop browser, which the phone app cannot pretend to be yet. Use Imad Downloader on Windows for this site."
+            "impersonat" in line -> "This site blocks apps that are not a desktop browser, which the phone app cannot pretend to be yet. Use Hyper Downloader on Windows for this site."
             else -> line.take(300).ifBlank { "Could not read this video page" }
         }
     }

@@ -20,7 +20,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ImadDownloader"
+rootProject.name = "HyperDownloader"
 include(":core")
 include(":desktop")
 include(":androidApp")

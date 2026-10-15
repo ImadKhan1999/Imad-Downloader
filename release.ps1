@@ -1,9 +1,9 @@
 <#
-  Builds, tests and publishes an Imad Downloader release, then points the in-app updaters at it.
+  Builds, tests and publishes a Hyper Downloader release, then points the in-app updaters at it.
 
     powershell -ExecutionPolicy Bypass -File release.ps1 -Changelog "What changed"
 
-  Steps: every test suite (engine, Windows, Android unit and emulator device tests, browser
+  Steps: every test suite (engine, Windows, Android unit and device tests on LDPlayer, browser
   extension end-to-end, installed-app HTTPS smoke test) -> MSI/EXE/APK/extension zips (Chromium + Firefox) ->
   GitHub release with the files -> update/version.json (versions, URLs, SHA-256) pushed to main,
   which is what the apps' "Check for updates" reads. Nothing is published if a test fails.
@@ -35,7 +35,8 @@ Stop-Process -Name IDMan, IEMonitor, IDMMsgHost, idmBroker, IDMGrHlp, IDMIntegra
 if (-not $SkipDeviceTests) {
     $booted = (& $adb shell getprop sys.boot_completed 2>$null) -eq "1"
     if (-not $booted) {
-        Start-Process -WindowStyle Hidden "$env:LOCALAPPDATA\Android\Sdk\emulator\emulator.exe" -ArgumentList "-avd imad_test -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot"
+        # Device tests run on the installed LDPlayer (Imad's choice), not Android Studio's emulator.
+        & "F:\LDPlayer\LDPlayer14\ldconsole.exe" launch --index 0
         & $adb wait-for-device
         $deadline = (Get-Date).AddMinutes(5)
         while ((& $adb shell getprop sys.boot_completed 2>$null) -ne "1" -and (Get-Date) -lt $deadline) { Start-Sleep 3 }
@@ -44,7 +45,7 @@ if (-not $SkipDeviceTests) {
 $tasks = @(":core:test", ":desktop:test", ":androidApp:testDebugUnitTest", ":desktop:packageMsi", ":desktop:packageExe", ":desktop:createDistributable", ":androidApp:assembleRelease")
 if (-not $SkipDeviceTests) { $tasks += ":androidApp:connectedDebugAndroidTest", "-Pandroid.testInstrumentationRunnerArguments.realNetwork=true" }
 Step "Gradle tests and builds" { & .\gradlew.bat @tasks --console=plain }
-$exe = "desktop\build\compose\binaries\main\app\Imad Downloader\Imad Downloader.exe"
+$exe = "desktop\build\compose\binaries\main\app\Hyper Downloader\Hyper Downloader.exe"
 # Chrome for Testing (accepts unpacked extensions) and a Firefox copy, both kept in E:\TestTools.
 $env:APP_EXE = (Resolve-Path $exe).Path
 if (-not $env:CHROME_PATH -and (Test-Path "E:\TestTools\chrome-win64\chrome.exe")) { $env:CHROME_PATH = "E:\TestTools\chrome-win64\chrome.exe" }
@@ -56,9 +57,9 @@ Step "Installed app HTTPS smoke test" { powershell -NoProfile -ExecutionPolicy B
 # ---------------------------------------------------------------- release files
 New-Item -ItemType Directory -Force dist | Out-Null
 Get-ChildItem dist -File | ForEach-Object { [IO.File]::Delete($_.FullName) }
-$msiName = "Imad.Downloader-$version.msi"; $exeName = "Imad.Downloader-$version.exe"; $apkName = "ImadDownloader-$version.apk"; $zipNames = "imad-downloader-chromium-$version.zip", "imad-downloader-firefox-$version.zip"
-Copy-Item "desktop\build\compose\binaries\main\msi\Imad Downloader-$version.msi" "dist\$msiName"
-Copy-Item "desktop\build\compose\binaries\main\exe\Imad Downloader-$version.exe" "dist\$exeName"
+$msiName = "Hyper.Downloader-$version.msi"; $exeName = "Hyper.Downloader-$version.exe"; $apkName = "HyperDownloader-$version.apk"; $zipNames = "hyper-downloader-chromium-$version.zip", "hyper-downloader-firefox-$version.zip"
+Copy-Item "desktop\build\compose\binaries\main\msi\Hyper Downloader-$version.msi" "dist\$msiName"
+Copy-Item "desktop\build\compose\binaries\main\exe\Hyper Downloader-$version.exe" "dist\$exeName"
 Copy-Item "androidApp\build\outputs\apk\release\androidApp-release.apk" "dist\$apkName"
 # extension\build.mjs (run by the Gradle build) makes the store-ready zip for each browser family.
 foreach ($z in $zipNames) { Copy-Item "extension\dist\$z" "dist\$z" }
@@ -69,8 +70,8 @@ $cred = cmd /c "git credential fill < `"$tmp`""; [IO.File]::Delete($tmp)
 $token = ($cred | Where-Object { $_ -like "password=*" }) -replace '^password=', ''
 if (-not $token) { throw "No GitHub credentials in Git's credential manager" }
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$h = @{ Authorization = "Bearer $token"; Accept = "application/vnd.github+json"; "User-Agent" = "imad-release" }
-$body = @{ tag_name = "v$version"; target_commitish = "main"; name = "Imad Downloader $version"; body = $Changelog } | ConvertTo-Json
+$h = @{ Authorization = "Bearer $token"; Accept = "application/vnd.github+json"; "User-Agent" = "hyper-release" }
+$body = @{ tag_name = "v$version"; target_commitish = "main"; name = "Hyper Downloader $version"; body = $Changelog } | ConvertTo-Json
 $rel = Invoke-RestMethod -Method Post -Headers $h -ContentType "application/json" -Body $body "https://api.github.com/repos/$repo/releases"
 $upload = $rel.upload_url -replace '\{.*\}', ''
 foreach ($f in Get-ChildItem dist -File) {

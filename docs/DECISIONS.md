@@ -193,3 +193,26 @@ Imad asked for YouTube and other sites with quality choice, using yt-dlp if need
   closed until reopened) and run browsers under neutral names (Chrome for Testing as
   `cr-imadtest.exe`, Firefox as `ff-imadtest.exe`). Branded Chrome no longer accepts
   `--load-extension`, so the Chromium test uses Chrome for Testing.
+
+## D-015 Rename to Hyper Downloader (2026-10-15)
+
+- Imad picked "Hyper Downloader" from name ideas. A search found two small apps with similar
+  names (an Android "Hyper Downloader - Video Saver" with about 100 installs, and a desktop
+  "Hyper Download Manager"); Imad was told and the rename went ahead.
+- New mark: a lightning bolt that ends in a download arrow, with speed lines, on a violet to blue
+  to cyan gradient (#7C3AED, #2563EB, #06B6D4). `branding/make_logo.py` draws every icon from the
+  same points: Windows .ico/.png and tray, Android launcher, adaptive foreground, notification and
+  monochrome icons, Play Store icon, extension icons, `branding/logo.svg` and `branding/banner.png`.
+  App colours moved from blue (#1565C0) to indigo (#4F46E5) with cyan accents to match.
+- Everything people see says Hyper Downloader: window titles, menus, dialogs, Android app name and
+  browser ("Hyper Browser"), extension name and menus, installer, Start menu, release files.
+- Kept on purpose, so updates keep working: the Android package id (com.imad.downloader, a new id
+  would be a separate app that cannot update the old one), the Windows installer upgrade id, the
+  Firefox add-on id, the GitHub repository name (update/version.json is read from it) and the
+  extension protocol header. The app and the extension accept the old name in each other's
+  handshake, so a 1.3.0 extension keeps working with the renamed app and the other way round.
+- Moved over automatically: the Windows data folder (%APPDATA%\Imad Downloader becomes
+  ...\Hyper Downloader with settings, list and tools), the "start with Windows" entry. Existing
+  download folders stay where they are; new installs default to Downloads\Hyper Downloader.
+- Updating from 1.3.0 on Windows installs into the new "Hyper Downloader" folder; the 1.3.0
+  updater then tries to reopen the old path, so the app has to be opened once from the Start menu.

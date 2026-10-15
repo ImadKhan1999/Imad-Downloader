@@ -10,6 +10,7 @@
 | 6. v1.1.0: quality picker, DASH + merging, Android queues and schedule | Done 2026-10-14 (phone/PC pairing dropped on request) |
 | 7. v1.2.0: YouTube and other sites (yt-dlp), in-app updates, release script | Done 2026-10-14 |
 | 8. v1.3.0: extension for Firefox too, app finds your browsers and adds the extension | Done 2026-10-15 |
+| 9. v1.4.0: renamed to Hyper Downloader, new logo, icons and colours | Done 2026-10-15 |
 
 ## Log
 

@@ -2,7 +2,7 @@
 # real file over HTTPS through the local API and checks the result.
 #   powershell -File desktop\test-installed.ps1 [-Exe <path>] [-Url <https url>]
 param(
-    [string]$Exe = "$PSScriptRoot\build\compose\binaries\main\app\Imad Downloader\Imad Downloader.exe",
+    [string]$Exe = "$PSScriptRoot\build\compose\binaries\main\app\Hyper Downloader\Hyper Downloader.exe",
     [string]$Url = "https://github.com/ImadKhan1999/Imad-Downloader/archive/refs/heads/main.zip"
 )
 $ErrorActionPreference = "Stop"

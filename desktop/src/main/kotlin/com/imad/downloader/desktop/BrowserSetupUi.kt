@@ -102,13 +102,13 @@ private fun InstallSteps(app: AppState, b: InstalledBrowser) {
         if (b.family == BrowserFamily.FIREFOX) {
             Step(1, "Firefox opened its \"This Firefox\" page (about:debugging). If not: type about:debugging in the address bar.")
             Step(2, "Click \"Load Temporary Add-on...\" and pick manifest.json in the folder below (the path is already copied - paste it into the file box).")
-            Step(3, "This row turns green when Firefox talks to Imad Downloader.")
+            Step(3, "This row turns green when Firefox talks to Hyper Downloader.")
             Hint("Firefox removes add-ons loaded this way when it restarts. A permanent Firefox install comes with the Firefox Add-ons listing.")
         } else {
             Step(1, "${b.name} opened its extensions page (${b.extensionsPage}). If not: type it in the address bar.")
             Step(2, "Turn on \"Developer mode\" (top right, or bottom left in Edge).")
             Step(3, "Click \"Load unpacked\" and choose the folder below (the path is already copied - paste it into the folder box).")
-            Step(4, "This row turns green when ${b.name} talks to Imad Downloader. It keeps working after app updates.")
+            Step(4, "This row turns green when ${b.name} talks to Hyper Downloader. It keeps working after app updates.")
         }
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 6.dp)) {
             Field(if (b.family == BrowserFamily.FIREFOX) java.io.File(folder, "manifest.json").path else folder.path, {}, Modifier.weight(1f), readOnly = true)
@@ -136,8 +136,8 @@ private fun Step(n: Int, text: String) {
 fun BrowserSetupDialog(app: AppState) {
     if (!app.browserSetupOpen) return
     AppDialog("Connect your browsers", 640.dp, 520.dp, app.settings.theme, { app.browserSetupOpen = false }) {
-        Text("Let Imad Downloader take over downloads in your browsers", style = MaterialTheme.typography.titleMedium)
-        Hint("Add the Imad Downloader extension to each browser you use. Downloads, videos and the right-click \"Download with Imad Downloader\" then come here.")
+        Text("Let Hyper Downloader take over downloads in your browsers", style = MaterialTheme.typography.titleMedium)
+        Hint("Add the Hyper Downloader extension to each browser you use. Downloads, videos and the right-click \"Download with Hyper Downloader\" then come here.")
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = 8.dp)) { BrowserConnectPanel(app) }
         ButtonRow {
             TextButton({ app.browserSetupOpen = false }) { Text("Later") }

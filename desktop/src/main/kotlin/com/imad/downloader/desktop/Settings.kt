@@ -7,20 +7,24 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File
 
-/** Where the Windows app keeps its data: %APPDATA%\Imad Downloader. */
+/** Where the Windows app keeps its data: %APPDATA%\Hyper Downloader. */
 object AppDirs {
     val data: File by lazy {
         // IMAD_DATA_DIR lets end-to-end tests run against a throwaway profile.
         System.getenv("IMAD_DATA_DIR")?.let { return@lazy File(it).apply { mkdirs() } }
         val base = System.getenv("APPDATA")?.let(::File) ?: File(System.getProperty("user.home"), ".config")
-        File(base, "Imad Downloader").apply { mkdirs() }
+        val dir = File(base, "Hyper Downloader")
+        // Moves settings, the download list and tools over from the name used before the rename.
+        val old = File(base, "Imad Downloader")
+        if (!dir.exists() && old.isDirectory) runCatching { old.renameTo(dir) }
+        dir.apply { mkdirs() }
     }
     val settingsFile get() = File(data, "settings.json")
     val downloadsFile get() = File(data, "downloads.json")
-    val logFile get() = File(data, "imad-downloader.log")
+    val logFile get() = File(data, "hyper-downloader.log")
 
     val defaultDownloads: String by lazy {
-        File(System.getProperty("user.home"), "Downloads/Imad Downloader").path
+        File(System.getProperty("user.home"), "Downloads/Hyper Downloader").path
     }
 }
 
@@ -28,7 +32,7 @@ enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
 enum class CompletionAction(val label: String) {
     NOTHING("Do nothing"),
-    EXIT("Exit Imad Downloader"),
+    EXIT("Exit Hyper Downloader"),
     SLEEP("Put computer to sleep"),
     SHUTDOWN("Shut down computer"),
 }
