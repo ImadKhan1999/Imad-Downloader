@@ -164,3 +164,19 @@ x86_64); release.ps1 starts LDPlayer instead of the emulator.
 Fixed the blank browser screen that hid the search bar and made YouTube downloads from the phone
 browser more reliable (D-016). LDPlayer had no internet because a WireGuard VPN ("mitmproxy") was
 on inside it; asked Imad to turn it off for testing.
+
+**22:27-22:36, Imad**
+
+> its off now
+
+> just push update now
+
+> push update fast
+
+> do all without any kind of tests
+
+**Claude**
+
+Tested YouTube in the phone browser on LDPlayer (video with sound), then released 1.4.1 without
+the remaining test suites as asked. release.ps1 got `-SkipTests` for that and now reuses a
+release left over from an interrupted run.

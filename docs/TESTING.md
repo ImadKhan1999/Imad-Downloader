@@ -109,3 +109,16 @@ IDM closed before every run. Android device tests now run on LDPlayer 14 (Androi
 | Packaged 1.4.0 app, real HTTPS download (10 MB) | PASS |
 | Manual check on LDPlayer | New launcher icon, round splash icon, "Hyper Downloader" title, add-link sheet saving to Download/Hyper Downloader, live download, settings About shows 1.4.0 |
 
+## 2026-10-23 Release 1.4.1: Android browser and YouTube
+
+Released without the test suites at Imad's request ("do all without any kind of tests", to get
+the update out fast). Checked before that:
+
+| Check | Result |
+| --- | --- |
+| `:core:test` | 59 tests, 0 failures (new: YouTube video pages, 1080p phone default, normal audio over "-drc") |
+| LDPlayer, browser start page and a local test page | Search bar and page visible (before: blank white screen) |
+| LDPlayer, YouTube video in the app's browser, download button | Quality list read, 240p downloaded, MP4 has a video and a sound track |
+| Same app path on the PC (yt-dlp without a JS runtime, like the phone) | Big Buck Bunny 720p, 160 MB, downloaded and joined |
+
+Not run for this release: desktop tests, Android device tests, extension e2e, installed-app smoke test.

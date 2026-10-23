@@ -12,7 +12,8 @@
 param(
     [Parameter(Mandatory = $true)][string]$Changelog,
     [switch]$Mandatory,
-    [switch]$SkipDeviceTests
+    [switch]$SkipDeviceTests,
+    [switch]$SkipTests # publish straight away (only when Imad asks for it)
 )
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
@@ -32,6 +33,7 @@ function Step($name, [scriptblock]$block) {
 # ---------------------------------------------------------------- tests and builds
 # The real IDM on this PC grabs browser downloads and would break the tests: close it (not uninstall).
 Stop-Process -Name IDMan, IEMonitor, IDMMsgHost, idmBroker, IDMGrHlp, IDMIntegrator64, MediumILStart -Force -ErrorAction SilentlyContinue
+if ($SkipTests) { $SkipDeviceTests = $true }
 if (-not $SkipDeviceTests) {
     # adb complains on stderr while no device is up; that must not stop the script.
     function Booted { $ErrorActionPreference = "Continue"; ((& $adb shell getprop sys.boot_completed 2>$null) -eq "1") }
@@ -44,17 +46,20 @@ if (-not $SkipDeviceTests) {
         while (-not (Booted) -and (Get-Date) -lt $deadline) { Start-Sleep 3 }
     }
 }
-$tasks = @(":core:test", ":desktop:test", ":androidApp:testDebugUnitTest", ":desktop:packageMsi", ":desktop:packageExe", ":desktop:createDistributable", ":androidApp:assembleRelease")
+$tasks = @(":core:test", ":desktop:test", ":androidApp:testDebugUnitTest") | Where-Object { -not $SkipTests }
+$tasks = @($tasks) + @(":desktop:packageMsi", ":desktop:packageExe", ":desktop:createDistributable", ":androidApp:assembleRelease")
 if (-not $SkipDeviceTests) { $tasks += ":androidApp:connectedDebugAndroidTest", "-Pandroid.testInstrumentationRunnerArguments.realNetwork=true" }
 Step "Gradle tests and builds" { & .\gradlew.bat @tasks --console=plain }
 $exe = "desktop\build\compose\binaries\main\app\Hyper Downloader\Hyper Downloader.exe"
 # Chrome for Testing (accepts unpacked extensions) and a Firefox copy, both kept in E:\TestTools.
+if (-not $SkipTests) {
 $env:APP_EXE = (Resolve-Path $exe).Path
 if (-not $env:CHROME_PATH -and (Test-Path "E:\TestTools\chrome-win64\chrome.exe")) { $env:CHROME_PATH = "E:\TestTools\chrome-win64\chrome.exe" }
 Step "Browser extension end-to-end (Chromium: Chrome, Edge, Brave, Opera, Vivaldi)" { node extension\test\e2e.mjs }
 Step "Browser extension end-to-end (Firefox)" { node extension\test\e2e-firefox.mjs }
 Remove-Item Env:APP_EXE
 Step "Installed app HTTPS smoke test" { powershell -NoProfile -ExecutionPolicy Bypass -File desktop\test-installed.ps1 -Exe (Resolve-Path $exe).Path -Url "https://proof.ovh.net/files/10Mb.dat" }
+}
 
 # ---------------------------------------------------------------- release files
 New-Item -ItemType Directory -Force dist | Out-Null
@@ -74,7 +79,10 @@ if (-not $token) { throw "No GitHub credentials in Git's credential manager" }
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $h = @{ Authorization = "Bearer $token"; Accept = "application/vnd.github+json"; "User-Agent" = "hyper-release" }
 $body = @{ tag_name = "v$version"; target_commitish = "main"; name = "Hyper Downloader $version"; body = $Changelog } | ConvertTo-Json
-$rel = Invoke-RestMethod -Method Post -Headers $h -ContentType "application/json" -Body $body "https://api.github.com/repos/$repo/releases"
+# A release left over from an interrupted run is reused (its files are replaced below).
+$rel = try { Invoke-RestMethod -Headers $h "https://api.github.com/repos/$repo/releases/tags/v$version" } catch { $null }
+if (-not $rel) { $rel = Invoke-RestMethod -Method Post -Headers $h -ContentType "application/json" -Body $body "https://api.github.com/repos/$repo/releases" }
+foreach ($old in $rel.assets) { Invoke-RestMethod -Method Delete -Headers $h $old.url | Out-Null }
 $upload = $rel.upload_url -replace '\{.*\}', ''
 foreach ($f in Get-ChildItem dist -File) {
     for ($try = 1; $try -le 4; $try++) {
