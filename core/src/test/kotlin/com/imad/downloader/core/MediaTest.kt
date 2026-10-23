@@ -82,6 +82,24 @@ class YtDlpJsonTest {
         assertTrue(MediaChoice.isKnownSite("https://m.facebook.com/watch/1"))
         assertTrue(!MediaChoice.isKnownSite("https://example.com/a.zip"))
     }
+
+    @Test fun `only single YouTube videos count as video pages`() {
+        assertTrue(MediaChoice.isVideoPage("https://m.youtube.com/watch?v=aqz-KE-bpKQ&pp=x"))
+        assertTrue(MediaChoice.isVideoPage("https://www.youtube.com/shorts/abc123"))
+        assertTrue(MediaChoice.isVideoPage("https://youtu.be/abc123"))
+        assertTrue(!MediaChoice.isVideoPage("https://m.youtube.com/"))
+        assertTrue(!MediaChoice.isVideoPage("https://m.youtube.com/results?search_query=cats"))
+        assertTrue(!MediaChoice.isVideoPage("https://www.youtube.com/@channel"))
+        assertTrue(MediaChoice.isVideoPage("https://vimeo.com/123"))
+    }
+
+    @Test fun `phones start at 1080p and skip loudness-compressed audio`() {
+        val base = YtDlpJson.parse(sample)
+        val info = base.copy(formats = base.formats + MediaFormat("140-drc", "m4a", "https://g/140d", acodec = "mp4a.40.2", tbr = 135.0))
+        val opts = MediaChoice.options(info)
+        assertEquals("137+140", MediaChoice.defaultOption(opts)!!.formatSpec, "1080p AVC, not 4K AV1, and the normal audio track")
+        assertEquals("136+140", MediaChoice.defaultOption(opts, maxHeight = 720)!!.formatSpec)
+    }
 }
 
 class MediaDownloadTest {

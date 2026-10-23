@@ -1,16 +1,30 @@
 """Bridge between the Android app and yt-dlp (runs inside Chaquopy's Python)."""
 import json
+import os
 import sys
 
-_override_loaded = False
+_loaded_from = None  # path of the downloaded yt-dlp in use, None = the copy built into the app
+_loaded_stamp = None
 
 
 def _use_override(path):
-    """Prefer a newer yt-dlp (official zipapp from GitHub) that the app downloaded."""
-    global _override_loaded
-    if path and not _override_loaded and "yt_dlp" not in sys.modules:
-        sys.path.insert(0, path)
-        _override_loaded = True
+    """Prefer a newer yt-dlp (official zipapp from GitHub) that the app downloaded.
+
+    A copy downloaded while the app runs replaces the loaded one right away: the old yt_dlp
+    modules are dropped and imported again from the new file.
+    """
+    global _loaded_from, _loaded_stamp
+    if not path or not os.path.isfile(path):
+        return
+    stamp = os.path.getmtime(path)
+    if _loaded_from == path and _loaded_stamp == stamp:
+        return
+    for name in [m for m in sys.modules if m == "yt_dlp" or m.startswith("yt_dlp.")]:
+        del sys.modules[name]
+    if path in sys.path:
+        sys.path.remove(path)
+    sys.path.insert(0, path)
+    _loaded_from, _loaded_stamp = path, stamp
 
 
 def version(override_path):

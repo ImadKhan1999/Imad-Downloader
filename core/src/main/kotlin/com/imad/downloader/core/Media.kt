@@ -38,6 +38,7 @@ data class MediaFormat(
     val isPlainHttp: Boolean get() = protocol == "https" || protocol == "http"
     /** Fragmented MP4 tracks can be joined by [Mp4Merge]. */
     val mp4Family: Boolean get() = ext in setOf("mp4", "m4a", "m4v")
+    val isDrc: Boolean get() = id.endsWith("-drc")
 }
 
 /** Everything known about a video page. */
@@ -155,7 +156,8 @@ object MediaChoice {
         val audioAll = info.formats.filter { it.hasAudio && !it.hasVideo }
         // Direct files first; streamed audio (SoundCloud, ...) only when nothing else exists.
         val audio = audioAll.filter { it.isPlainHttp }.ifEmpty { audioAll.filter { it.isHls } }
-        val bestM4a = audio.filter { it.mp4Family && it.isPlainHttp }.maxByOrNull { it.tbr }
+        // YouTube also offers "-drc" (loudness-compressed) copies of each track; prefer the normal one.
+        val bestM4a = audio.filter { it.mp4Family && it.isPlainHttp }.sortedWith(compareBy<MediaFormat> { it.isDrc }.thenByDescending { it.tbr }).firstOrNull()
         val out = LinkedHashMap<Int, MediaOption>()
 
         // Video-only mp4 + m4a audio, joined after download (YouTube style).
@@ -188,6 +190,16 @@ object MediaChoice {
         return video + audioOpt
     }
 
+    /**
+     * The quality selected first in a phone's download sheet: the best video up to [maxHeight]
+     * (1080p: plays smoothly on phones and keeps the file a sensible size), else the smallest one.
+     */
+    fun defaultOption(options: List<MediaOption>, maxHeight: Int = 1080): MediaOption? {
+        val videos = options.filter { !it.audioOnly }
+        return videos.filter { it.height in 1..maxHeight }.maxByOrNull { it.height }
+            ?: videos.minByOrNull { it.height } ?: options.firstOrNull()
+    }
+
     /** Picks the option matching [height] (0 = best) from a fresh format list, e.g. on resume. */
     fun pick(info: MediaInfo, spec: String?, height: Int): MediaOption? {
         val opts = options(info)
@@ -208,6 +220,20 @@ object MediaChoice {
         "x.com", "twitter.com", "tiktok.com", "twitch.tv", "soundcloud.com", "reddit.com", "bilibili.com",
         "streamable.com", "rumble.com", "ok.ru", "vk.com", "pinterest.com", "linkedin.com", "bandcamp.com",
     )
+
+    /** False for YouTube pages that are not a single video (home, search, channels), true elsewhere. */
+    fun isVideoPage(url: String): Boolean {
+        val u = runCatching { URI(url.trim()) }.getOrNull() ?: return false
+        val host = u.host?.lowercase() ?: return false
+        val path = u.path.orEmpty()
+        return when {
+            host == "youtu.be" -> path.length > 1
+            host == "youtube.com" || host.endsWith(".youtube.com") ->
+                (path == "/watch" && u.rawQuery?.contains("v=") == true) ||
+                    listOf("/shorts/", "/live/", "/embed/").any { path.startsWith(it) && path.length > it.length }
+            else -> true
+        }
+    }
 
     /** Pages that are certainly video sites (others are tried when they return HTML). */
     fun isKnownSite(url: String): Boolean {

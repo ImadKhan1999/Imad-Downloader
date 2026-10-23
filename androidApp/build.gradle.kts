@@ -24,7 +24,7 @@ android {
         applicationId = "com.imad.downloader"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
+        versionCode = 6
         versionName = libs.versions.app.get()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -73,7 +73,7 @@ kotlin { jvmToolchain(17) }
 chaquopy {
     defaultConfig {
         version = "3.13"
-        pip { install("yt-dlp") }
+        pip { install("yt-dlp==2026.10.21") } // pinned so builds get a recent copy; the app updates itself later
     }
 }
 

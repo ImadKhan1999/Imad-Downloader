@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit
 /**
  * yt-dlp on Android: the copy built into the app (Python via Chaquopy) or, once downloaded, the
  * latest official yt-dlp from GitHub (checked against SHA2-256SUMS), so sites keep working
- * between app releases. A new copy takes effect the next time the app starts.
+ * between app releases. A new copy is used from the next extraction on.
  */
 class AndroidYtDlp(private val context: Context) : MediaExtractor {
     private val dir = File(context.filesDir, "ytdlp").apply { mkdirs() }
@@ -45,8 +45,22 @@ class AndroidYtDlp(private val context: Context) : MediaExtractor {
     }
 
     override suspend fun extract(url: String, headers: Map<String, String>): MediaInfo = withContext(Dispatchers.IO) {
+        try {
+            extractOnce(url, headers)
+        } catch (e: PyException) {
+            // Sites (YouTube above all) change often and a newer yt-dlp usually copes: fetch the
+            // newest one now (unless it was fetched in the last hour) and try once more.
+            val updated = runCatching { updateIfDue(everyMillis = 3_600_000L) }.getOrDefault(false)
+            if (!updated) throw IOException(friendly(e.message.orEmpty()))
+            try { extractOnce(url, headers) } catch (e2: PyException) { throw IOException(friendly(e2.message.orEmpty())) }
+        }
+    }
+
+    private suspend fun extractOnce(url: String, headers: Map<String, String>): MediaInfo {
         val cookie = headers.entries.firstOrNull { it.key.equals("Cookie", true) }?.value
-        val plain = headers.filterKeys { !it.equals("Cookie", true) }
+        // yt-dlp picks the right browser identity per site (YouTube's player clients each need
+        // their own); the in-app browser's phone User-Agent would override that, so it is not sent.
+        val plain = headers.filterKeys { !it.equals("Cookie", true) && !it.equals("User-Agent", true) }
         val headersJson = JsonObject(plain.mapValues { JsonPrimitive(it.value) }).toString()
         var cookieFile: File? = null
         try {
@@ -56,18 +70,20 @@ class AndroidYtDlp(private val context: Context) : MediaExtractor {
             val out = lock.withLock {
                 py().getModule("imad_ytdlp").callAttr("extract", url, headersJson, cookieFile?.path, overridePath()).toString()
             }
-            YtDlpJson.parse(out)
-        } catch (e: PyException) {
-            throw IOException(friendly(e.message.orEmpty()))
+            return YtDlpJson.parse(out)
         } finally {
             cookieFile?.delete()
         }
     }
 
-    /** Downloads the newest official yt-dlp when the last check is older than [everyMillis]. */
-    suspend fun updateIfDue(everyMillis: Long = 3 * 24 * 3_600_000L): Boolean = withContext(Dispatchers.IO) {
+    /**
+     * Downloads the newest official yt-dlp when the last check is older than [everyMillis].
+     * It is used from the next extraction on, without restarting the app.
+     */
+    suspend fun updateIfDue(everyMillis: Long = 24 * 3_600_000L): Boolean = withContext(Dispatchers.IO) {
         val last = stamp.takeIf { it.exists() }?.readText()?.trim()?.toLongOrNull() ?: 0
         if (System.currentTimeMillis() - last < everyMillis) return@withContext false
+        stamp.writeText(System.currentTimeMillis().toString()) // one try per period, even when offline
         val base = "https://github.com/yt-dlp/yt-dlp/releases/latest/download"
         fun get(u: String) = http.newCall(Request.Builder().url(u).header("User-Agent", "HyperDownloader").build()).execute().also {
             if (!it.isSuccessful) { it.close(); throw IOException("yt-dlp update failed (${it.code})") }
@@ -75,13 +91,17 @@ class AndroidYtDlp(private val context: Context) : MediaExtractor {
         val expected = get("$base/SHA2-256SUMS").use { r ->
             r.body.string().lines().firstOrNull { it.trim().endsWith(" yt-dlp") }?.substringBefore(' ')?.lowercase()
         } ?: throw IOException("Could not read yt-dlp checksums")
+        val current = runCatching { version() }.getOrNull()
+        val latest = runCatching { get("https://github.com/yt-dlp/yt-dlp/releases/latest").use { it.request.url.pathSegments.lastOrNull() } }.getOrNull()
+        if (current != null && latest != null && latest.trimStart('v') == current) return@withContext false
         val tmp = File(dir, "yt-dlp.zip.part")
         get("$base/yt-dlp").use { r -> tmp.outputStream().use { r.body.byteStream().copyTo(it) } }
         val actual = MessageDigest.getInstance("SHA-256").digest(tmp.readBytes()).joinToString("") { "%02x".format(it) }
         if (actual != expected) { tmp.delete(); throw IOException("yt-dlp update did not match its checksum") }
-        if (override.exists()) override.delete()
-        tmp.renameTo(override)
-        stamp.writeText(System.currentTimeMillis().toString())
+        lock.withLock {
+            if (override.exists()) override.delete()
+            tmp.renameTo(override)
+        }
         true
     }
 

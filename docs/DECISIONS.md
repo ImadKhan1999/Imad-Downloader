@@ -216,3 +216,19 @@ Imad asked for YouTube and other sites with quality choice, using yt-dlp if need
   download folders stay where they are; new installs default to Downloads\Hyper Downloader.
 - Updating from 1.3.0 on Windows installs into the new "Hyper Downloader" folder; the 1.3.0
   updater then tries to reopen the old path, so the app has to be opened once from the Start menu.
+
+## D-016 Android browser blank screen and YouTube downloads (2026-10-24)
+
+- Imad could not see the browser's search bar. Cause: the start page kept an empty, zero-size
+  WebView in the layout, and on LDPlayer (and likely other GPUs) a WebView that has not painted
+  yet draws white over the whole screen, search bar included. The start page no longer creates the
+  WebView, and the address bar and progress line are drawn above the page so a slow page cannot
+  hide them. The bar also got a clearer outline.
+- YouTube from the phone browser: the download button now reads the page's live address (YouTube
+  changes it without reloading) and only shows on single-video pages, not on YouTube's home or
+  search. yt-dlp no longer gets the browser's phone User-Agent (it chooses its own per YouTube
+  client; the phone one breaks some). When a video fails, the app fetches the newest yt-dlp from
+  GitHub (checked against SHA2-256SUMS) and retries at once; new copies are used without
+  restarting the app. The copy built into the APK is pinned to 2026.10.21 (builds had kept a
+  2026.08.19 copy). The quality picked first on phones is the best up to 1080p (H.264 where
+  offered) instead of 4K AV1, and normal audio is preferred over YouTube's "-drc" copies.

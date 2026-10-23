@@ -123,8 +123,9 @@ fun AddDownloadSheet(
             m.onSuccess { info ->
                 val opts = com.imad.downloader.core.MediaChoice.options(info)
                 if (opts.isEmpty()) { if (!quiet) error = "No downloadable video found on this page"; return@onSuccess }
-                media = info; mediaOptions = opts; mediaOption = opts.first(); error = null
-                if (!nameEdited) name = com.imad.downloader.core.MediaChoice.safeTitle(info.title) + "." + opts.first().extension
+                val pick = com.imad.downloader.core.MediaChoice.defaultOption(opts) ?: opts.first()
+                media = info; mediaOptions = opts; mediaOption = pick; error = null
+                if (!nameEdited) name = com.imad.downloader.core.MediaChoice.safeTitle(info.title) + "." + pick.extension
             }.onFailure { if (!quiet) error = it.message ?: "Could not read this video page" }
         }
         if (com.imad.downloader.core.MediaChoice.isKnownSite(url) && initial.mediaFormat == null) {

@@ -151,3 +151,16 @@ Renamed everything to Hyper Downloader with a new logo and colours, released as 
 Stopped the Android Studio emulator. Android device tests now run on LDPlayer 14 (Android 14,
 x86_64); release.ps1 starts LDPlayer instead of the emulator.
 
+## 2026-10-23
+
+**21:53, Imad**
+
+> can u fix downloader on android
+> fix it to download properly from youtube on android browser also improve browser UI i am not
+> able to see search bar maybe due to color or some other issue just fix Both the issues
+
+**Claude**
+
+Fixed the blank browser screen that hid the search bar and made YouTube downloads from the phone
+browser more reliable (D-016). LDPlayer had no internet because a WireGuard VPN ("mitmproxy") was
+on inside it; asked Imad to turn it off for testing.

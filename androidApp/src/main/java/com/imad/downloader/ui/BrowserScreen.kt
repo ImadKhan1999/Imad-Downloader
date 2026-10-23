@@ -96,6 +96,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.viewinterop.AndroidView
 import com.imad.downloader.FileActions
 import com.imad.downloader.R
@@ -132,13 +133,16 @@ fun BrowserScreen(controller: BrowserController, data: BrowserData, onDownload: 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
             // ---------------------------------------------------------------- address bar
+            // Drawn after the page (zIndex) so a WebView that has not painted yet cannot cover it.
             Row(
-                Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 8.dp, vertical = 6.dp),
+                Modifier.zIndex(1f).fillMaxWidth().background(MaterialTheme.colorScheme.surface).statusBarsPadding()
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(
-                    Modifier.weight(1f).height(44.dp).clip(RoundedCornerShape(22.dp))
-                        .background(if (tab.incognito) Color(0xFF3C3F44) else MaterialTheme.colorScheme.surfaceVariant)
+                    Modifier.weight(1f).height(46.dp).clip(RoundedCornerShape(23.dp))
+                        .background(if (tab.incognito) Color(0xFF3C3F44) else MaterialTheme.colorScheme.surfaceContainerHigh)
+                        .border(1.dp, if (editing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(23.dp))
                         .padding(start = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -195,7 +199,7 @@ fun BrowserScreen(controller: BrowserController, data: BrowserData, onDownload: 
                 }
             }
             if (tab.progress in 1..99 && !tab.isStartPage) {
-                LinearProgressIndicator(progress = { tab.progress / 100f }, modifier = Modifier.fillMaxWidth().height(2.dp), drawStopIndicator = {})
+                LinearProgressIndicator(progress = { tab.progress / 100f }, modifier = Modifier.zIndex(1f).fillMaxWidth().height(3.dp), drawStopIndicator = {})
             }
             findText?.let { ft ->
                 FindBar(ft, onChange = { findText = it; controller.find(it) }, onNext = { controller.findNext(it) }, onClose = { findText = null; controller.clearFind() })
@@ -206,7 +210,7 @@ fun BrowserScreen(controller: BrowserController, data: BrowserData, onDownload: 
                 if (tab.isStartPage) {
                     StartPage(store.bookmarks, onOpen = { controller.navigate(it) }, onRemove = { data.removeBookmark(it) })
                 }
-                key(tab.id) {
+                if (!tab.isStartPage) key(tab.id) {
                     AndroidView(
                         factory = { ctx ->
                             controller.webViewFor(tab, ctx).also { wv -> (wv.parent as? ViewGroup)?.removeView(wv) }
@@ -231,13 +235,15 @@ fun BrowserScreen(controller: BrowserController, data: BrowserData, onDownload: 
         }
 
         // Floating "videos found" button (1DM style).
-        val videoSite = com.imad.downloader.core.MediaChoice.isKnownSite(tab.url)
+        // The page's own address (YouTube changes it without reloading when you open a video).
+        val pageUrl = tab.webView?.url?.takeIf { it.startsWith("http") } ?: tab.url
+        val videoSite = com.imad.downloader.core.MediaChoice.isKnownSite(pageUrl) && com.imad.downloader.core.MediaChoice.isVideoPage(pageUrl)
         if ((tab.media.isNotEmpty() || videoSite) && !tab.isStartPage) {
             BadgedBox(
                 badge = { if (!videoSite) Badge(containerColor = Color(0xFF00C853)) { Text(tab.media.size.toString()) } },
                 modifier = Modifier.align(Alignment.BottomEnd).padding(end = 18.dp, bottom = 72.dp),
             ) {
-                FloatingActionButton({ if (videoSite) onDownload(controller.requestFor(tab.url)) else sheet = BrowserSheet.MEDIA }, containerColor = MaterialTheme.colorScheme.primary, modifier = Modifier.testTag("media-fab")) {
+                FloatingActionButton({ if (videoSite) onDownload(controller.requestFor(pageUrl)) else sheet = BrowserSheet.MEDIA }, containerColor = MaterialTheme.colorScheme.primary, modifier = Modifier.testTag("media-fab")) {
                     Icon(Icons.Filled.Download, "Media found", tint = Color.White)
                 }
             }
