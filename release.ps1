@@ -33,13 +33,15 @@ function Step($name, [scriptblock]$block) {
 # The real IDM on this PC grabs browser downloads and would break the tests: close it (not uninstall).
 Stop-Process -Name IDMan, IEMonitor, IDMMsgHost, idmBroker, IDMGrHlp, IDMIntegrator64, MediumILStart -Force -ErrorAction SilentlyContinue
 if (-not $SkipDeviceTests) {
-    $booted = (& $adb shell getprop sys.boot_completed 2>$null) -eq "1"
+    # adb complains on stderr while no device is up; that must not stop the script.
+    function Booted { $ErrorActionPreference = "Continue"; ((& $adb shell getprop sys.boot_completed 2>$null) -eq "1") }
+    $booted = Booted
     if (-not $booted) {
         # Device tests run on the installed LDPlayer (Imad's choice), not Android Studio's emulator.
         & "F:\LDPlayer\LDPlayer14\ldconsole.exe" launch --index 0
-        & $adb wait-for-device
+        & cmd /c "`"$adb`" wait-for-device"
         $deadline = (Get-Date).AddMinutes(5)
-        while ((& $adb shell getprop sys.boot_completed 2>$null) -ne "1" -and (Get-Date) -lt $deadline) { Start-Sleep 3 }
+        while (-not (Booted) -and (Get-Date) -lt $deadline) { Start-Sleep 3 }
     }
 }
 $tasks = @(":core:test", ":desktop:test", ":androidApp:testDebugUnitTest", ":desktop:packageMsi", ":desktop:packageExe", ":desktop:createDistributable", ":androidApp:assembleRelease")
