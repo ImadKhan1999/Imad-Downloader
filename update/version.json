@@ -1,19 +1,19 @@
 {
     "android":  {
-                    "version":  "1.4.0",
-                    "versionCode":  5,
-                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.4.0/HyperDownloader-1.4.0.apk",
-                    "sha256":  "878a3d1d460ca32af009a3103c1ebcd7534fcb0d0a7120c7b2d2a9a6991550d2",
-                    "size":  41118396,
-                    "changelog":  "Imad Downloader is now Hyper Downloader: new name, new logo and new colours. Your settings, download list and files carry over.",
+                    "version":  "1.4.1",
+                    "versionCode":  6,
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.4.1/HyperDownloader-1.4.1.apk",
+                    "sha256":  "b3c328cbac8f9c587a5766d806421616b66249731216c34c72effbf138496927",
+                    "size":  41125140,
+                    "changelog":  "Android: the browser no longer goes blank and hides the search bar; YouTube downloads from the browser are more reliable (the app fetches the newest YouTube support when needed and picks 1080p by default).",
                     "mandatory":  false
                 },
     "windows":  {
-                    "version":  "1.4.0",
-                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.4.0/Hyper.Downloader-1.4.0.msi",
-                    "sha256":  "6be87d5bf07654422456e0270ec04bdc358d2d6c8a9da0a60cbae3bc7c48c545",
-                    "size":  100787208,
-                    "changelog":  "Imad Downloader is now Hyper Downloader: new name, new logo and new colours. Your settings, download list and files carry over.",
+                    "version":  "1.4.1",
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.4.1/Hyper.Downloader-1.4.1.msi",
+                    "sha256":  "2592de6e364434b2d784eafd1ebad95a2a74f5966110825b4621177d8db0abfe",
+                    "size":  100783112,
+                    "changelog":  "Android: the browser no longer goes blank and hides the search bar; YouTube downloads from the browser are more reliable (the app fetches the newest YouTube support when needed and picks 1080p by default).",
                     "mandatory":  false
                 }
 }
