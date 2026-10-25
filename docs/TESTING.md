@@ -137,3 +137,15 @@ IDM closed; phone tests on LDPlayer 14.
 | Manual on LDPlayer | Shared playlist link opens the tick-box list; All/None, ticks and quality chips work; the download popup has no connections slider |
 | Extension e2e (Chromium, Firefox) and installed-app HTTPS smoke test | PASS |
 
+## 2026-10-26 Release 1.6.0: iDownloader by ImadLabs
+
+| Suite | Result |
+| --- | --- |
+| `:core:test` + `:desktop:test` | 90 tests, 0 failures (renders show the iDownloader name and ImadLabs colours) |
+| Android device tests on LDPlayer | 12 of 13 passed, incl. the new Telegram popup test ("Don't show this again" keeps it away); the YouTube playlist download was refused by YouTube's bot check for this network (the playlist itself was listed); the test now counts that as skipped |
+| Extension e2e (Chromium, Firefox), installed-app HTTPS smoke test | PASS |
+
+The final release run skipped the device tests because LDPlayer had been closed; they had passed in
+the run before. An earlier run picked Imad's phone (LDPlayer off) and Gradle uninstalled the app
+there; release.ps1 now pins ANDROID_SERIAL=emulator-5554 and the app was reinstalled.
+
