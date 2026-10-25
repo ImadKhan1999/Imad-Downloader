@@ -1,19 +1,19 @@
 {
     "android":  {
-                    "version":  "1.5.1",
-                    "versionCode":  8,
-                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.5.1/HyperDownloader-1.5.1.apk",
-                    "sha256":  "3e004d32ee35f2444ecb355dedb837498d2efb5f17b68a3da391b8c4a646da69",
-                    "size":  41125136,
-                    "changelog":  "Updates now pop up by themselves when the app starts and every few hours. Removed the update and project page items from Settings.",
+                    "version":  "1.6.0",
+                    "versionCode":  9,
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.6.0/iDownloader-1.6.0.apk",
+                    "sha256":  "c08d045e483a81f89a355dd198d4f60ce9600663b382a307a264d65babe421af",
+                    "size":  41157868,
+                    "changelog":  "Now called iDownloader, by ImadLabs: new icon and colours from the ImadLabs brand. Join ImadLabs on Telegram (t.me/ImadLabs) from About.",
                     "mandatory":  false
                 },
     "windows":  {
-                    "version":  "1.5.1",
-                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.5.1/Hyper.Downloader-1.5.1.msi",
-                    "sha256":  "6364cae072df98e52bed5dd9de1e4e57a385182873ccbbfd413cf3e6a778d4d9",
-                    "size":  100828168,
-                    "changelog":  "Updates now pop up by themselves when the app starts and every few hours. Removed the update and project page items from Settings.",
+                    "version":  "1.6.0",
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.6.0/iDownloader-1.6.0.msi",
+                    "sha256":  "3c24f5728caeceaa5cb46a32008aa4b7c13e950f5568cfa8633d47bc3514f027",
+                    "size":  100799496,
+                    "changelog":  "Now called iDownloader, by ImadLabs: new icon and colours from the ImadLabs brand. Join ImadLabs on Telegram (t.me/ImadLabs) from About.",
                     "mandatory":  false
                 }
 }
