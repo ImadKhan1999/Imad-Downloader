@@ -233,3 +233,22 @@ Installed 1.5.1 on Imad's phone (Infinix X6873) over adb as an update; data kept
 
 Renamed to iDownloader by ImadLabs with the brand kit's downloader icon and colours, added the
 Telegram link and the first-run popup (D-019). Released as 1.6.0.
+
+**21:55-21:57, Imad (project chat)**
+
+> https://github.com/deniscerri/ytdlnis
+> it has 1000 websites support add the support of mainstream apps
+> like tiktok facebook instagram x yt music as well dont test android app just properly build it
+> also i have updated graphics in repo you can check out the downloader folder and its content
+
+> and also fix downloading from yt and yt music coz its saying youtube wants you singned in for
+> this and open yt blah blah
+
+> and if the size doesnt become too large add all websites support that is listed and already
+> open source in the ytdlnis repo
+
+**Claude**
+
+Same yt-dlp engine as ytdlnis already bundled (all its sites); more quick-detect sites; YouTube bot
+check handled with fallback clients, QuickJS on Android, in-app browser cookies and a sign-in
+button; new cloud icon (D-020). Android built, not tested, as asked. Released as 1.7.0.

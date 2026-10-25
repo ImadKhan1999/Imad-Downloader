@@ -35,7 +35,13 @@ class AndroidYtDlp(private val context: Context) : MediaExtractor {
     private val http = OkHttpClient.Builder().readTimeout(60, TimeUnit.SECONDS).build()
 
     private fun py(): Python {
-        if (!Python.isStarted()) Python.start(AndroidPlatform(context))
+        if (!Python.isStarted()) {
+            Python.start(AndroidPlatform(context))
+            // QuickJS (bundled as libqjs.so) solves YouTube's JavaScript challenges, which signed-in
+            // YouTube and most of its formats need.
+            val qjs = File(context.applicationInfo.nativeLibraryDir, "libqjs.so")
+            runCatching { Python.getInstance().getModule("imad_ytdlp").callAttr("set_js_runtime", qjs.path) }
+        }
         return Python.getInstance()
     }
 
@@ -64,7 +70,11 @@ class AndroidYtDlp(private val context: Context) : MediaExtractor {
     }
 
     private suspend fun call(function: String, url: String, headers: Map<String, String>): String {
-        val cookie = headers.entries.firstOrNull { it.key.equals("Cookie", true) }?.value
+        // Links shared from other apps come without cookies: use the in-app browser's for that site,
+        // so a YouTube / Instagram / Facebook / X sign-in there carries over (and YouTube sees a
+        // normal visitor instead of a bare app, which it flags as a bot less often).
+        val cookie = headers.entries.firstOrNull { it.key.equals("Cookie", true) }?.value?.takeIf { it.isNotBlank() }
+            ?: runCatching { android.webkit.CookieManager.getInstance().getCookie(url) }.getOrNull()
         // yt-dlp picks the right browser identity per site (YouTube's player clients each need
         // their own); the in-app browser's phone User-Agent would override that, so it is not sent.
         val plain = headers.filterKeys { !it.equals("Cookie", true) && !it.equals("User-Agent", true) }
@@ -115,7 +125,7 @@ class AndroidYtDlp(private val context: Context) : MediaExtractor {
         val line = msg.lines().lastOrNull { "ERROR" in it || "Error" in it }?.substringAfter("ERROR:")?.trim() ?: msg.lines().lastOrNull().orEmpty()
         return when {
             "Unsupported URL" in line -> "No video found on this page"
-            "not a bot" in line -> "YouTube wants you signed in for this. Open YouTube in the app's browser, sign in, then use the download button there."
+            "not a bot" in line -> "YouTube is asking this network to sign in. Tap \"Sign in to YouTube\" below once; downloads then use your sign-in."
             "Sign in" in line || "logged-in" in line -> "This site needs you to be signed in. Sign in using the app's browser, then try again from there."
             "Private video" in line -> "This video is private"
             "impersonat" in line -> "This site blocks apps that are not a desktop browser, which the phone app cannot pretend to be yet. Use iDownloader on Windows for this site."

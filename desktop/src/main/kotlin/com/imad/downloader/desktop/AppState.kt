@@ -304,7 +304,7 @@ class AppState(
                                 fileName = MediaChoice.safeTitle(info.title) + ".mp4", description = cur.description.ifBlank { info.title },
                                 saveDir = engine.defaultDirFor(Category.VIDEO),
                             )
-                            base.withOption(opts.first())
+                            base.withOption((if (MediaChoice.isMusicSite(request.url)) opts.firstOrNull { it.audioOnly } else null) ?: opts.first())
                         }
                     },
                     onFailure = { e -> if (quiet) cur.copy(extracting = false, extractNote = null) else cur.copy(extracting = false, extractNote = null, error = e.message ?: "Could not read this video page") },

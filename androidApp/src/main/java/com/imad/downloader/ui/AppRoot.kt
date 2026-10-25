@@ -176,6 +176,7 @@ fun AppRoot(app: ImadApp, browser: BrowserController, activity: MainActivity) {
                     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                 },
                 canStart = { app.canDownloadNow() },
+                onOpenInBrowser = { link -> addRequest = null; screen = Screen.BROWSER; browser.navigate(link) },
             )
         }
         details?.let { id -> DetailsSheet(app.engine, id, onDismiss = { details = null }, canStart = canStart) }

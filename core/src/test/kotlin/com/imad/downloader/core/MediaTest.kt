@@ -83,6 +83,18 @@ class YtDlpJsonTest {
         assertTrue(!MediaChoice.isKnownSite("https://example.com/a.zip"))
     }
 
+    @Test fun `mainstream apps and music sites`() {
+        for (u in listOf("https://vm.tiktok.com/ZMabc/", "https://www.instagram.com/reel/Chunk8-jurw/", "https://m.facebook.com/watch/?v=1",
+                "https://x.com/user/status/1", "https://music.youtube.com/watch?v=1", "https://www.threads.net/@a/post/1", "https://pin.it/abc")) {
+            assertTrue(MediaChoice.isKnownSite(u), u)
+        }
+        assertTrue(MediaChoice.isMusicSite("https://music.youtube.com/watch?v=1"))
+        assertTrue(!MediaChoice.isMusicSite("https://www.youtube.com/watch?v=1"))
+        assertTrue(MediaChoice.isKnownYouTube("https://youtu.be/x") && !MediaChoice.isKnownYouTube("https://vimeo.com/1"))
+        assertTrue(MediaChoice.isBotCheck("ERROR: [youtube] x: Sign in to confirm you're not a bot."))
+        assertTrue(!MediaChoice.isBotCheck("ERROR: Unsupported URL"))
+    }
+
     @Test fun `only single YouTube videos count as video pages`() {
         assertTrue(MediaChoice.isVideoPage("https://m.youtube.com/watch?v=aqz-KE-bpKQ&pp=x"))
         assertTrue(MediaChoice.isVideoPage("https://www.youtube.com/shorts/abc123"))

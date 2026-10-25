@@ -1,5 +1,6 @@
 package com.imad.downloader.desktop
 
+import com.imad.downloader.core.MediaChoice
 import com.imad.downloader.core.MediaExtractor
 import com.imad.downloader.core.MediaInfo
 import com.imad.downloader.core.PlaylistInfo
@@ -138,10 +139,26 @@ class YtDlpExtractor(
     private val onInstalling: (Long, Long) -> Unit = { _, _ -> },
 ) : MediaExtractor {
     override suspend fun extract(url: String, headers: Map<String, String>): MediaInfo =
-        YtDlpJson.parse(run(url, headers, listOf("--no-playlist")))
+        YtDlpJson.parse(withYouTubeFallback(url) { extra -> run(url, headers, listOf("--no-playlist") + extra) })
 
     override suspend fun extractPlaylist(url: String, headers: Map<String, String>): PlaylistInfo =
-        YtDlpJson.parsePlaylist(run(url, headers, listOf("--yes-playlist", "--flat-playlist")))
+        YtDlpJson.parsePlaylist(withYouTubeFallback(url) { extra -> run(url, headers, listOf("--yes-playlist", "--flat-playlist") + extra) })
+
+    /**
+     * YouTube sometimes answers "confirm you're not a bot" for one player client while others
+     * still work from the same network; those are tried in turn before giving up.
+     */
+    private suspend fun withYouTubeFallback(url: String, call: suspend (List<String>) -> String): String {
+        try {
+            return call(emptyList())
+        } catch (e: java.io.IOException) {
+            if (!MediaChoice.isKnownYouTube(url) || !MediaChoice.isBotCheck(e.message.orEmpty())) throw e
+            for (client in MediaChoice.YOUTUBE_FALLBACK_CLIENTS) {
+                runCatching { return call(listOf("--extractor-args", "youtube:player_client=$client")) }
+            }
+            throw e
+        }
+    }
 
     private suspend fun run(url: String, headers: Map<String, String>, mode: List<String>): String {
         tool.ensure(onInstalling)

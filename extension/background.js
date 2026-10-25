@@ -13,7 +13,7 @@ const MEDIA_TYPES = /^(video\/|audio\/|application\/(vnd\.apple\.mpegurl|x-mpegu
 const MEDIA_EXT = /\.(mp4|m4v|webm|mkv|mov|flv|m3u8|mpd|mp3|m4a|aac|ogg|opus|wav|flac)(\?|$)/i;
 const MIN_MEDIA_BYTES = 300 * 1024;
 // Sites whose videos the app reads from the page itself (through yt-dlp) instead of sniffed streams.
-const VIDEO_SITES = ["youtube.com", "youtu.be", "vimeo.com", "dailymotion.com", "facebook.com", "fb.watch", "instagram.com", "x.com", "twitter.com", "tiktok.com", "twitch.tv", "soundcloud.com", "reddit.com", "bilibili.com", "streamable.com", "rumble.com", "ok.ru", "vk.com", "pinterest.com", "linkedin.com", "bandcamp.com"];
+const VIDEO_SITES = ["youtube.com", "youtu.be", "vimeo.com", "dailymotion.com", "facebook.com", "fb.watch", "instagram.com", "x.com", "twitter.com", "tiktok.com", "twitch.tv", "soundcloud.com", "reddit.com", "bilibili.com", "streamable.com", "rumble.com", "ok.ru", "vk.com", "pinterest.com", "linkedin.com", "bandcamp.com", "threads.net", "threads.com", "pin.it", "dai.ly", "snapchat.com", "kick.com", "bsky.app", "9gag.com", "imgur.com", "tumblr.com", "audiomack.com", "mixcloud.com", "likee.video", "kwai.com", "douyin.com", "weibo.com", "bilibili.tv", "nicovideo.jp", "odysee.com", "bitchute.com", "rutube.ru", "loom.com", "ted.com", "coub.com", "vidio.com", "zee5.com", "mxplayer.in"];
 
 function isVideoSite(url) {
   try {

@@ -5,6 +5,23 @@ import sys
 
 _loaded_from = None  # path of the downloaded yt-dlp in use, None = the copy built into the app
 _loaded_stamp = None
+_js_runtime = None  # QuickJS shipped with the app: lets yt-dlp solve YouTube's JS challenges
+
+
+def set_js_runtime(path):
+    """Uses QuickJS only if it really runs on this phone; otherwise yt-dlp works without it."""
+    global _js_runtime
+    _js_runtime = None
+    if not path or not os.path.isfile(path):
+        return False
+    try:
+        import subprocess
+        r = subprocess.run([path, "-e", "console.log(1+1)"], capture_output=True, text=True, timeout=10)
+        if r.returncode == 0 and r.stdout.strip() == "2":
+            _js_runtime = path
+    except Exception:
+        pass
+    return _js_runtime is not None
 
 
 def _use_override(path):
@@ -33,46 +50,58 @@ def version(override_path):
     return yt_dlp.version.__version__
 
 
-def extract(url, headers_json, cookie_file, override_path):
-    """Returns `yt-dlp -J` style JSON for a page, or raises with yt-dlp's own message."""
-    _use_override(override_path)
+# YouTube sometimes answers "Sign in to confirm you're not a bot" for one player client while
+# others still work from the same network; these are tried in turn before giving up.
+YOUTUBE_FALLBACK_CLIENTS = ["tv_embedded", "android_vr", "mweb", "ios", "tv_simply"]
+
+
+def _is_youtube(url):
+    host = url.split("/")[2].lower() if "://" in url else ""
+    return host == "youtu.be" or host == "youtube.com" or host.endswith(".youtube.com")
+
+
+def _needs_other_client(message):
+    m = message.lower()
+    return "not a bot" in m or "sign in" in m or "page needs to be reloaded" in m or "requested format is not available" in m
+
+
+def _run(url, opts):
     import yt_dlp
 
-    opts = {
-        "quiet": True,
-        "no_warnings": True,
-        "noplaylist": True,
-        "skip_download": True,
-        "noprogress": True,
-    }
+    with yt_dlp.YoutubeDL(opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+        return json.dumps(ydl.sanitize_info(info))
+
+
+def _extract(url, headers_json, cookie_file, override_path, extra):
+    _use_override(override_path)
+    opts = {"quiet": True, "no_warnings": True, "skip_download": True, "noprogress": True}
+    opts.update(extra)
+    if _js_runtime:
+        opts["js_runtimes"] = {"quickjs": {"path": _js_runtime}}
     headers = json.loads(headers_json or "{}")
     if headers:
         opts["http_headers"] = headers
     if cookie_file:
         opts["cookiefile"] = cookie_file
-    with yt_dlp.YoutubeDL(opts) as ydl:
-        info = ydl.extract_info(url, download=False)
-        return json.dumps(ydl.sanitize_info(info))
+    try:
+        return _run(url, opts)
+    except Exception as first:
+        if not _is_youtube(url) or not _needs_other_client(str(first)):
+            raise
+        for client in YOUTUBE_FALLBACK_CLIENTS:
+            try:
+                return _run(url, dict(opts, extractor_args={"youtube": {"player_client": [client]}}))
+            except Exception:
+                continue
+        raise first
+
+
+def extract(url, headers_json, cookie_file, override_path):
+    """Returns `yt-dlp -J` style JSON for a page, or raises with yt-dlp's own message."""
+    return _extract(url, headers_json, cookie_file, override_path, {"noplaylist": True})
 
 
 def extract_playlist(url, headers_json, cookie_file, override_path):
     """Returns `yt-dlp -J --flat-playlist` style JSON: the playlist's videos without their formats."""
-    _use_override(override_path)
-    import yt_dlp
-
-    opts = {
-        "quiet": True,
-        "no_warnings": True,
-        "noplaylist": False,
-        "extract_flat": "in_playlist",
-        "skip_download": True,
-        "noprogress": True,
-    }
-    headers = json.loads(headers_json or "{}")
-    if headers:
-        opts["http_headers"] = headers
-    if cookie_file:
-        opts["cookiefile"] = cookie_file
-    with yt_dlp.YoutubeDL(opts) as ydl:
-        info = ydl.extract_info(url, download=False)
-        return json.dumps(ydl.sanitize_info(info))
+    return _extract(url, headers_json, cookie_file, override_path, {"noplaylist": False, "extract_flat": "in_playlist"})

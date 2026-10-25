@@ -24,7 +24,7 @@ android {
         applicationId = "com.imad.downloader"
         minSdk = 26
         targetSdk = 36
-        versionCode = 9
+        versionCode = 10
         versionName = libs.versions.app.get()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -62,6 +62,9 @@ android {
     }
     packaging {
         resources.excludes += setOf("META-INF/{AL2.0,LGPL2.1}", "META-INF/versions/9/OSGI-INF/MANIFEST.MF")
+        // libqjs.so is the QuickJS-ng program (MIT) yt-dlp runs to solve YouTube's JS challenges;
+        // it must be unpacked to the native library folder to be executable.
+        jniLibs.useLegacyPackaging = true
     }
     testOptions { unitTests.isReturnDefaultValues = true }
 }

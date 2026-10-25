@@ -265,6 +265,8 @@ object MediaChoice {
         "youtube.com", "youtu.be", "vimeo.com", "dailymotion.com", "facebook.com", "fb.watch", "instagram.com",
         "x.com", "twitter.com", "tiktok.com", "twitch.tv", "soundcloud.com", "reddit.com", "bilibili.com",
         "streamable.com", "rumble.com", "ok.ru", "vk.com", "pinterest.com", "linkedin.com", "bandcamp.com",
+        // More of the sites yt-dlp reads (the same engine and site list ytdlnis uses); any other page is tried too.
+        "threads.net", "threads.com", "pin.it", "dai.ly", "snapchat.com", "kick.com", "bsky.app", "9gag.com", "imgur.com", "tumblr.com", "audiomack.com", "mixcloud.com", "likee.video", "kwai.com", "douyin.com", "weibo.com", "bilibili.tv", "nicovideo.jp", "odysee.com", "bitchute.com", "rutube.ru", "loom.com", "ted.com", "coub.com", "vidio.com", "zee5.com", "mxplayer.in",
     )
 
     /**
@@ -283,6 +285,28 @@ object MediaChoice {
                 sizeHint = -1,
             )
         }
+
+    /** YouTube player clients tried when the normal one hits YouTube's bot check (see the yt-dlp bridges). */
+    val YOUTUBE_FALLBACK_CLIENTS = listOf("tv_embedded", "android_vr", "mweb", "ios", "tv_simply")
+
+    fun isKnownYouTube(url: String): Boolean {
+        val host = runCatching { URI(url.trim()).host?.lowercase() }.getOrNull() ?: return false
+        return host == "youtu.be" || host == "youtube.com" || host.endsWith(".youtube.com")
+    }
+
+    /** yt-dlp messages that another YouTube player client may get past. */
+    fun isBotCheck(message: String): Boolean {
+        val m = message.lowercase()
+        return "not a bot" in m || "sign in" in m || "page needs to be reloaded" in m || "requested format is not available" in m ||
+            "signed-in" in m || "signed in" in m
+    }
+
+    /** YouTube Music pages: the sound is what people want, so audio comes first. */
+    fun isMusicSite(url: String): Boolean {
+        val host = runCatching { URI(url.trim()).host?.lowercase() }.getOrNull() ?: return false
+        return host == "music.youtube.com" || host == "soundcloud.com" || host.endsWith(".soundcloud.com") ||
+            host.endsWith("bandcamp.com") || host == "audiomack.com" || host == "mixcloud.com" || host.endsWith(".mixcloud.com")
+    }
 
     /** [DownloadRequest.mediaFormat] for "just the sound" (playlists in audio-only mode). */
     const val AUDIO_ONLY = "audio-only"

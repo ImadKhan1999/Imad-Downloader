@@ -84,6 +84,9 @@ import java.util.Date
 
 // ------------------------------------------------------------------ add download
 
+const val YOUTUBE_SIGN_IN = "https://accounts.google.com/ServiceLogin?service=youtube&continue=https%3A%2F%2Fm.youtube.com%2F"
+
+
 @Composable
 fun AddDownloadSheet(
     engine: DownloadEngine,
@@ -91,6 +94,7 @@ fun AddDownloadSheet(
     onDismiss: () -> Unit,
     onAdded: (started: Boolean, count: Int) -> Unit,
     canStart: () -> Boolean,
+    onOpenInBrowser: (String) -> Unit = {},
 ) {
     var url by remember { mutableStateOf(initial.url) }
     var name by remember { mutableStateOf(initial.fileName ?: FileNames.fromUrl(initial.url)?.let(FileNames::sanitize).orEmpty()) }
@@ -145,7 +149,8 @@ fun AddDownloadSheet(
             m.onSuccess { info ->
                 val opts = com.imad.downloader.core.MediaChoice.options(info)
                 if (opts.isEmpty()) { if (!quiet) error = "No downloadable video found on this page"; return@onSuccess }
-                val pick = com.imad.downloader.core.MediaChoice.defaultOption(opts) ?: opts.first()
+                val pick = (if (MediaChoice.isMusicSite(url)) opts.firstOrNull { it.audioOnly } else null)
+                    ?: MediaChoice.defaultOption(opts) ?: opts.first()
                 media = info; mediaOptions = opts; mediaOption = pick; error = null
                 if (!nameEdited) name = com.imad.downloader.core.MediaChoice.safeTitle(info.title) + "." + pick.extension
             }.onFailure { if (!quiet) error = it.message ?: "Could not read this video page" }
@@ -245,6 +250,10 @@ fun AddDownloadSheet(
                 }
             }
             Spacer(Modifier.height(16.dp))
+            if (error?.contains("Sign in to YouTube") == true) {
+                // YouTube's bot check: one sign-in in the app's browser, then every download uses it.
+                FilledTonalButton({ onOpenInBrowser(YOUTUBE_SIGN_IN) }, Modifier.padding(top = 8.dp).testTag("youtube-sign-in")) { Text("Sign in to YouTube") }
+            }
             OutlinedTextField(url, { url = it.trim() }, Modifier.fillMaxWidth().testTag("url-field"), label = { Text("Link") }, singleLine = true, isError = url.isNotEmpty() && !valid)
             Spacer(Modifier.height(10.dp))
             val pl = playlist

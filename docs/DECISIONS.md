@@ -285,3 +285,28 @@ Imad asked for YouTube and other sites with quality choice, using yt-dlp if need
   upgrade id, the repository name and the extension protocol; the apps still accept the old
   names ("Hyper Downloader", "Imad Downloader") in the extension handshake and move the old
   Windows data folder and start-with-Windows entry over.
+
+## D-020 YouTube's bot check, mainstream apps, new icon (2026-10-26)
+
+- Imad pointed at ytdlnis (github.com/deniscerri/ytdlnis) for its 1000+ sites. ytdlnis gets them
+  from yt-dlp, which iDownloader already bundles in full on both apps, so every site it supports
+  works here too at no extra size. The quick-detection list (download button in the phone
+  browser, extension's "Download this video") gained Threads, Pinterest short links, Snapchat,
+  Bluesky, 9GAG, Imgur, Tumblr, Audiomack, Mixcloud, Kwai, Douyin, Bilibili, Odysee and more.
+  Checked on the PC with yt-dlp run like the phone (no JS runtime): TikTok, Instagram reel and
+  Facebook video read fine.
+- YouTube / YouTube Music "YouTube wants you signed in": that is YouTube's "confirm you're not a
+  bot" check for the network. Seen in testing: it can hit one YouTube player client and not
+  others, and at times every client for the address. So:
+  - both apps retry with other player clients (tv_embedded, android_vr, mweb, ios, tv_simply);
+  - Android now ships QuickJS-ng 0.17.0 (MIT, static build, about 2.5 MB per ABI, as libqjs.so)
+    and gives it to yt-dlp as its JavaScript runtime, which signed-in YouTube and most formats
+    need; it is only used if it runs on the phone;
+  - links shared from other apps use the in-app browser's cookies for that site, so one sign-in
+    to YouTube (or Instagram, Facebook, X) there carries over; the bot-check message has a
+    "Sign in to YouTube" button that opens Google's sign-in in the app's browser.
+- YouTube Music (and SoundCloud, Bandcamp, Audiomack, Mixcloud) pre-select audio only.
+- Icon: Imad's updated kit replaced the cube with a cloud and Cyber Mint download arrow plus the
+  ImadLabs quantum dot (Graphics repo apps/downloader). The kit's 1024 px icon and Android
+  adaptive layers are used as they are (copied to branding/imadlabs/downloader/).
+- Imad asked not to test the Android app this time, only to build it properly.
