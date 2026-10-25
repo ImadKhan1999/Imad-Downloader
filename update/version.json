@@ -1,19 +1,19 @@
 {
     "android":  {
-                    "version":  "1.4.1",
-                    "versionCode":  6,
-                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.4.1/HyperDownloader-1.4.1.apk",
-                    "sha256":  "b3c328cbac8f9c587a5766d806421616b66249731216c34c72effbf138496927",
+                    "version":  "1.5.0",
+                    "versionCode":  7,
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.5.0/HyperDownloader-1.5.0.apk",
+                    "sha256":  "6b00c7e3dd93475c21b9379e29d1798074077b521c776c2c3adff46582808d94",
                     "size":  41125140,
-                    "changelog":  "Android: the browser no longer goes blank and hides the search bar; YouTube downloads from the browser are more reliable (the app fetches the newest YouTube support when needed and picks 1080p by default).",
+                    "changelog":  "YouTube playlists: tick the videos you want and pick one quality (or audio only) for all of them. The download popup no longer shows connections; set the default in Settings.",
                     "mandatory":  false
                 },
     "windows":  {
-                    "version":  "1.4.1",
-                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.4.1/Hyper.Downloader-1.4.1.msi",
-                    "sha256":  "2592de6e364434b2d784eafd1ebad95a2a74f5966110825b4621177d8db0abfe",
-                    "size":  100783112,
-                    "changelog":  "Android: the browser no longer goes blank and hides the search bar; YouTube downloads from the browser are more reliable (the app fetches the newest YouTube support when needed and picks 1080p by default).",
+                    "version":  "1.5.0",
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.5.0/Hyper.Downloader-1.5.0.msi",
+                    "sha256":  "7a7d89924ba147c4b3d9d8737d44a32d658350b61282987e2a73bba5da13c9d8",
+                    "size":  100828168,
+                    "changelog":  "YouTube playlists: tick the videos you want and pick one quality (or audio only) for all of them. The download popup no longer shows connections; set the default in Settings.",
                     "mandatory":  false
                 }
 }
