@@ -1,19 +1,19 @@
 {
     "android":  {
-                    "version":  "1.7.1",
-                    "versionCode":  11,
-                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.7.1/iDownloader-1.7.1.apk",
-                    "sha256":  "965d9a6600a7581437d119ccff1e851348f22ca7a065b82fbbf3cf63b6b69a3e",
-                    "size":  27593167,
-                    "changelog":  "YouTube and YouTube Music: when YouTube asks to confirm you\u0027re not a bot, iDownloader tries other ways in and offers a one-time sign-in. Better TikTok, Instagram, Facebook, X and YouTube Music support, plus every site yt-dlp knows. New icon and the new ImadLabs logo.",
+                    "version":  "1.8.0",
+                    "versionCode":  12,
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.8.0/iDownloader-1.8.0.apk",
+                    "sha256":  "de732605637ffdeed3c2e6c09bc471e75c6c6a2dabe0cdf76d932699b54a428f",
+                    "size":  27934983,
+                    "changelog":  "New look with the Hyper Downloader logo and a startup animation on Android. Audio downloads keep their cover picture, title and artist, and there is now an MP3 option. iDownloader shows in the share menu of any app.",
                     "mandatory":  false
                 },
     "windows":  {
-                    "version":  "1.7.1",
-                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.7.1/iDownloader-1.7.1.msi",
-                    "sha256":  "0e26af3a595c42cd244d3cced4a8f59050dfea80561866368adff65dc8b966b3",
-                    "size":  100959240,
-                    "changelog":  "YouTube and YouTube Music: when YouTube asks to confirm you\u0027re not a bot, iDownloader tries other ways in and offers a one-time sign-in. Better TikTok, Instagram, Facebook, X and YouTube Music support, plus every site yt-dlp knows. New icon and the new ImadLabs logo.",
+                    "version":  "1.8.0",
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.8.0/iDownloader-1.8.0.msi",
+                    "sha256":  "00e71d69c5a27f7150428075782781a7254e9cbed524cdc87ff93ab1994007c9",
+                    "size":  101811256,
+                    "changelog":  "New look with the Hyper Downloader logo and a startup animation on Android. Audio downloads keep their cover picture, title and artist, and there is now an MP3 option. iDownloader shows in the share menu of any app.",
                     "mandatory":  false
                 }
 }
