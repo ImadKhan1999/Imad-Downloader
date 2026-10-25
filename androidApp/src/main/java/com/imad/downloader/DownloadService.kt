@@ -28,7 +28,7 @@ class DownloadService : LifecycleService() {
         if (!started) {
             started = true
             wakeLock = getSystemService(PowerManager::class.java)
-                .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "HyperDownloader:download")
+                .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "iDownloader:download")
                 .apply { setReferenceCounted(false); acquire(6 * 60 * 60 * 1000L) }
             lifecycleScope.launch { loop(app) }
         }

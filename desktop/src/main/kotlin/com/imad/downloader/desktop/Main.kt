@@ -49,10 +49,10 @@ fun main(args: Array<String>) {
         Tray(
             icon = painterResource("icons/tray.png"),
             state = tray,
-            tooltip = "Hyper Downloader",
+            tooltip = "iDownloader",
             onAction = { app.showWindow() },
             menu = {
-                Item("Open Hyper Downloader", onClick = { app.showWindow() })
+                Item("Open iDownloader", onClick = { app.showWindow() })
                 Item("Add URL...", onClick = { app.showWindow(); app.addUrlOpen = Platform.clipboardText().orEmpty() })
                 Separator()
                 Item(if (app.settings.speedLimitEnabled) "Turn speed limiter off" else "Turn speed limiter on", onClick = {
@@ -73,7 +73,7 @@ fun main(args: Array<String>) {
             onCloseRequest = { if (app.settings.minimizeToTray) app.windowVisible = false else quit() },
             visible = app.windowVisible,
             state = windowState,
-            title = "Hyper Downloader",
+            title = "iDownloader",
             icon = painterResource("icons/app.png"),
             onPreviewKeyEvent = { e ->
                 if (e.type != KeyEventType.KeyDown) return@Window false
@@ -184,7 +184,8 @@ private fun androidx.compose.ui.window.FrameWindowScope.AppMenuBar(app: AppState
         }
         Menu("Help", mnemonic = 'H') {
             Item("Connect browsers...", onClick = { app.browserSetupOpen = true })
-            Item("About Hyper Downloader", onClick = { app.aboutOpen = true })
+            Item("ImadLabs on Telegram", onClick = { Platform.browse(TELEGRAM_URL) })
+            Item("About iDownloader", onClick = { app.aboutOpen = true })
         }
     }
 }

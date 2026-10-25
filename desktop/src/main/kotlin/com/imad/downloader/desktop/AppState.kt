@@ -157,7 +157,7 @@ class AppState(
         onLinks = { l -> scope.launch { linksDialog = l; showWindow() } },
         onShow = { scope.launch { showWindow() } },
         ping = {
-            PingReply("Hyper Downloader", APP_VERSION, settings.browserIntegration, settings.clipboardTypeSet.toList())
+            PingReply("iDownloader", APP_VERSION, settings.browserIntegration, settings.clipboardTypeSet.toList())
         },
         onSeen = { family ->
             scope.launch {
@@ -168,6 +168,8 @@ class AppState(
     )
 
     var browserSetupOpen by mutableStateOf(false)
+    /** ImadLabs Telegram invite: shown each start until "Don't show this again" is ticked. */
+    var telegramOpen by mutableStateOf(!preview && !settings.telegramPromptOff)
     val browsers by lazy(detectBrowsers)
 
     fun start() {

@@ -67,12 +67,14 @@ fun AllDialogs(app: AppState) {
     if (app.aboutOpen) AboutDialog(app, theme)
     UpdateDialog(app)
     BrowserSetupDialog(app)
+    // Waits for the first-run browser window and any update window, so they never stack.
+    if (app.telegramOpen && !app.browserSetupOpen && !app.updateDialogOpen) TelegramDialog(app, theme)
     app.propertiesFor?.let { PropertiesDialog(app, it, theme) }
     app.linksDialog?.let { LinksDialog(app, it, theme) }
     app.confirmDelete?.let { ConfirmDeleteDialog(app, it, theme) }
     app.refreshAddressFor?.let { RefreshAddressDialog(app, it, theme) }
     app.message?.let { msg ->
-        AppDialog("Hyper Downloader", 420.dp, 180.dp, theme, { app.message = null }) {
+        AppDialog("iDownloader", 420.dp, 180.dp, theme, { app.message = null }) {
             Text(msg, fontSize = 14.sp, modifier = Modifier.weight(1f))
             ButtonRow { Button({ app.message = null }) { Text("OK") } }
         }
@@ -506,22 +508,53 @@ private fun LinksDialog(app: AppState, links: CapturedLinks, theme: ThemeMode) {
 
 @Composable
 private fun AboutDialog(app: AppState, theme: ThemeMode) {
-    AppDialog("About Hyper Downloader", 440.dp, 330.dp, theme, { app.aboutOpen = false }) {
+    AppDialog("About iDownloader", 440.dp, 330.dp, theme, { app.aboutOpen = false }) {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             Image(painterResource("icons/app.png"), null, Modifier.size(84.dp))
             VSpace(10.dp)
-            Text("Hyper Downloader", style = MaterialTheme.typography.titleLarge)
+            Text("iDownloader", style = MaterialTheme.typography.titleLarge)
             Text("Version $APP_VERSION", fontSize = 13.sp, color = LocalPalette.current.muted)
             VSpace(10.dp)
             Text("Fast multi-connection download manager for Windows and Android.", fontSize = 13.sp)
             Text("Browser extension port: ${app.integration.port.takeIf { it > 0 } ?: "not running"}", fontSize = 12.sp, color = LocalPalette.current.muted)
             Text("Data folder: ${AppDirs.data.path}", fontSize = 12.sp, color = LocalPalette.current.muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
             VSpace(4.dp)
-            Text("© 2026 Imad Khan", fontSize = 12.sp, color = LocalPalette.current.muted)
+            Text("© 2026 ImadLabs", fontSize = 12.sp, color = LocalPalette.current.muted)
         }
         Spacer(Modifier.weight(1f))
         ButtonRow {
+            OutlinedButton({ Platform.browse(TELEGRAM_URL) }) { Text("ImadLabs on Telegram") }
+            Spacer(Modifier.weight(1f))
             Button({ app.aboutOpen = false }) { Text("Close") }
+        }
+    }
+}
+
+const val TELEGRAM_URL = "https://t.me/ImadLabs"
+
+/** Invites people to the ImadLabs Telegram channel; shown at start until "Don't show this again". */
+@Composable
+private fun TelegramDialog(app: AppState, theme: ThemeMode) {
+    var never by remember { mutableStateOf(false) }
+    fun close() {
+        app.telegramOpen = false
+        if (never) app.updateSettings(app.settings.copy(telegramPromptOff = true))
+    }
+    AppDialog("ImadLabs", 460.dp, 360.dp, theme, ::close) {
+        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Image(painterResource("icons/imadlabs.png"), null, Modifier.size(84.dp))
+            VSpace(8.dp)
+            Text("Join ImadLabs on Telegram", style = MaterialTheme.typography.titleLarge)
+            VSpace(6.dp)
+            Text("Get iDownloader news, updates and new apps from ImadLabs first.", fontSize = 13.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            Text("t.me/ImadLabs", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+        }
+        Spacer(Modifier.weight(1f))
+        CheckRow("Don't show this again", never) { never = it }
+        ButtonRow {
+            Spacer(Modifier.weight(1f))
+            TextButton(::close) { Text("Not now") }
+            Button({ Platform.browse(TELEGRAM_URL); close() }) { Text("Join channel") }
         }
     }
 }

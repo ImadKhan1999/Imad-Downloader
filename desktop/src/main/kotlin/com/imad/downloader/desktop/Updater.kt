@@ -69,7 +69,7 @@ class DesktopUpdater(
         _state.value = UpdateState.Downloading(release, 0, release.size)
         job = scope.launch {
             _state.value = runCatching {
-                val dir = File(System.getProperty("java.io.tmpdir"), "HyperDownloaderUpdate")
+                val dir = File(System.getProperty("java.io.tmpdir"), "iDownloaderUpdate")
                 client.download(release, dir) { done, total -> _state.value = UpdateState.Downloading(release, done, total) }
             }.fold({ UpdateState.Ready(release, it) }, { UpdateState.Failed(it.message ?: "Download failed", release) })
         }
@@ -81,17 +81,17 @@ class DesktopUpdater(
             _state.value = UpdateState.Failed("Updates install only into the installed app. Run the downloaded installer: ${file.path}")
             return false
         }
-        val script = File(file.parentFile, "hyper-update.cmd")
+        val script = File(file.parentFile, "idownloader-update.cmd")
         script.writeText(
             """
             @echo off
-            rem Hyper Downloader update: wait for the app to close, upgrade, start it again.
+            rem iDownloader update: wait for the app to close, upgrade, start it again.
             timeout /t 2 /nobreak >nul
             msiexec /i "${file.path}" /passive /norestart
             start "" "$exe"
             """.trimIndent().replace("\n", "\r\n"),
         )
-        ProcessBuilder("cmd", "/c", "start", "HyperUpdate", "/min", script.path).start()
+        ProcessBuilder("cmd", "/c", "start", "iDownloaderUpdate", "/min", script.path).start()
         return true
     }
 }
@@ -102,7 +102,7 @@ fun UpdateDialog(app: AppState) {
     if (state == UpdateState.Idle || state == UpdateState.Checking && !app.updateDialogOpen) return
     if (!app.updateDialogOpen) return
     fun close() { app.updateDialogOpen = false; if (state !is UpdateState.Downloading) app.updater.reset() }
-    AppDialog("Hyper Downloader update", 480.dp, 330.dp, app.settings.theme, ::close) {
+    AppDialog("iDownloader update", 480.dp, 330.dp, app.settings.theme, ::close) {
         val release = when (val s = state) {
             is UpdateState.Available -> s.release
             is UpdateState.Downloading -> s.release
@@ -128,7 +128,7 @@ fun UpdateDialog(app: AppState) {
                             Text("Downloading ${s.percent}%  (${Format.bytes(s.done)} of ${Format.bytes(s.total)})", fontSize = 12.sp)
                         }
                         UpdateState.Verifying -> Text("Verifying...", fontSize = 12.sp)
-                        is UpdateState.Ready -> Text("Downloaded and verified. Hyper Downloader will close, update and open again.", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = LocalPalette.current.complete)
+                        is UpdateState.Ready -> Text("Downloaded and verified. iDownloader will close, update and open again.", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = LocalPalette.current.complete)
                         is UpdateState.Failed -> Text(s.reason, fontSize = 13.sp, color = LocalPalette.current.error)
                         else -> Unit
                     }

@@ -1,7 +1,7 @@
 // End-to-end test: real Windows app + real browser with the extension loaded.
 //
 //  1. Serves a test page and a 3 MB file from a local server (with byte ranges).
-//  2. Starts Hyper Downloader (gradlew :desktop:run) with a throwaway data folder.
+//  2. Starts iDownloader (gradlew :desktop:run) with a throwaway data folder.
 //  3. Opens Chromium with the unpacked extension and clicks the download link.
 //  4. Passes when the browser download was taken over and the app saved an identical file.
 //
@@ -90,7 +90,7 @@ async function waitFor(fn, ms, what) {
 
 try {
   stopIdm();
-  if (await ping()) throw new Error("Another Hyper Downloader is already running; close it first.");
+  if (await ping()) throw new Error("Another iDownloader is already running; close it first.");
   log("starting app...");
   // APP_EXE runs the packaged app instead of the Gradle dev build.
   const cmd = process.env.APP_EXE ? [process.env.APP_EXE, []] : ["cmd.exe", ["/d", "/c", path.join(root, "gradlew.bat"), ":desktop:run", "--console=plain", "-q"]];
@@ -139,7 +139,7 @@ try {
   if (browserDownloads.some((d) => d.url.includes("e2e-test.zip") && d.state === "complete")) {
     throw new Error("the browser also downloaded the file; capture did not cancel it");
   }
-  // Right-click "Download with Hyper Downloader" path: same function the context menu calls.
+  // Right-click "Download with iDownloader" path: same function the context menu calls.
   const sent = await worker.evaluate((a) => sendDownload({ url: a.url, referer: a.ref }), { url: `${base}/files/menu-pick.zip`, ref: `${base}/` });
   if (!sent) throw new Error("context menu hand-off failed");
   const menuTarget = path.join(saveDir, "menu-pick.zip");
@@ -150,7 +150,7 @@ try {
   log("context menu download saved with referer", menuItem.referer);
   const idm = idmRunning();
   if (idm.length) throw new Error("IDM started during the test: " + idm.join(", "));
-  log("PASS: browser download captured and completed by Hyper Downloader (IDM stayed closed)");
+  log("PASS: browser download captured and completed by iDownloader (IDM stayed closed)");
 } catch (e) {
   failed = true;
   console.error("[e2e] FAIL:", e.message);

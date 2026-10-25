@@ -141,7 +141,7 @@ fun DownloadsScreen(
                             Image(painterResource(R.drawable.logo), null, Modifier.size(30.dp).clip(RoundedCornerShape(8.dp)))
                             Spacer(Modifier.width(10.dp))
                             Column {
-                                Text("Hyper Downloader", fontWeight = FontWeight.SemiBold, fontSize = 19.sp)
+                                Text("iDownloader", fontWeight = FontWeight.SemiBold, fontSize = 19.sp)
                                 if (speed > 0) Text("↓ ${Format.speed(speed)}", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
                             }
                         }

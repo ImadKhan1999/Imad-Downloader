@@ -22,7 +22,7 @@
       button.classList.add("imad-dl-busy");
       const res = await ext.runtime.sendMessage({ type: "download-best", src, title: document.title });
       button.classList.remove("imad-dl-busy");
-      flash(res?.ok ? "Sent to Hyper Downloader" : res?.found === false ? "No video found yet - press play first" : "Hyper Downloader is not running");
+      flash(res?.ok ? "Sent to iDownloader" : res?.found === false ? "No video found yet - press play first" : "iDownloader is not running");
     });
     button.addEventListener("mouseenter", () => clearTimeout(hideTimer));
     button.addEventListener("mouseleave", scheduleHide);

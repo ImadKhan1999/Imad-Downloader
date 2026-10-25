@@ -46,9 +46,10 @@ data class Palette(
     val segmentActive: Color,
 )
 
-val Brand = Color(0xFF4F46E5)
-val BrandLight = Color(0xFF6366F1)
-val Accent = Color(0xFF06B6D4)
+// ImadLabs brand colours (Electric Cobalt, Sky Diamond, Cyber Mint) and its dark surfaces.
+val Brand = Color(0xFF0066FF)
+val BrandLight = Color(0xFF38BDF8)
+val Accent = Color(0xFF00F5A0)
 
 private val LightPalette = Palette(
     window = Color(0xFFF5F6FB),
@@ -57,35 +58,35 @@ private val LightPalette = Palette(
     sidebar = Color(0xFFFAFBFD),
     tableHeader = Color(0xFFEDF2F8),
     rowAlt = Color(0xFFF8FAFD),
-    rowSelected = Color(0xFFE0E3FF),
+    rowSelected = Color(0xFFDCEBFF),
     gridLine = Color(0xFFE3E8EF),
     progressTrack = Color(0xFFE1E7EF),
-    progress = Color(0xFF4F46E5),
-    complete = Color(0xFF2E9D4F),
-    error = Color(0xFFD32F2F),
-    paused = Color(0xFFE09B12),
-    muted = Color(0xFF6B7685),
-    segmentDone = Color(0xFF6366F1),
-    segmentActive = Color(0xFF06B6D4),
+    progress = Color(0xFF0066FF),
+    complete = Color(0xFF10B981),
+    error = Color(0xFFEF4444),
+    paused = Color(0xFFF59E0B),
+    muted = Color(0xFF64748B),
+    segmentDone = Color(0xFF0066FF),
+    segmentActive = Color(0xFF00C98A),
 )
 
 private val DarkPalette = Palette(
-    window = Color(0xFF1B1D21),
-    toolbar = Color(0xFF24272C),
-    toolbarBorder = Color(0xFF33373E),
-    sidebar = Color(0xFF202327),
-    tableHeader = Color(0xFF2A2E34),
-    rowAlt = Color(0xFF1F2226),
-    rowSelected = Color(0xFF2D2B63),
-    gridLine = Color(0xFF30343A),
-    progressTrack = Color(0xFF353A42),
-    progress = Color(0xFF818CF8),
-    complete = Color(0xFF4CC26D),
-    error = Color(0xFFF26B6B),
-    paused = Color(0xFFF0B43C),
-    muted = Color(0xFF9AA4B2),
-    segmentDone = Color(0xFF818CF8),
-    segmentActive = Color(0xFF22D3EE),
+    window = Color(0xFF070B14),
+    toolbar = Color(0xFF0B0F19),
+    toolbarBorder = Color(0xFF1E293B),
+    sidebar = Color(0xFF0B0F19),
+    tableHeader = Color(0xFF111827),
+    rowAlt = Color(0xFF0B0F19),
+    rowSelected = Color(0xFF162B4D),
+    gridLine = Color(0xFF1E293B),
+    progressTrack = Color(0xFF1E293B),
+    progress = Color(0xFF38BDF8),
+    complete = Color(0xFF10B981),
+    error = Color(0xFFEF4444),
+    paused = Color(0xFFF59E0B),
+    muted = Color(0xFF94A3B8),
+    segmentDone = Color(0xFF38BDF8),
+    segmentActive = Color(0xFF00F5A0),
 )
 
 val LocalPalette = staticCompositionLocalOf { LightPalette }
@@ -93,8 +94,8 @@ val LocalPalette = staticCompositionLocalOf { LightPalette }
 private val lightScheme: ColorScheme = lightColorScheme(
     primary = Brand,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFE0E3FF),
-    secondary = Color(0xFF4338CA),
+    primaryContainer = Color(0xFFDCEBFF),
+    secondary = Color(0xFF0058DB),
     tertiary = Accent,
     background = LightPalette.window,
     surface = Color.White,
@@ -104,15 +105,17 @@ private val lightScheme: ColorScheme = lightColorScheme(
 )
 
 private val darkScheme: ColorScheme = darkColorScheme(
-    primary = Color(0xFFA5B4FC),
-    onPrimary = Color(0xFF1E1B4B),
-    primaryContainer = Color(0xFF312E81),
-    secondary = Color(0xFFA5B4FC),
+    primary = Color(0xFF38BDF8),
+    onPrimary = Color(0xFF041322),
+    primaryContainer = Color(0xFF0B2A52),
+    secondary = Color(0xFF38BDF8),
     tertiary = Accent,
     background = DarkPalette.window,
-    surface = Color(0xFF25282D),
-    surfaceVariant = Color(0xFF2C3036),
-    outline = Color(0xFF4A505A),
+    surface = Color(0xFF111827),
+    surfaceVariant = Color(0xFF162032),
+    outline = Color(0xFF334155),
+    onSurface = Color(0xFFF8FAFC),
+    onSurfaceVariant = Color(0xFF94A3B8),
     error = DarkPalette.error,
 )
 

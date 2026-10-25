@@ -13,6 +13,8 @@
 | 9. v1.4.0: renamed to Hyper Downloader, new logo, icons and colours | Done 2026-10-15 |
 | 10. v1.4.1: Android browser blank screen fixed, sturdier YouTube | Done 2026-10-23 |
 | 11. v1.5.0: YouTube playlists (tick videos, one quality), no connections in the popup | Done 2026-10-25 |
+| 12. v1.5.1: update prompt at startup and every few hours | Done 2026-10-25 |
+| 13. v1.6.0: renamed to iDownloader by ImadLabs, ImadLabs icon and colours, Telegram invite | Done 2026-10-26 |
 
 ## Log
 

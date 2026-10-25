@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><rect width="100%" height="100%" fill="#070B14" rx="224"/><rect x="12" y="12" width="1000" height="1000" rx="214" fill="none" stroke="#1E293B" stroke-width="4"/>
+    <g transform="translate(180, 160) scale(3.2)">
+        <polygon points="100,20 180,66 100,112 20,66" fill="#38BDF8"/>
+        <polygon points="20,74 100,120 100,212 20,166" fill="#0284C7"/>
+        <polygon points="100,120 180,74 180,166 100,212" fill="#0066FF"/>
+        <!-- Triple Acceleration Turbo Chevrons -->
+        <path d="M 80 55 L 100 75 L 120 55" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none"/>
+        <path d="M 80 75 L 100 95 L 120 75" stroke="#00FFC2" stroke-width="6" stroke-linecap="round" fill="none"/>
+        <path d="M 100 120 L 100 182 L 152 152" stroke="#00F5A0" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </g>
+    </svg>

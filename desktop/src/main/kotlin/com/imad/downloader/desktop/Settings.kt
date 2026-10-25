@@ -7,24 +7,24 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File
 
-/** Where the Windows app keeps its data: %APPDATA%\Hyper Downloader. */
+/** Where the Windows app keeps its data: %APPDATA%\iDownloader. */
 object AppDirs {
     val data: File by lazy {
         // IMAD_DATA_DIR lets end-to-end tests run against a throwaway profile.
         System.getenv("IMAD_DATA_DIR")?.let { return@lazy File(it).apply { mkdirs() } }
         val base = System.getenv("APPDATA")?.let(::File) ?: File(System.getProperty("user.home"), ".config")
-        val dir = File(base, "Hyper Downloader")
-        // Moves settings, the download list and tools over from the name used before the rename.
-        val old = File(base, "Imad Downloader")
-        if (!dir.exists() && old.isDirectory) runCatching { old.renameTo(dir) }
+        val dir = File(base, "iDownloader")
+        // Moves settings, the download list and tools over from the names used before the renames.
+        val old = listOf("Hyper Downloader", "Imad Downloader").map { File(base, it) }.firstOrNull { it.isDirectory }
+        if (!dir.exists() && old != null) runCatching { old.renameTo(dir) }
         dir.apply { mkdirs() }
     }
     val settingsFile get() = File(data, "settings.json")
     val downloadsFile get() = File(data, "downloads.json")
-    val logFile get() = File(data, "hyper-downloader.log")
+    val logFile get() = File(data, "idownloader.log")
 
     val defaultDownloads: String by lazy {
-        File(System.getProperty("user.home"), "Downloads/Hyper Downloader").path
+        File(System.getProperty("user.home"), "Downloads/iDownloader").path
     }
 }
 
@@ -32,7 +32,7 @@ enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
 enum class CompletionAction(val label: String) {
     NOTHING("Do nothing"),
-    EXIT("Exit Hyper Downloader"),
+    EXIT("Exit iDownloader"),
     SLEEP("Put computer to sleep"),
     SHUTDOWN("Shut down computer"),
 }
@@ -65,6 +65,8 @@ data class DesktopSettings(
     /** Browser id (chrome, edge, firefox, ...) -> last time its extension talked to the app. */
     val connectedBrowsers: Map<String, Long> = emptyMap(),
     val browserSetupShown: Boolean = false,
+    /** "Don't show this again" was ticked on the ImadLabs Telegram popup. */
+    val telegramPromptOff: Boolean = false,
     val lastUpdateCheck: Long = 0,
     /** Browser whose cookies yt-dlp may read ("firefox", "edge", "chrome", "brave"), empty = none. */
     val videoCookiesBrowser: String = "",

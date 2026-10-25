@@ -64,7 +64,7 @@ class YtDlpTool(
         }
     }
 
-    private fun get(url: String) = http.newCall(Request.Builder().url(url).header("User-Agent", "HyperDownloader").build()).execute().also {
+    private fun get(url: String) = http.newCall(Request.Builder().url(url).header("User-Agent", "iDownloader").build()).execute().also {
         if (!it.isSuccessful) { it.close(); throw IOException("Download of yt-dlp failed (${it.code})") }
     }
 

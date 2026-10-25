@@ -86,10 +86,19 @@ class AppUiTest {
     @Before fun setUp() {
         server = MiniServer()
         app.engine.downloads.forEach { app.engine.remove(it.id, deleteFile = true) }
-        app.settings.update { it.copy(askBeforeDownload = true, clipboardMonitor = false, wifiOnly = false, autoUpdate = false) }
+        app.settings.update { it.copy(askBeforeDownload = true, clipboardMonitor = false, wifiOnly = false, autoUpdate = false, telegramPromptOff = true) }
     }
 
     @After fun tearDown() = server.close()
+
+    @Test fun telegramInviteCanBeTurnedOff() {
+        compose.runOnUiThread { app.settings.update { it.copy(telegramPromptOff = false) } }
+        compose.waitUntilAtLeastOneExists(hasText("Join ImadLabs on Telegram"), 10_000)
+        compose.onNodeWithTag("telegram-never").performClick()
+        compose.onNodeWithTag("telegram-close").performClick()
+        compose.waitUntil(5_000) { app.settings.value.telegramPromptOff }
+        compose.waitUntilDoesNotExist(hasText("Join ImadLabs on Telegram"), 5_000)
+    }
 
     @Test fun downloadAppearsInListAndCompletes() {
         server.routes["/files/report.pdf"] = MiniServer.Route(MiniServer.content(600_000), "application/pdf")

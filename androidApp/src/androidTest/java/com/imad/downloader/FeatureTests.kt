@@ -48,7 +48,7 @@ class FeatureTests {
         dir = File(compose.activity.cacheDir, "feature-test").apply { deleteRecursively(); mkdirs() }
         app.engine.downloads.forEach { app.engine.remove(it.id, deleteFile = true) }
         app.engine.queues.filter { it.id != "main" }.forEach { app.engine.removeQueue(it.id) }
-        app.settings.update { it.copy(askBeforeDownload = true, clipboardMonitor = false, wifiOnly = false, autoUpdate = false, saveDir = dir.path, categoryFolders = false) }
+        app.settings.update { it.copy(askBeforeDownload = true, clipboardMonitor = false, wifiOnly = false, autoUpdate = false, telegramPromptOff = true, saveDir = dir.path, categoryFolders = false) }
     }
 
     @After fun tearDown() { server.close() }

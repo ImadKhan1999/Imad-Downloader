@@ -1,7 +1,7 @@
-// Hyper Downloader browser integration (Manifest V3 service worker).
+// iDownloader browser integration (Manifest V3 service worker).
 //
 // - Takes over browser downloads of the file types the app is configured for.
-// - Adds "Download with Hyper Downloader" to the right-click menu.
+// - Adds "Download with iDownloader" to the right-click menu.
 // - Sniffs video/audio streams per tab (mp4, webm, m3u8 ...) for the popup and the
 //   "Download this video" button the content script shows over players.
 
@@ -44,8 +44,8 @@ async function call(path, body) {
       });
       if (!res.ok) continue;
       const json = await res.json();
-      // "Imad Downloader" is what the app answered before the rename.
-      if (path === "/api/ping" && json.app !== "Hyper Downloader" && json.app !== "Imad Downloader") continue;
+      // "Hyper Downloader" and "Imad Downloader" are what the app answered before the renames.
+      if (path === "/api/ping" && !["iDownloader", "Hyper Downloader", "Imad Downloader"].includes(json.app)) continue;
       appPort = port;
       return json;
     } catch (e) {
@@ -58,7 +58,7 @@ async function call(path, body) {
 
 async function ping() {
   appInfo = await call("/api/ping");
-  await ext.action.setBadgeBackgroundColor({ color: appInfo ? "#4F46E5" : "#9E9E9E" });
+  await ext.action.setBadgeBackgroundColor({ color: appInfo ? "#0066FF" : "#9E9E9E" });
   return appInfo;
 }
 
@@ -142,11 +142,11 @@ ext.downloads.onCreated.addListener(async (item) => {
 
 function buildMenus() {
   ext.contextMenus.removeAll(() => {
-    ext.contextMenus.create({ id: "imad-link", title: "Download with Hyper Downloader", contexts: ["link"] });
-    ext.contextMenus.create({ id: "imad-media", title: "Download this media with Hyper Downloader", contexts: ["video", "audio", "image"] });
+    ext.contextMenus.create({ id: "imad-link", title: "Download with iDownloader", contexts: ["link"] });
+    ext.contextMenus.create({ id: "imad-media", title: "Download this media with iDownloader", contexts: ["video", "audio", "image"] });
     ext.contextMenus.create({ id: "imad-page-video", title: "Download video from this page", contexts: ["page", "video"] });
-    ext.contextMenus.create({ id: "imad-all", title: "Download all links with Hyper Downloader", contexts: ["page"] });
-    ext.contextMenus.create({ id: "imad-selection", title: "Download selected links with Hyper Downloader", contexts: ["selection"] });
+    ext.contextMenus.create({ id: "imad-all", title: "Download all links with iDownloader", contexts: ["page"] });
+    ext.contextMenus.create({ id: "imad-selection", title: "Download selected links with iDownloader", contexts: ["selection"] });
   });
 }
 

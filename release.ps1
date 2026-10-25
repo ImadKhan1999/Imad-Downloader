@@ -1,5 +1,5 @@
 <#
-  Builds, tests and publishes a Hyper Downloader release, then points the in-app updaters at it.
+  Builds, tests and publishes an iDownloader release, then points the in-app updaters at it.
 
     powershell -ExecutionPolicy Bypass -File release.ps1 -Changelog "What changed"
 
@@ -50,7 +50,7 @@ $tasks = @(":core:test", ":desktop:test", ":androidApp:testDebugUnitTest") | Whe
 $tasks = @($tasks) + @(":desktop:packageMsi", ":desktop:packageExe", ":desktop:createDistributable", ":androidApp:assembleRelease")
 if (-not $SkipDeviceTests) { $tasks += ":androidApp:connectedDebugAndroidTest", "-Pandroid.testInstrumentationRunnerArguments.realNetwork=true" }
 Step "Gradle tests and builds" { & .\gradlew.bat @tasks --console=plain }
-$exe = "desktop\build\compose\binaries\main\app\Hyper Downloader\Hyper Downloader.exe"
+$exe = "desktop\build\compose\binaries\main\app\iDownloader\iDownloader.exe"
 # Chrome for Testing (accepts unpacked extensions) and a Firefox copy, both kept in E:\TestTools.
 if (-not $SkipTests) {
 $env:APP_EXE = (Resolve-Path $exe).Path
@@ -64,9 +64,9 @@ Step "Installed app HTTPS smoke test" { powershell -NoProfile -ExecutionPolicy B
 # ---------------------------------------------------------------- release files
 New-Item -ItemType Directory -Force dist | Out-Null
 Get-ChildItem dist -File | ForEach-Object { [IO.File]::Delete($_.FullName) }
-$msiName = "Hyper.Downloader-$version.msi"; $exeName = "Hyper.Downloader-$version.exe"; $apkName = "HyperDownloader-$version.apk"; $zipNames = "hyper-downloader-chromium-$version.zip", "hyper-downloader-firefox-$version.zip"
-Copy-Item "desktop\build\compose\binaries\main\msi\Hyper Downloader-$version.msi" "dist\$msiName"
-Copy-Item "desktop\build\compose\binaries\main\exe\Hyper Downloader-$version.exe" "dist\$exeName"
+$msiName = "iDownloader-$version.msi"; $exeName = "iDownloader-$version.exe"; $apkName = "iDownloader-$version.apk"; $zipNames = "idownloader-chromium-$version.zip", "idownloader-firefox-$version.zip"
+Copy-Item "desktop\build\compose\binaries\main\msi\iDownloader-$version.msi" "dist\$msiName"
+Copy-Item "desktop\build\compose\binaries\main\exe\iDownloader-$version.exe" "dist\$exeName"
 Copy-Item "androidApp\build\outputs\apk\release\androidApp-release.apk" "dist\$apkName"
 # extension\build.mjs (run by the Gradle build) makes the store-ready zip for each browser family.
 foreach ($z in $zipNames) { Copy-Item "extension\dist\$z" "dist\$z" }
@@ -77,8 +77,8 @@ $cred = cmd /c "git credential fill < `"$tmp`""; [IO.File]::Delete($tmp)
 $token = ($cred | Where-Object { $_ -like "password=*" }) -replace '^password=', ''
 if (-not $token) { throw "No GitHub credentials in Git's credential manager" }
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$h = @{ Authorization = "Bearer $token"; Accept = "application/vnd.github+json"; "User-Agent" = "hyper-release" }
-$body = @{ tag_name = "v$version"; target_commitish = "main"; name = "Hyper Downloader $version"; body = $Changelog } | ConvertTo-Json
+$h = @{ Authorization = "Bearer $token"; Accept = "application/vnd.github+json"; "User-Agent" = "idownloader-release" }
+$body = @{ tag_name = "v$version"; target_commitish = "main"; name = "iDownloader $version"; body = $Changelog } | ConvertTo-Json
 # A release left over from an interrupted run is reused (its files are replaced below).
 $rel = try { Invoke-RestMethod -Headers $h "https://api.github.com/repos/$repo/releases/tags/v$version" } catch { $null }
 if (-not $rel) { $rel = Invoke-RestMethod -Method Post -Headers $h -ContentType "application/json" -Body $body "https://api.github.com/repos/$repo/releases" }

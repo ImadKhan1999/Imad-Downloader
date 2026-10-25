@@ -117,9 +117,12 @@ fun SettingsScreen(repo: SettingsRepository, browserData: BrowserData) {
                 Image(painterResource(R.drawable.logo), null, Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)))
                 Spacer(Modifier.width(14.dp))
                 Column {
-                    Text("Hyper Downloader ${BuildConfig.VERSION_NAME}", fontWeight = FontWeight.SemiBold)
-                    Text("Multi-connection downloader with built-in browser", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("iDownloader ${BuildConfig.VERSION_NAME}", fontWeight = FontWeight.SemiBold)
+                    Text("by ImadLabs", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
+            }
+            Item("ImadLabs on Telegram", TELEGRAM_URL.removePrefix("https://")) {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(TELEGRAM_URL)))
             }
             Spacer(Modifier.height(24.dp))
         }
@@ -133,7 +136,7 @@ fun SettingsScreen(repo: SettingsRepository, browserData: BrowserData) {
             text = {
                 Column {
                     OutlinedTextField(path, { path = it }, singleLine = false)
-                    TextButton({ path = AppSettings.defaultSaveDir() }) { Text("Use Download/Hyper Downloader") }
+                    TextButton({ path = AppSettings.defaultSaveDir() }) { Text("Use Download/iDownloader") }
                     TextButton({ path = context.getExternalFilesDir(null)?.path ?: path }) { Text("Use app storage (hidden from gallery)") }
                 }
             },

@@ -22,22 +22,23 @@ import androidx.core.view.WindowCompat
 import com.imad.downloader.ThemeMode
 import com.imad.downloader.core.Category
 
-val Brand = Color(0xFF4F46E5)
-val BrandBright = Color(0xFF6366F1)
-val Success = Color(0xFF2E9D4F)
-val Warning = Color(0xFFE09B12)
-val Danger = Color(0xFFD32F2F)
+// ImadLabs brand colours (Electric Cobalt, Sky Diamond, Cyber Mint) and its dark surfaces.
+val Brand = Color(0xFF0066FF)
+val BrandBright = Color(0xFF38BDF8)
+val Success = Color(0xFF10B981)
+val Warning = Color(0xFFF59E0B)
+val Danger = Color(0xFFEF4444)
 
 private val Light = lightColorScheme(
     primary = Brand,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFE0E3FF),
-    onPrimaryContainer = Color(0xFF1E1B4B),
-    secondary = Color(0xFF4338CA),
-    secondaryContainer = Color(0xFFE0E7FF),
-    tertiary = Color(0xFF06B6D4),
-    background = Color(0xFFF5F7FA),
-    surface = Color(0xFFF5F7FA),
+    primaryContainer = Color(0xFFDCEBFF),
+    onPrimaryContainer = Color(0xFF0B1930),
+    secondary = Color(0xFF0058DB),
+    secondaryContainer = Color(0xFFDCEBFF),
+    tertiary = Color(0xFF00B377),
+    background = Color(0xFFF6F8FB),
+    surface = Color(0xFFF6F8FB),
     surfaceContainer = Color(0xFFFFFFFF),
     surfaceContainerLow = Color(0xFFFFFFFF),
     surfaceContainerHigh = Color(0xFFEEF2F7),
@@ -47,20 +48,23 @@ private val Light = lightColorScheme(
 )
 
 private val Dark = darkColorScheme(
-    primary = Color(0xFFA5B4FC),
-    onPrimary = Color(0xFF1E1B4B),
-    primaryContainer = Color(0xFF312E81),
-    onPrimaryContainer = Color(0xFFE0E3FF),
-    secondary = Color(0xFFA5B4FC),
-    tertiary = Color(0xFF22D3EE),
-    background = Color(0xFF111316),
-    surface = Color(0xFF111316),
-    surfaceContainer = Color(0xFF1B1E22),
-    surfaceContainerLow = Color(0xFF181B1F),
-    surfaceContainerHigh = Color(0xFF23272C),
-    surfaceVariant = Color(0xFF2A2E34),
-    outlineVariant = Color(0xFF33383F),
-    error = Color(0xFFF26B6B),
+    primary = Color(0xFF38BDF8),
+    onPrimary = Color(0xFF041322),
+    primaryContainer = Color(0xFF0B2A52),
+    onPrimaryContainer = Color(0xFFDCEBFF),
+    secondary = Color(0xFF38BDF8),
+    secondaryContainer = Color(0xFF162032),
+    tertiary = Color(0xFF00F5A0),
+    background = Color(0xFF070B14),
+    surface = Color(0xFF070B14),
+    surfaceContainer = Color(0xFF0B0F19),
+    surfaceContainerLow = Color(0xFF0B0F19),
+    surfaceContainerHigh = Color(0xFF111827),
+    surfaceVariant = Color(0xFF162032),
+    outlineVariant = Color(0xFF1E293B),
+    onSurface = Color(0xFFF8FAFC),
+    onSurfaceVariant = Color(0xFF94A3B8),
+    error = Color(0xFFEF4444),
 )
 
 @Composable

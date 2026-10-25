@@ -74,7 +74,7 @@ private enum class OptionsPage(val title: String, val icon: ImageVector) {
 fun OptionsDialog(app: AppState) {
     var s by remember { mutableStateOf(app.settings) }
     var page by remember { mutableStateOf(OptionsPage.GENERAL) }
-    AppDialog("Hyper Downloader Configuration", 820.dp, 600.dp, app.settings.theme, { app.optionsOpen = false }) {
+    AppDialog("iDownloader Configuration", 820.dp, 600.dp, app.settings.theme, { app.optionsOpen = false }) {
         Row(Modifier.weight(1f)) {
             Column(Modifier.width(190.dp).fillMaxHeight()) {
                 OptionsPage.entries.forEach { pg ->
@@ -96,7 +96,7 @@ fun OptionsDialog(app: AppState) {
                 SectionTitle(page.title)
                 when (page) {
                     OptionsPage.GENERAL -> {
-                        CheckRow("Launch Hyper Downloader when Windows starts", s.launchOnStartup) { s = s.copy(launchOnStartup = it) }
+                        CheckRow("Launch iDownloader when Windows starts", s.launchOnStartup) { s = s.copy(launchOnStartup = it) }
                         CheckRow("Keep running in the system tray when the window is closed", s.minimizeToTray) { s = s.copy(minimizeToTray = it) }
                         CheckRow("Watch the clipboard for download links", s.monitorClipboard) { s = s.copy(monitorClipboard = it) }
                         CheckRow("Show the file info dialog before downloading", s.showStartDialog) { s = s.copy(showStartDialog = it) }

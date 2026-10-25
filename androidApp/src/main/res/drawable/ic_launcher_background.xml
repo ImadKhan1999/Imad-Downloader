@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- ImadLabs Deep Void tile behind the adaptive icon. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <gradient android:angle="315" android:startColor="#7C3AED" android:centerColor="#2563EB" android:endColor="#06B6D4" />
+    <solid android:color="#070B14" />
 </shape>

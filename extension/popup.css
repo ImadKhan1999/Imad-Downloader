@@ -3,12 +3,12 @@
   --fg: #1d2430;
   --muted: #6b7685;
   --line: #e3e8ef;
-  --brand: #4f46e5;
+  --brand: #0066ff;
   --ok: #2e9d4f;
   --bad: #d32f2f;
 }
 @media (prefers-color-scheme: dark) {
-  :root { --bg: #1f2226; --fg: #e8ebef; --muted: #9aa4b2; --line: #33373e; --brand: #a5b4fc; }
+  :root { --bg: #1f2226; --fg: #e8ebef; --muted: #9aa4b2; --line: #33373e; --brand: #38bdf8; }
 }
 body {
   margin: 0;

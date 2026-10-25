@@ -1,133 +1,141 @@
-"""Renders the Hyper Downloader logo into every size the apps, the extension and the docs need.
+"""Renders the iDownloader icon (ImadLabs HexaCore style) into every size the apps, the extension
+and the docs need.
 
 Run from the repo root:  python branding/make_logo.py
-The mark is a lightning bolt that ends in a download arrow, with speed lines, on a
-violet -> blue -> cyan gradient. Also writes the vector versions (branding/logo.svg and the
-Android notification/monochrome icon) from the same points, so every copy matches.
+The icon is the downloader icon from Imad's ImadLabs brand kit (github.com/ImadKhan1999/Graphics,
+apps/hyper-downloader/...-master-icon.svg): an isometric cube (sky, cyan and cobalt facets) with
+two download chevrons on top and the Cyber Mint "L" pathway, on the Deep Void tile. It is drawn
+here from the same coordinates so every size, the adaptive foreground and the notification icon
+match. The banner also uses the ImadLabs logo from branding/imadlabs/.
 """
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
-S = 1024  # master size; everything is drawn at 4x and scaled down for smooth edges
-SS = 4
+S = 1024
+SS = 4  # drawn at 4x and scaled down for smooth edges
 
-STOPS = [(0.0, (0x7C, 0x3A, 0xED)), (0.55, (0x25, 0x63, 0xEB)), (1.0, (0x06, 0xB6, 0xD4))]  # violet, blue, cyan
-DX = 26  # shifts the bolt right so bolt + speed lines sit centred
-BOLT = [(560, 140), (340, 510), (480, 510), (400, 690), (300, 690), (512, 890),
-        (724, 690), (600, 690), (700, 440), (560, 440), (680, 140)]
-BOLT = [(x + DX, y) for x, y in BOLT]
-SPEED = [(290, 250, 420), (370, 190, 380), (450, 240, 340)]  # (y, x0, x1), 28 px thick
+BG = (0x07, 0x0B, 0x14)        # Deep Void
+BORDER = (0x1E, 0x29, 0x3B)
+TOP = (0x38, 0xBD, 0xF8)       # Sky Diamond facet
+LEFT = (0x02, 0x84, 0xC7)      # Deep Cyan-Blue facet
+RIGHT = (0x00, 0x66, 0xFF)     # Electric Cobalt facet
+WHITE = (0xFF, 0xFF, 0xFF)
+DOT = (0x00, 0xFF, 0xC2)       # Quantum Dot
+MINT = (0x00, 0xF5, 0xA0)      # Cyber Mint "L"
 
-
-def lerp(a, b, t):
-    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
-
-
-def gradient(n=256):
-    img = Image.new("RGB", (n, n))
-    px = img.load()
-    for y in range(n):
-        for x in range(n):
-            t = (x * 0.35 + y * 0.65) / (n - 1)
-            for (a, ca), (b, cb) in zip(STOPS, STOPS[1:]):
-                if t <= b:
-                    px[x, y] = lerp(ca, cb, (t - a) / (b - a))
-                    break
-    return img
+# Brand-kit geometry (200x232 box), placed with translate(180,160) scale(3.2) on a 1024 tile.
+FACETS = [
+    ([(100, 20), (180, 66), (100, 112), (20, 66)], TOP),
+    ([(20, 74), (100, 120), (100, 212), (20, 166)], LEFT),
+    ([(100, 120), (180, 74), (180, 166), (100, 212)], RIGHT),
+]
+STROKES = [  # (points, colour, width)
+    ([(80, 55), (100, 75), (120, 55)], WHITE, 6),
+    ([(80, 75), (100, 95), (120, 75)], DOT, 6),
+    ([(100, 120), (100, 182), (152, 152)], MINT, 14),
+]
 
 
-def glyph(draw, size, color=(255, 255, 255, 255), lines=True):
-    u = size / 1024
-    if lines:
-        for y, x0, x1 in SPEED:
-            draw.rounded_rectangle([x0 * u, (y - 14) * u, x1 * u, (y + 14) * u], radius=14 * u, fill=color[:3] + (175,))
-    draw.polygon([(x * u, y * u) for x, y in BOLT], fill=color)
-
-
-def rounded_mask(big, radius=0.22):
-    mask = Image.new("L", (big, big), 0)
-    ImageDraw.Draw(mask).rounded_rectangle([0, 0, big - 1, big - 1], radius=int(big * radius), fill=255)
-    return mask
+def draw_mark(img, ox, oy, scale):
+    d = ImageDraw.Draw(img, "RGBA")
+    def p(x, y):
+        return (ox + x * scale, oy + y * scale)
+    for pts, col in FACETS:
+        d.polygon([p(*q) for q in pts], fill=col)
+    for pts, col, w in STROKES:
+        ww = w * scale
+        d.line([p(*q) for q in pts], fill=col, width=int(ww), joint="curve")
+        for q in (pts[0], pts[-1]):  # round caps
+            x, y = p(*q)
+            d.ellipse([x - ww / 2, y - ww / 2, x + ww / 2, y + ww / 2], fill=col)
 
 
 def master():
     big = S * SS
-    mask = rounded_mask(big)
     img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
-    img.paste(gradient().resize((big, big), Image.BICUBIC), (0, 0), mask)
-    glow = Image.new("RGBA", (big, big), (0, 0, 0, 0))
-    ImageDraw.Draw(glow).polygon([(x * big / 1024, y * big / 1024) for x, y in BOLT], fill=(255, 255, 255, 140))
-    glow = glow.filter(ImageFilter.GaussianBlur(80))
-    img = Image.alpha_composite(img, Image.composite(glow, Image.new("RGBA", (big, big), (0, 0, 0, 0)), mask))
-    glyph(ImageDraw.Draw(img, "RGBA"), big)
+    d = ImageDraw.Draw(img)
+    d.rounded_rectangle([0, 0, big - 1, big - 1], radius=224 * SS, fill=BG)
+    d.rounded_rectangle([12 * SS, 12 * SS, (1012) * SS, (1012) * SS], radius=214 * SS, outline=BORDER, width=4 * SS)
+    draw_mark(img, 180 * SS, 160 * SS, 3.2 * SS)
     return img.resize((S, S), Image.LANCZOS)
 
 
 def foreground():
-    """Android adaptive icon foreground: glyph only, inside the 66% safe zone."""
+    """Android adaptive icon foreground: the cube alone inside the 66% safe zone."""
     big = S * SS
-    inner = Image.new("RGBA", (big, big), (0, 0, 0, 0))
-    glyph(ImageDraw.Draw(inner, "RGBA"), big)
-    scaled = inner.resize((int(big * 0.62), int(big * 0.62)), Image.LANCZOS)
     img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
-    off = (big - scaled.width) // 2
-    img.paste(scaled, (off, off), scaled)
+    scale = 2.2 * SS  # the 200x232 mark becomes ~440x510 of 1024
+    draw_mark(img, (big - 200 * scale) / 2, (big - 212 * scale) / 2 - 10 * scale, scale)
     return img.resize((S, S), Image.LANCZOS)
 
 
-def font(size, bold=True):
-    for name in (["segoeuib.ttf", "seguisb.ttf"] if bold else ["segoeui.ttf"]):
-        p = Path("C:/Windows/Fonts") / name
-        if p.exists():
-            return ImageFont.truetype(str(p), size)
+def font(size, weight="bold"):
+    names = {"bold": ["segoeuib.ttf"], "regular": ["segoeui.ttf"], "light": ["segoeuil.ttf", "segoeui.ttf"]}[weight]
+    for name in names:
+        f = Path("C:/Windows/Fonts") / name
+        if f.exists():
+            return ImageFont.truetype(str(f), size)
     return ImageFont.load_default()
 
 
 def banner(logo):
-    """Wide image for the README and store listings: logo + name + tagline."""
+    """Wide image for the README and store pages: icon, name, tagline and the ImadLabs logo."""
     w, h = 1600, 500
-    bg = gradient().resize((w, h), Image.BICUBIC).convert("RGBA")
-    img = Image.alpha_composite(bg, Image.new("RGBA", (w, h), (0x0B, 0x0C, 0x24, 200)))
+    img = Image.new("RGBA", (w, h), BG + (255,))
+    glow = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    gd = ImageDraw.Draw(glow)
+    gd.ellipse([260 - 300, 250 - 300, 260 + 300, 250 + 300], fill=(0x00, 0x66, 0xFF, 70))
+    img = Image.alpha_composite(img, glow.filter(ImageFilter.GaussianBlur(120)))
     mark = logo.resize((300, 300), Image.LANCZOS)
     img.paste(mark, (110, 100), mark)
     d = ImageDraw.Draw(img)
-    d.text((470, 135), "Hyper Downloader", font=font(120), fill=(255, 255, 255, 255))
-    d.text((476, 290), "Fast downloads, videos in any quality.", font=font(48, bold=False), fill=(0xC7, 0xD2, 0xFE, 255))
-    d.text((476, 355), "Windows  \u2022  Android  \u2022  Chrome, Edge, Firefox", font=font(40, bold=False), fill=(0x67, 0xE8, 0xF9, 255))
+    d.text((470, 120), "iDownloader", font=font(124), fill=(0xF8, 0xFA, 0xFC, 255))
+    d.text((476, 285), "Fast downloads, videos and playlists in any quality.", font=font(42, "regular"), fill=(0x94, 0xA3, 0xB8, 255))
+    d.text((476, 345), "Windows  \u2022  Android  \u2022  Chrome, Edge, Firefox", font=font(36, "regular"), fill=MINT + (255,))
+    brand = ROOT / "branding/imadlabs/imadlabs-logo-horizontal-transparent.png"
+    if brand.exists():
+        b = Image.open(brand).convert("RGBA")
+        b = b.crop(b.getbbox())
+        b = b.resize((int(b.width * 70 / b.height), 70), Image.LANCZOS)
+        x, y = w - b.width - 60, h - b.height - 40
+        d.text((x - 52, y + 18), "by", font=font(28, "regular"), fill=(0x64, 0x74, 0x8B, 255))
+        img.paste(b, (x, y), b)
     return img
 
 
 def svg():
-    pts = " ".join(f"{x},{y}" for x, y in BOLT)
-    lines = "\n".join(
-        f'  <rect x="{x0}" y="{y - 14}" width="{x1 - x0}" height="28" rx="14" fill="#fff" fill-opacity="0.69"/>' for y, x0, x1 in SPEED)
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="0.5" y2="1">
-      <stop offset="0" stop-color="#7C3AED"/><stop offset="0.55" stop-color="#2563EB"/><stop offset="1" stop-color="#06B6D4"/>
-    </linearGradient>
-  </defs>
-  <rect width="1024" height="1024" rx="225" fill="url(#g)"/>
-{lines}
-  <polygon points="{pts}" fill="#fff"/>
+    facets = "\n".join(
+        f'    <polygon points="{" ".join(f"{x},{y}" for x, y in pts)}" fill="#{c[0]:02X}{c[1]:02X}{c[2]:02X}"/>' for pts, c in FACETS)
+    strokes = "\n".join(
+        f'    <path d="M {" L ".join(f"{x} {y}" for x, y in pts)}" stroke="#{c[0]:02X}{c[1]:02X}{c[2]:02X}" stroke-width="{w}" '
+        f'stroke-linecap="round" stroke-linejoin="round" fill="none"/>' for pts, c, w in STROKES)
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" rx="224" fill="#070B14"/>
+  <rect x="12" y="12" width="1000" height="1000" rx="214" fill="none" stroke="#1E293B" stroke-width="4"/>
+  <g transform="translate(180, 160) scale(3.2)">
+{facets}
+{strokes}
+  </g>
 </svg>
 """
 
 
 def android_vector():
-    """24dp notification / monochrome icon: the bolt alone, fitted to the 24x24 box."""
-    xs = [x for x, _ in BOLT]
-    ys = [y for _, y in BOLT]
-    scale = 21 / (max(ys) - min(ys))
-    ox = 12 - (min(xs) + max(xs)) / 2 * scale
-    oy = 12 - (min(ys) + max(ys)) / 2 * scale
-    path = "M" + " L".join(f"{x * scale + ox:.2f},{y * scale + oy:.2f}" for x, y in BOLT) + " Z"
+    """24dp notification / monochrome icon: cube outline with the download chevron, in white."""
+    s = 24 / 232
+    ox = (24 - 200 * s) / 2
+    def pt(x, y):
+        return f"{ox + x * s:.2f},{y * s + 0.5:.2f}"
+    cube = "M" + " L".join(pt(x, y) for x, y in [(100, 20), (180, 66), (180, 166), (100, 212), (20, 166), (20, 66)]) + " Z"
+    hole = "M" + " L".join(pt(x, y) for x, y in [(100, 40), (34, 78), (34, 158), (100, 196), (166, 158), (166, 78)]) + " Z"
+    chevron = "M" + " L".join(pt(x, y) for x, y in [(68, 92), (100, 124), (132, 92), (132, 112), (100, 144), (68, 112)]) + " Z"
     return f"""<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
-    <path android:fillColor="#FFFFFFFF" android:pathData="{path}" />
+    <path android:fillColor="#FFFFFFFF" android:fillType="evenOdd" android:pathData="{cube} {hole}" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="{chevron}" />
 </vector>
 """
 

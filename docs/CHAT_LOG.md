@@ -209,3 +209,27 @@ connections slider from the Android download popup (D-017). Released as 1.5.0.
 Both apps now check at startup and every 2-6 hours and open the update dialog themselves; the
 Settings items are gone (D-018). Compiled both apps and released 1.5.1 without the test suites, as
 asked.
+
+**12:36, Imad**
+
+> my phone is connected via adb can u install it directly
+
+**Claude**
+
+Installed 1.5.1 on Imad's phone (Infinix X6873) over adb as an update; data kept.
+
+**20:15, Imad (project chat)**
+
+> few things to add
+> add my telegram channel link https://t.me/ImadLabs
+> in about and on first run using popup so they can tick dont show next time
+> also about the icon and ui i have added a repo of graphics
+> also ImadLabs is my brand name ok
+> https://github.com/ImadKhan1999/Graphics
+>
+> rename it to iDownloader not hyper downloader
+
+**Claude**
+
+Renamed to iDownloader by ImadLabs with the brand kit's downloader icon and colours, added the
+Telegram link and the first-run popup (D-019). Released as 1.6.0.

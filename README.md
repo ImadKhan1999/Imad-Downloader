@@ -1,6 +1,8 @@
-# Hyper Downloader
+# iDownloader
 
-![Hyper Downloader](branding/banner.png)
+![iDownloader](branding/banner.png)
+
+By **ImadLabs**. News and updates: [t.me/ImadLabs](https://t.me/ImadLabs)
 
 A full download manager for **Windows** (inspired by IDM) and **Android** (inspired by 1DM,
 with a built-in browser). Both apps share one Kotlin download engine.
@@ -31,7 +33,7 @@ with a built-in browser). Both apps share one Kotlin download engine.
 - File info dialog, progress window with connection map, completion dialog
 - Options, Scheduler (exit / sleep / shut down when a queue finishes), batch and link lists
 - Clipboard capture, system tray, notifications, start with Windows, light/dark theme
-- Chrome / Edge extension: takes over downloads, right-click "Download with Hyper Downloader",
+- Chrome / Edge extension: takes over downloads, right-click "Download with iDownloader",
   "Download all links", finds videos and shows a "Download this video" button
 
 **Android**
@@ -44,9 +46,9 @@ with a built-in browser). Both apps share one Kotlin download engine.
 ## Download
 
 See the [Releases](https://github.com/ImadKhan1999/Imad-Downloader/releases) page:
-`Hyper.Downloader-<version>.exe` or `.msi` for Windows, `HyperDownloader-<version>.apk` for
-Android, `hyper-downloader-chromium-<version>.zip` (Chrome, Edge, Brave, Opera, Vivaldi) and
-`hyper-downloader-firefox-<version>.zip` for the browser extension. The Windows app ships both and
+`iDownloader-<version>.exe` or `.msi` for Windows, `iDownloader-<version>.apk` for
+Android, `idownloader-chromium-<version>.zip` (Chrome, Edge, Brave, Opera, Vivaldi) and
+`idownloader-firefox-<version>.zip` for the browser extension. The Windows app ships both and
 adds them for you: it finds the browsers on the PC on first start (and in Help > Connect
 browsers...) and walks through adding the extension to each one.
 
@@ -75,5 +77,5 @@ node extension\test\e2e-firefox.mjs                  (real Firefox through gecko
 Release signing: put `keystore/imad-release.jks` and `keystore/release.properties` next to the
 project (both are git-ignored). Without them the release APK is signed with the debug key.
 
-Hyper Downloader was called Imad Downloader up to version 1.3.0. Updating keeps your settings,
-download list and files.
+iDownloader was called Imad Downloader (up to 1.3.0) and iDownloader (1.4.0 to 1.5.1).
+Updating keeps your settings, download list and files.

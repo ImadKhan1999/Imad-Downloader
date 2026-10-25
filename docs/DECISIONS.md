@@ -264,3 +264,24 @@ Imad asked for YouTube and other sites with quality choice, using yt-dlp if need
 - Removed at Imad's request: "Check for updates", "Check for updates automatically" and "Project
   page" from Android Settings; on Windows the matching Options checkbox, Help menu items and the
   About box buttons.
+
+## D-019 iDownloader by ImadLabs (2026-10-26)
+
+- Imad renamed the app to **iDownloader**; **ImadLabs** is his brand (always spelled that way).
+  His brand kit is github.com/ImadKhan1999/Graphics ("The HexaCore Matrix").
+- Icon: the kit's downloader icon (apps/hyper-downloader/...-master-icon.svg): isometric cube in
+  Sky #38BDF8, Deep Cyan #0284C7 and Electric Cobalt #0066FF facets, white and Quantum Dot
+  #00FFC2 download chevrons, the Cyber Mint #00F5A0 "L", on the Deep Void #070B14 tile.
+  `branding/make_logo.py` draws it from the same coordinates for every size (Windows, Android
+  launcher/adaptive/notification, extension, Play Store) and builds `branding/banner.png` with the
+  ImadLabs logo. The kit files used are copied into `branding/imadlabs/`.
+- Colours follow the kit's tokens: Cobalt primary (Sky on dark), Cyber Mint accents, and the kit's
+  dark surfaces (#070B14, #0B0F19, #111827, #162032, borders #1E293B) for dark mode.
+- Telegram: "ImadLabs on Telegram" (https://t.me/ImadLabs) in Android Settings > About, the
+  Windows About box and Help menu. A popup invites people to the channel each time the app
+  opens until they tick "Don't show this again" (it waits for the update and first-run browser
+  windows so nothing stacks).
+- Vendor and copyright are now ImadLabs. Kept for updates: Android package id, the Windows
+  upgrade id, the repository name and the extension protocol; the apps still accept the old
+  names ("Hyper Downloader", "Imad Downloader") in the extension handshake and move the old
+  Windows data folder and start-with-Windows entry over.

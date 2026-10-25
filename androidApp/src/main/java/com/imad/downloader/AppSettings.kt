@@ -44,6 +44,8 @@ data class AppSettings(
     val userAgent: String = "",
     val autoUpdate: Boolean = true,
     val lastUpdateCheck: Long = 0,
+    /** "Don't show this again" was ticked on the ImadLabs Telegram popup. */
+    val telegramPromptOff: Boolean = false,
 ) {
     fun toEngineConfig() = EngineConfig(
         defaultSaveDir = saveDir,
@@ -62,7 +64,7 @@ data class AppSettings(
         const val DESKTOP_UA = EngineConfig.DEFAULT_USER_AGENT
 
         fun defaultSaveDir(): String =
-            File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "Hyper Downloader").path
+            File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "iDownloader").path
     }
 }
 

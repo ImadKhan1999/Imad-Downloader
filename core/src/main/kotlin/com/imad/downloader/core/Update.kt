@@ -56,7 +56,7 @@ class UpdateClient(
     suspend fun manifest(): UpdateManifest = withContext(Dispatchers.IO) {
         // Cache-busting query: raw.githubusercontent.com caches for a few minutes.
         val url = manifestUrl + (if ('?' in manifestUrl) "&" else "?") + "t=" + System.currentTimeMillis() / 60_000
-        http.newCall(Request.Builder().url(url).header("User-Agent", "HyperDownloader-Updater").build()).execute().use { r ->
+        http.newCall(Request.Builder().url(url).header("User-Agent", "iDownloader-Updater").build()).execute().use { r ->
             if (!r.isSuccessful) throw IOException("Update check failed (${r.code})")
             json.decodeFromString(UpdateManifest.serializer(), r.body.string())
         }
@@ -69,7 +69,7 @@ class UpdateClient(
         val out = File(dir, FileNames.sanitize(name))
         if (out.isFile && sha256(out).equals(release.sha256, ignoreCase = true)) return@withContext out
         val tmp = File(dir, out.name + ".part")
-        http.newCall(Request.Builder().url(release.url).header("User-Agent", "HyperDownloader-Updater").build()).execute().use { r ->
+        http.newCall(Request.Builder().url(release.url).header("User-Agent", "iDownloader-Updater").build()).execute().use { r ->
             if (!r.isSuccessful) throw IOException("Download failed (${r.code})")
             val total = r.body.contentLength().takeIf { it > 0 } ?: release.size
             val md = MessageDigest.getInstance("SHA-256")

@@ -337,7 +337,7 @@ private fun StartPage(bookmarks: List<com.imad.downloader.browser.Bookmark>, onO
         Spacer(Modifier.height(36.dp))
         Image(painterResource(R.drawable.logo), null, Modifier.size(72.dp).clip(RoundedCornerShape(18.dp)))
         Spacer(Modifier.height(10.dp))
-        Text("Hyper Browser", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+        Text("iDownloader Browser", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
         Text("Videos and files you open here can be downloaded in one tap.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(24.dp))
         LazyVerticalGrid(GridCells.Fixed(4), verticalArrangement = Arrangement.spacedBy(14.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

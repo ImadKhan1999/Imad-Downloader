@@ -63,7 +63,7 @@ class AppUpdater(
             _state.value = runCatching {
                 val f = client.download(release, dir) { d, t -> _state.value = UpdateState.Downloading(release, d, t) }
                 _state.value = UpdateState.Verifying
-                if (!signedLikeMe(f)) { f.delete(); error("The update is not signed by Hyper Downloader. Not installing.") }
+                if (!signedLikeMe(f)) { f.delete(); error("The update is not signed by iDownloader. Not installing.") }
                 f
             }.fold({ UpdateState.Ready(release, it) }, { UpdateState.Failed(it.message ?: "Download failed", release) })
         }

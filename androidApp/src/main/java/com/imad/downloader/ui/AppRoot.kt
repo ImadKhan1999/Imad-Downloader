@@ -56,6 +56,8 @@ fun AppRoot(app: ImadApp, browser: BrowserController, activity: MainActivity) {
     var batch by remember { mutableStateOf(false) }
     var queues by rememberSaveable { mutableStateOf(false) }
     var showUpdate by remember { mutableStateOf(false) }
+    // ImadLabs Telegram invite: every start until "Don't show this again" is ticked.
+    var telegramShown by rememberSaveable { mutableStateOf(false) }
     // Looks for a new version when the app opens, then again every few hours (at random, so
     // phones do not all ask at once) for as long as it stays open; a new version pops up the
     // update dialog by itself.
@@ -179,6 +181,10 @@ fun AppRoot(app: ImadApp, browser: BrowserController, activity: MainActivity) {
         details?.let { id -> DetailsSheet(app.engine, id, onDismiss = { details = null }, canStart = canStart) }
         if (batch) BatchSheet(app.engine, onDismiss = { batch = false }, canStart = canStart)
         if (showUpdate) UpdateDialog(app.updater) { showUpdate = false; app.updater.reset() }
+        else if (!telegramShown && !settings.telegramPromptOff) TelegramDialog { never ->
+            telegramShown = true
+            if (never) app.settings.update { it.copy(telegramPromptOff = true) }
+        }
         if (queues) androidx.compose.material3.Surface(Modifier.fillMaxSize()) { QueuesScreen(app.engine, onBack = { queues = false }, canStart = canStart) }
     }
 }

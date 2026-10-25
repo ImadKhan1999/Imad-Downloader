@@ -81,7 +81,7 @@ function build(name, manifest) {
   for (const f of files) fs.copyFileSync(path.join(src, f), path.join(dir, f));
   copyTree(path.join(src, "icons"), path.join(dir, "icons"));
   fs.writeFileSync(path.join(dir, "manifest.json"), JSON.stringify(manifest, null, 2));
-  zipDir(dir, path.join(out, `hyper-downloader-${name}-${manifest.version}.zip`));
+  zipDir(dir, path.join(out, `idownloader-${name}-${manifest.version}.zip`));
   return dir;
 }
 
