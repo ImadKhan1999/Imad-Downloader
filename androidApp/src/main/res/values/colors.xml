@@ -2,5 +2,6 @@
     <color name="brand">#0066FF</color>
     <color name="brand_dark">#0B1930</color>
     <color name="ic_launcher_background">#070B14</color>
-    <color name="splash_bg">#FFFFFF</color>
+    <color name="splash_bg">#070B14</color>
+    <color name="app_bg">#F6F8FB</color>
 </resources>

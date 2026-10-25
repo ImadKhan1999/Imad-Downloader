@@ -9,6 +9,9 @@ dependencies {
     api(libs.kotlinx.coroutines.core)
     api(libs.kotlinx.serialization.json)
     api(libs.okhttp)
+    // MP3 conversion and AAC decoding for audio downloads (pure Java, so Android works too).
+    implementation(libs.jump3r)
+    implementation(libs.jaad)
     testImplementation(kotlin("test"))
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(platform("org.junit:junit-bom:${libs.versions.junit.get()}"))

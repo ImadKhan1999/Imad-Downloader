@@ -263,3 +263,24 @@ button; new cloud icon (D-020). Android built, not tested, as asked. Released as
 
 Pulled the kit again: new flat "iL" ImadLabs logo now in the Telegram popup and banner; the
 downloader icon was already the kit's current one. Released 1.7.1 (Android built, not tested).
+
+**22:24-22:34, Imad (project chat)**
+
+> sorry use the hyper downloader logo only logo changed,
+> Also can you add startup animation for android version only.
+> and yes dont test nor for pc nor android
+
+> also if there is any logo/background image in an audio make sure to download with it and also
+> mp3 option as well or atleast converter so user get mp3 if they want
+
+> i think the new logo is Graphics / apps / hyper-downloader / hyper-downloader-1024x1024.png
+> (branch claude/project-thread-yobem5)
+
+> before updating can u also add something
+> like it must appear in when someone click share a link in any app it must appear like
+> idownloader so u know what im saying
+
+**Claude**
+
+Hyper Downloader logo, Android startup animation, cover art and MP3 for audio, clearer share
+target (D-021). Released 1.8.0 without tests, as asked.

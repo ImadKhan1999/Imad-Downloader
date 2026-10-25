@@ -42,11 +42,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- "Share" a link from any app. -->
-            <intent-filter>
+            <!-- "Share" a link from any app: shows as iDownloader with its icon in the share sheet. -->
+            <intent-filter android:label="@string/app_name" android:icon="@mipmap/ic_launcher">
                 <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/plain" />
+                <data android:mimeType="text/*" />
             </intent-filter>
 
             <!-- Open web pages in the built-in browser. -->

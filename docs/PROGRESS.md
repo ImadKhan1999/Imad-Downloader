@@ -37,3 +37,4 @@
   lowers the connection count instead of failing (D-007).
 - Release key created locally (`keystore/`, not in git). Back it up: updates to the Android
   app must be signed with the same key.
+| 15. v1.8.0: Hyper Downloader logo, Android startup animation, MP3 and cover art, share sheet | Done 2026-10-26 |

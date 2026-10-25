@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "iDownloader Integration",
   "short_name": "iDownloader",
-  "version": "1.7.1",
+  "version": "1.8.0",
   "description": "Sends downloads, videos and links from your browser to iDownloader for fast multi-connection downloading.",
   "icons": {
     "16": "icons/icon16.png",

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <!-- ImadLabs app icon (downloader). Edit the "glyph" group to customise the symbol.
+  <!-- ImadLabs app icon (hyper-downloader). Edit the "glyph" group to customise the symbol.
        The "background" group is swapped out automatically for iOS (full bleed) and Android adaptive layers. -->
   <defs>
     <linearGradient id="cobalt" gradientUnits="userSpaceOnUse" x1="300" y1="250" x2="740" y2="760">

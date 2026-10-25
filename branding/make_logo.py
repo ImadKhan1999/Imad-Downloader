@@ -1,10 +1,11 @@
 """Builds every iDownloader icon size from Imad's ImadLabs brand kit.
 
 Run from the repo root:  python branding/make_logo.py
-Source art: github.com/ImadKhan1999/Graphics, apps/downloader/ (cloud with the Cyber Mint download
-arrow and the ImadLabs quantum dot), copied into branding/imadlabs/downloader/. The kit's 1024 px
-icon and its Android adaptive layers are scaled here for Windows, Android, the extension and the
-docs; the notification / monochrome icon is a vector of the same cloud and arrow.
+Source art: github.com/ImadKhan1999/Graphics, apps/hyper-downloader/ (cobalt download arrow into a
+Cyber Mint tray, with the ImadLabs quantum dot; Imad's pick), copied into
+branding/imadlabs/downloader/. The kit's 1024 px icon and its Android adaptive layers are scaled
+here for Windows, Android, the extension and the docs; the notification / monochrome icon is a
+vector of the same arrow and tray.
 """
 from pathlib import Path
 
@@ -50,19 +51,17 @@ def banner(logo):
 
 
 def android_vector():
-    """24dp notification / monochrome icon: the kit's cloud outline with the download arrow."""
+    """24dp notification / monochrome icon: the kit's arrow and tray, in white."""
     s = 24 / 1024
     def n(v):
         return f"{v * s:.2f}"
-    # Cloud from the kit's master SVG (arcs scaled to 24 dp), arrow as a cut-out stroke.
-    cloud = (f"M{n(340)},{n(640)} A{n(110)},{n(110)} 0 0 1 {n(330)},{n(420)} A{n(150)},{n(150)} 0 0 1 {n(610)},{n(360)} "
-             f"A{n(130)},{n(130)} 0 0 1 {n(700)},{n(640)} Z")
     return f"""<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
-    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="{n(56)}" android:strokeLineJoin="round" android:pathData="{cloud}" />
-    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="{n(78)}" android:strokeLineCap="round" android:strokeLineJoin="round"
-        android:pathData="M{n(512)},{n(470)} L{n(512)},{n(790)} M{n(400)},{n(680)} L{n(512)},{n(792)} L{n(624)},{n(680)}" />
+    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="{n(88)}" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M{n(512)},{n(250)} L{n(512)},{n(600)} M{n(352)},{n(470)} L{n(512)},{n(630)} L{n(672)},{n(470)}" />
+    <path android:strokeColor="#FFFFFFFF" android:strokeWidth="{n(64)}" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M{n(290)},{n(680)} L{n(290)},{n(800)} L{n(734)},{n(800)} L{n(734)},{n(680)}" />
 </vector>
 """
 

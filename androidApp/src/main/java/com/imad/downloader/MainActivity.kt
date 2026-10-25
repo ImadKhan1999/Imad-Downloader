@@ -32,7 +32,17 @@ class MainActivity : ComponentActivity() {
     private val permissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        val splash = installSplashScreen()
+        // Startup animation: let the icon animation (Android 12+) play once, then zoom and fade out.
+        val shownAt = System.currentTimeMillis()
+        if (Build.VERSION.SDK_INT >= 31 && savedInstanceState == null) {
+            splash.setKeepOnScreenCondition { System.currentTimeMillis() - shownAt < 1_100 }
+        }
+        splash.setOnExitAnimationListener { provider ->
+            val icon = provider.iconView
+            icon.animate().scaleX(1.35f).scaleY(1.35f).alpha(0f).setDuration(260).start()
+            provider.view.animate().alpha(0f).setStartDelay(80).setDuration(260).withEndAction { provider.remove() }.start()
+        }
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val app = application as ImadApp
@@ -72,8 +82,14 @@ class MainActivity : ComponentActivity() {
         fun parseIntent(intent: Intent?): Incoming? {
             intent ?: return null
             return when (intent.action) {
-                Intent.ACTION_SEND -> {
-                    val text = intent.getStringExtra(Intent.EXTRA_TEXT).orEmpty()
+                Intent.ACTION_SEND, Intent.ACTION_SEND_MULTIPLE -> {
+                    // Apps share "Look at this! https://..." or just the link (sometimes as a subject or clip).
+                    val text = listOfNotNull(
+                        intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString(),
+                        intent.getStringArrayListExtra(Intent.EXTRA_TEXT)?.joinToString(" "),
+                        intent.getStringExtra(Intent.EXTRA_SUBJECT),
+                        intent.clipData?.let { c -> (0 until c.itemCount).joinToString(" ") { c.getItemAt(it).text?.toString().orEmpty() } },
+                    ).joinToString(" ")
                     BatchUrls.extractLinks(text).firstOrNull()?.let { Incoming.Download(DownloadRequest(it)) }
                 }
                 Intent.ACTION_VIEW -> {

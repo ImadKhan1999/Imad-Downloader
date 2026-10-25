@@ -50,6 +50,10 @@ data class MediaInfo(
     val durationSeconds: Double = 0.0,
     val thumbnail: String? = null,
     val formats: List<MediaFormat> = emptyList(),
+    /** Uploader / artist, written into audio files. */
+    val artist: String = "",
+    /** Largest JPEG/PNG picture of the page (audio cover art; tags cannot hold WebP). */
+    val coverUrl: String? = null,
 )
 
 /** A line in the quality picker. [formatSpec] is "video+audio" or a single format id. */
@@ -72,14 +76,19 @@ data class PlaylistEntry(val url: String, val title: String, val durationSeconds
 data class PlaylistInfo(val title: String, val entries: List<PlaylistEntry>)
 
 /** One quality for a whole playlist: each video takes the best format up to [height]. */
-data class PlaylistQuality(val label: String, val height: Int, val audioOnly: Boolean = false) {
+data class PlaylistQuality(val label: String, val height: Int, val audioOnly: Boolean = false, val mp3: Boolean = false) {
     /** What goes into [DownloadRequest.mediaFormat] (null = pick by height). */
-    val mediaFormat: String? get() = if (audioOnly) MediaChoice.AUDIO_ONLY else null
+    val mediaFormat: String? get() = when {
+        mp3 -> MediaChoice.AUDIO_ONLY + MediaChoice.MP3_SUFFIX
+        audioOnly -> MediaChoice.AUDIO_ONLY
+        else -> null
+    }
 
     companion object {
         val all = listOf(
             PlaylistQuality("Best", 0), PlaylistQuality("1080p", 1080), PlaylistQuality("720p", 720),
             PlaylistQuality("480p", 480), PlaylistQuality("360p", 360), PlaylistQuality("Audio only", 0, audioOnly = true),
+            PlaylistQuality("MP3", 0, audioOnly = true, mp3 = true),
         )
         val default = all[1]
     }
@@ -176,6 +185,11 @@ object YtDlpJson {
             durationSeconds = o.num("duration") ?: 0.0,
             thumbnail = o.str("thumbnail"),
             formats = formats,
+            artist = o.str("artist") ?: o.str("uploader") ?: o.str("channel") ?: "",
+            coverUrl = (o["thumbnails"] as? JsonArray).orEmpty().mapNotNull { it as? JsonObject }
+                .filter { t -> t.str("url")?.substringBefore('?')?.lowercase()?.let { it.endsWith(".jpg") || it.endsWith(".jpeg") || it.endsWith(".png") } == true }
+                .maxByOrNull { (it.long("width") ?: 0) * (it.long("height") ?: 0) + (it.long("preference") ?: 0) }?.str("url")
+                ?: o.str("thumbnail")?.takeIf { it.substringBefore('?').lowercase().let { u -> u.endsWith(".jpg") || u.endsWith(".png") } },
         )
     }
 }
@@ -230,7 +244,11 @@ object MediaChoice {
         }
         val video = out.values.sortedByDescending { it.height }
         val audioOpt = (bestM4a ?: audio.maxByOrNull { it.tbr })?.let {
-            listOf(MediaOption("Audio only (${it.ext})", 0, it.id, it.ext, size(it, d), audioOnly = true))
+            buildList {
+                add(MediaOption("Audio only (${it.ext})", 0, it.id, it.ext, size(it, d), audioOnly = true))
+                // MP3 is made from AAC audio after the download (see AudioTools).
+                if (it.mp4Family && it.isPlainHttp) add(MediaOption("MP3", 0, it.id + MP3_SUFFIX, "mp3", size(it, d) * 3 / 2, audioOnly = true))
+            }
         }.orEmpty()
         return video + audioOpt
     }
@@ -249,8 +267,9 @@ object MediaChoice {
     fun pick(info: MediaInfo, spec: String?, height: Int): MediaOption? {
         val opts = options(info)
         if (spec == AUDIO_ONLY) return opts.firstOrNull { it.audioOnly } ?: opts.firstOrNull()
+        if (spec == AUDIO_ONLY + MP3_SUFFIX) return opts.firstOrNull { it.audioOnly && it.extension == "mp3" } ?: opts.firstOrNull { it.audioOnly }
         if (spec != null) {
-            val ids = spec.split('+')
+            val ids = spec.removeSuffix(MP3_SUFFIX).split('+')
             if (ids.all { id -> info.formats.any { it.id == id } }) {
                 return opts.firstOrNull { it.formatSpec == spec } ?: MediaOption("custom", height, spec, "mp4", 0)
             }
@@ -277,7 +296,7 @@ object MediaChoice {
         entries.map { e ->
             base.copy(
                 url = e.url,
-                fileName = safeTitle(e.title) + if (quality.audioOnly) ".m4a" else ".mp4",
+                fileName = safeTitle(e.title) + if (quality.mp3) ".mp3" else if (quality.audioOnly) ".m4a" else ".mp4",
                 description = e.title,
                 kind = DownloadKind.MEDIA,
                 mediaFormat = quality.mediaFormat,
@@ -310,6 +329,9 @@ object MediaChoice {
 
     /** [DownloadRequest.mediaFormat] for "just the sound" (playlists in audio-only mode). */
     const val AUDIO_ONLY = "audio-only"
+
+    /** Appended to a format choice: convert the downloaded AAC audio to MP3. */
+    const val MP3_SUFFIX = ">mp3"
 
     /** YouTube playlist pages, and videos opened from a playlist (their URL carries `list=`). */
     fun isPlaylist(url: String): Boolean {
@@ -376,12 +398,13 @@ internal class MediaDownloadTask(
     override suspend fun run(): DownloadItem {
         val info = extractor.extract(item.url, item.headers)
         val option = MediaChoice.pick(info, item.mediaFormat, item.streamHeight) ?: throw IOException("No downloadable video found on this page")
-        val ids = option.formatSpec.split('+')
+        val toMp3 = option.formatSpec.endsWith(MediaChoice.MP3_SUFFIX)
+        val ids = option.formatSpec.removeSuffix(MediaChoice.MP3_SUFFIX).split('+')
         val formats = ids.map { id -> info.formats.firstOrNull { it.id == id } ?: throw IOException("Format $id is no longer offered") }
 
         val dir = File(item.saveDir).apply { mkdirs() }
         val merged = formats.size > 1
-        val ext = if (merged) "mp4" else if (formats[0].isHls) "mp4" else formats[0].ext
+        val ext = if (toMp3) "mp3" else if (merged) "mp4" else if (formats[0].isHls) "mp4" else formats[0].ext
         var name = item.fileName
         if (!item.nameLocked || name.substringAfterLast('.', "").lowercase() != ext) {
             val base = if (item.nameLocked) name.substringBeforeLast('.') else MediaChoice.safeTitle(info.title)
@@ -449,7 +472,18 @@ internal class MediaDownloadTask(
         val target = File(dir, item.fileName)
         if (target.exists()) target.delete()
         var note: String? = null
-        if (files.size == 1) {
+        if (files.size == 1 && toMp3) {
+            try {
+                AudioTools.m4aToMp3(files[0], target)
+            } catch (e: Throwable) {
+                // Keep the sound even if conversion fails: save the original audio instead.
+                target.delete()
+                val kept = File(dir, FileNames.unique(dir, target.nameWithoutExtension + "." + formats[0].ext))
+                move(files[0], kept)
+                item = item.copy(fileName = kept.name)
+                note = "MP3 conversion failed (${e.message ?: e.javaClass.simpleName}); kept the original audio"
+            }
+        } else if (files.size == 1) {
             move(files[0], target)
         } else {
             val out = File(partsDir, "merged.mp4")
@@ -462,7 +496,9 @@ internal class MediaDownloadTask(
             }
         }
         partsDir.deleteRecursively()
-        val size = target.length()
+        val final = File(dir, item.fileName)
+        if (option.audioOnly) tagAudio(final, info)
+        val size = final.length()
         return item.copy(
             totalBytes = size, downloadedBytes = size, parts = emptyList(),
             description = note?.let { "${item.description} - $it" } ?: item.description,
@@ -472,6 +508,18 @@ internal class MediaDownloadTask(
     private fun persist() {
         item = item.copy(parts = parts.toList())
         callbacks.onPersist(item)
+    }
+
+    /** Title, artist and the page's picture as cover art (best effort: the audio is kept either way). */
+    private fun tagAudio(file: File, info: MediaInfo) {
+        runCatching {
+            val cover = AudioTools.fetchCover(client, info.coverUrl)
+            val tags = AudioTags(info.title, info.artist, cover?.first, cover?.second ?: "image/jpeg")
+            when (file.extension.lowercase()) {
+                "mp3" -> AudioTools.tagMp3(file, tags)
+                "m4a", "mp4" -> if (Mp4Merge.looksLikeMp4(file)) AudioTools.tagMp4(file, tags)
+            }
+        }
     }
 
     private fun move(from: File, to: File) {

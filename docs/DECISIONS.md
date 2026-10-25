@@ -313,3 +313,23 @@ Imad asked for YouTube and other sites with quality choice, using yt-dlp if need
 - Same day, Imad's kit replaced the ImadLabs HexaCore cube with a flat "iL" mark everywhere
   (quantum-dot "i" and Cyber Mint "L"). The new ImadLabs logos are used in the Telegram popup and
   the README banner (1.7.1); the downloader app icon in the kit did not change.
+
+## D-021 Logo, startup animation, MP3 and cover art, share sheet (2026-10-26)
+
+- Logo: Imad chose the kit's "hyper-downloader" icon (cobalt download arrow into a Cyber Mint
+  tray, with the quantum dot; Graphics repo apps/hyper-downloader, branch
+  claude/project-thread-yobem5). Only the logo changed; the name stays iDownloader.
+- Android startup animation (Android 12+, values-v31 theme): an animated vector of the same icon,
+  the arrow drops in, the tray draws itself, the dot pops in, on the dark ImadLabs background;
+  the splash then zooms and fades out. Older Android shows the still icon.
+- Audio: downloads of sound only now carry the page's picture as cover art plus title and artist
+  (M4A: iTunes-style ilst in moov, chunk offsets moved when needed; MP3: ID3v2.3 with APIC). Only
+  JPEG/PNG pictures are used (tags cannot hold WebP); yt-dlp's thumbnail list usually has one.
+- MP3: a new "MP3" choice next to "Audio only" (and in the playlist qualities). AAC is decoded
+  with JAAD (public domain) and encoded with jump3r, a Java port of LAME (LGPL 2.1), at 192 kbps,
+  on both apps, no extra programs. jump3r's own wrapper needs javax.sound (missing on Android),
+  so its LAME core is wired up directly. If conversion fails the original audio is kept and the
+  download notes why. Checked on the PC: a 5 s AAC sample became a valid 192 kbps MP3 with cover.
+- Share sheet: the share target is labelled iDownloader with the app icon, accepts any text share
+  (text/*, single or multiple) and finds the link in the text, subject or clip data.
+- Imad asked for no tests on PC or Android for this release; only builds.

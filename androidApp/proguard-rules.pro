@@ -13,3 +13,8 @@
 -dontwarn org.conscrypt.**
 -dontwarn org.bouncycastle.**
 -dontwarn org.openjsse.**
+
+# Audio tools: jump3r (LAME) and JAAD carry javax.sound helpers the app never uses (absent on Android).
+-dontwarn javax.sound.**
+-keep class de.sciss.jump3r.** { *; }
+-keep class net.sourceforge.jaad.** { *; }

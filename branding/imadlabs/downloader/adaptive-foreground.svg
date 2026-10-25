@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <!-- ImadLabs app icon (downloader). Edit the "glyph" group to customise the symbol.
+  <!-- ImadLabs app icon (hyper-downloader). Edit the "glyph" group to customise the symbol.
        The "background" group is swapped out automatically for iOS (full bleed) and Android adaptive layers. -->
   <defs>
     <linearGradient id="cobalt" gradientUnits="userSpaceOnUse" x1="300" y1="250" x2="740" y2="760">
@@ -21,14 +21,13 @@
   </defs>
   <g id="background"></g>
   <g id="glyph">
-    <!-- Cloud -->
-    <path d="M 340 640 A 110 110 0 0 1 330 420 A 150 150 0 0 1 610 360 A 130 130 0 0 1 700 640 Z" fill="url(#cobalt)" stroke="url(#cobalt)" stroke-width="30" stroke-linejoin="round"/>
-    <!-- Down arrow (dark outline separates it from the cloud) -->
-    <path d="M 512 470 L 512 760 M 410 670 L 512 772 L 614 670" fill="none" stroke="#070B14" stroke-width="110" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M 512 470 L 512 760" fill="none" stroke="url(#mint)" stroke-width="64" stroke-linecap="round" filter="url(#glow)"/>
-    <path d="M 410 670 L 512 772 L 614 670" fill="none" stroke="url(#mint)" stroke-width="64" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
+    <!-- Download arrow -->
+    <path d="M 512 300 L 512 600" fill="none" stroke="url(#cobalt)" stroke-width="88" stroke-linecap="round"/>
+    <path d="M 352 470 L 512 630 L 672 470" fill="none" stroke="url(#cobalt)" stroke-width="88" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Tray -->
+    <path d="M 290 680 L 290 790 L 734 790 L 734 680" fill="none" stroke="url(#mint)" stroke-width="56" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
     <!-- ImadLabs quantum dot (brand signature) -->
-    <circle cx="790" cy="250" r="46" fill="#00FFC2" filter="url(#glow)"/>
-    <circle cx="790" cy="250" r="20" fill="#FFFFFF"/>
+    <circle cx="760" cy="250" r="46" fill="#00FFC2" filter="url(#glow)"/>
+    <circle cx="760" cy="250" r="20" fill="#FFFFFF"/>
   </g>
 </svg>

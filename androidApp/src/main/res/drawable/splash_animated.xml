@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Startup animation (Android 12+): the download arrow drops in, the tray draws itself under it,
+     then the ImadLabs quantum dot pops in. Shapes are the app icon's (Graphics repo,
+     apps/hyper-downloader), scaled from its 1024 px canvas into the 72 dp centre of the 108 dp
+     splash icon: x' = 18 + x * 72 / 1024. -->
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+            <group android:name="arrow" android:translateY="-26">
+                <path android:name="arrowPath"
+                    android:fillAlpha="0" android:strokeAlpha="0"
+                    android:strokeColor="#FF1F8BFF" android:strokeWidth="6.19"
+                    android:strokeLineCap="round" android:strokeLineJoin="round"
+                    android:pathData="M54,39.09 L54,60.19 M42.75,51.05 L54,62.30 L65.25,51.05" />
+            </group>
+            <path android:name="tray"
+                android:strokeColor="#FF00E09A" android:strokeWidth="3.94"
+                android:strokeLineCap="round" android:strokeLineJoin="round"
+                android:trimPathEnd="0"
+                android:pathData="M38.39,65.81 L38.39,73.55 L69.61,73.55 L69.61,65.81" />
+            <group android:name="dot" android:pivotX="71.44" android:pivotY="35.58" android:scaleX="0" android:scaleY="0">
+                <path android:fillColor="#FF00FFC2"
+                    android:pathData="M71.44,35.58 m-3.23,0 a3.23,3.23 0 1,0 6.47,0 a3.23,3.23 0 1,0 -6.47,0" />
+                <path android:fillColor="#FFFFFFFF"
+                    android:pathData="M71.44,35.58 m-1.41,0 a1.41,1.41 0 1,0 2.81,0 a1.41,1.41 0 1,0 -2.81,0" />
+            </group>
+        </vector>
+    </aapt:attr>
+
+    <target android:name="arrow">
+        <aapt:attr name="android:animation">
+            <objectAnimator android:propertyName="translateY" android:duration="520"
+                android:valueFrom="-26" android:valueTo="0" android:valueType="floatType"
+                android:interpolator="@android:anim/overshoot_interpolator" />
+        </aapt:attr>
+    </target>
+    <target android:name="arrowPath">
+        <aapt:attr name="android:animation">
+            <objectAnimator android:propertyName="strokeAlpha" android:duration="260"
+                android:valueFrom="0" android:valueTo="1" android:valueType="floatType" />
+        </aapt:attr>
+    </target>
+    <target android:name="tray">
+        <aapt:attr name="android:animation">
+            <objectAnimator android:propertyName="trimPathEnd" android:startOffset="380" android:duration="420"
+                android:valueFrom="0" android:valueTo="1" android:valueType="floatType"
+                android:interpolator="@android:interpolator/fast_out_slow_in" />
+        </aapt:attr>
+    </target>
+    <target android:name="dot">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator android:propertyName="scaleX" android:startOffset="720" android:duration="300"
+                    android:valueFrom="0" android:valueTo="1" android:valueType="floatType"
+                    android:interpolator="@android:anim/overshoot_interpolator" />
+                <objectAnimator android:propertyName="scaleY" android:startOffset="720" android:duration="300"
+                    android:valueFrom="0" android:valueTo="1" android:valueType="floatType"
+                    android:interpolator="@android:anim/overshoot_interpolator" />
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>

@@ -16,13 +16,13 @@ object Mp4Merge {
     class NotMergeable(message: String) : IOException(message)
 
     /** An MP4 box. Containers keep [children]; leaves keep their payload bytes. */
-    class Box(val type: String, var payload: ByteArray = ByteArray(0), val children: MutableList<Box>? = null) {
+    open class Box(val type: String, var payload: ByteArray = ByteArray(0), val children: MutableList<Box>? = null) {
         fun child(t: String) = children?.firstOrNull { it.type == t }
         fun all(t: String) = children?.filter { it.type == t }.orEmpty()
 
-        fun size(): Long = 8 + (children?.sumOf { it.size() } ?: payload.size.toLong())
+        open fun size(): Long = 8 + (children?.sumOf { it.size() } ?: payload.size.toLong())
 
-        fun write(out: java.io.OutputStream) {
+        open fun write(out: java.io.OutputStream) {
             val s = size()
             require(s <= UInt.MAX_VALUE.toLong()) { "box too large to rewrite" }
             out.write(ByteBuffer.allocate(8).putInt(s.toInt()).put(type.toByteArray(Charsets.ISO_8859_1)).array())
