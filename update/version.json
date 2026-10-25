@@ -1,19 +1,19 @@
 {
     "android":  {
-                    "version":  "1.7.0",
-                    "versionCode":  10,
-                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.7.0/iDownloader-1.7.0.apk",
-                    "sha256":  "6ace01a5c88e5fb5de19bbe9c993bff4f74693105493d56626a521f7f3313c78",
-                    "size":  27623959,
-                    "changelog":  "YouTube and YouTube Music: when YouTube asks to confirm you\u0027re not a bot, iDownloader tries other ways in and offers a one-time sign-in. Better TikTok, Instagram, Facebook, X and YouTube Music support, plus every site yt-dlp knows. New icon.",
+                    "version":  "1.7.1",
+                    "versionCode":  11,
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.7.1/iDownloader-1.7.1.apk",
+                    "sha256":  "965d9a6600a7581437d119ccff1e851348f22ca7a065b82fbbf3cf63b6b69a3e",
+                    "size":  27593167,
+                    "changelog":  "YouTube and YouTube Music: when YouTube asks to confirm you\u0027re not a bot, iDownloader tries other ways in and offers a one-time sign-in. Better TikTok, Instagram, Facebook, X and YouTube Music support, plus every site yt-dlp knows. New icon and the new ImadLabs logo.",
                     "mandatory":  false
                 },
     "windows":  {
-                    "version":  "1.7.0",
-                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.7.0/iDownloader-1.7.0.msi",
-                    "sha256":  "28484bca366aba4ec3e076ceb672b9d87f17ee910858918e5828275183c0f568",
-                    "size":  100992008,
-                    "changelog":  "YouTube and YouTube Music: when YouTube asks to confirm you\u0027re not a bot, iDownloader tries other ways in and offers a one-time sign-in. Better TikTok, Instagram, Facebook, X and YouTube Music support, plus every site yt-dlp knows. New icon.",
+                    "version":  "1.7.1",
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.7.1/iDownloader-1.7.1.msi",
+                    "sha256":  "0e26af3a595c42cd244d3cced4a8f59050dfea80561866368adff65dc8b966b3",
+                    "size":  100959240,
+                    "changelog":  "YouTube and YouTube Music: when YouTube asks to confirm you\u0027re not a bot, iDownloader tries other ways in and offers a one-time sign-in. Better TikTok, Instagram, Facebook, X and YouTube Music support, plus every site yt-dlp knows. New icon and the new ImadLabs logo.",
                     "mandatory":  false
                 }
 }
