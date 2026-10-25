@@ -184,8 +184,6 @@ private fun androidx.compose.ui.window.FrameWindowScope.AppMenuBar(app: AppState
         }
         Menu("Help", mnemonic = 'H') {
             Item("Connect browsers...", onClick = { app.browserSetupOpen = true })
-            Item("Project page", onClick = { Platform.browse("https://github.com/ImadKhan1999/Imad-Downloader") })
-            Item("Check for updates...", onClick = { app.checkForUpdates() })
             Item("About Hyper Downloader", onClick = { app.aboutOpen = true })
         }
     }

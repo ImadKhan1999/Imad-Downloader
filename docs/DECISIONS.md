@@ -254,3 +254,13 @@ Imad asked for YouTube and other sites with quality choice, using yt-dlp if need
 - Seen in testing: after many test downloads YouTube started asking this PC's network to "confirm
   you're not a bot", for the PC and LDPlayer alike. That is YouTube limiting the address, not the
   app; signing in to YouTube in the app's browser (or the PC browser with the extension) passes it.
+
+## D-018 Updates pop up by themselves (2026-10-25)
+
+- Imad had to open Settings and press "Check for updates" to see 1.5.0: the apps only checked once
+  a day. Now both apps check when they start and again every 2 to 6 hours (random) while open,
+  and a new version opens the update dialog by itself. A check never interrupts a download or a
+  dialog that is already open.
+- Removed at Imad's request: "Check for updates", "Check for updates automatically" and "Project
+  page" from Android Settings; on Windows the matching Options checkbox, Help menu items and the
+  About box buttons.

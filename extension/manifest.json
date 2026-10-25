@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Hyper Downloader Integration",
   "short_name": "Hyper DL",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Sends downloads, videos and links from your browser to Hyper Downloader for fast multi-connection downloading.",
   "icons": {
     "16": "icons/icon16.png",

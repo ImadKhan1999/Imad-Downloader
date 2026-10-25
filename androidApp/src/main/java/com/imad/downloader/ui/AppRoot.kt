@@ -1,5 +1,6 @@
 package com.imad.downloader.ui
 
+import com.imad.downloader.core.UpdateState
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -55,11 +56,16 @@ fun AppRoot(app: ImadApp, browser: BrowserController, activity: MainActivity) {
     var batch by remember { mutableStateOf(false) }
     var queues by rememberSaveable { mutableStateOf(false) }
     var showUpdate by remember { mutableStateOf(false) }
+    // Looks for a new version when the app opens, then again every few hours (at random, so
+    // phones do not all ask at once) for as long as it stays open; a new version pops up the
+    // update dialog by itself.
     LaunchedEffect(Unit) {
-        val s = app.settings.value
-        if (s.autoUpdate && System.currentTimeMillis() - s.lastUpdateCheck > 24 * 3_600_000L) {
-            app.settings.update { it.copy(lastUpdateCheck = System.currentTimeMillis()) }
-            app.updater.check { showUpdate = true }
+        while (true) {
+            val st = app.updater.state.value
+            if (!showUpdate && (st is UpdateState.Idle || st is UpdateState.UpToDate || st is UpdateState.Failed)) {
+                app.updater.check { showUpdate = true }
+            }
+            kotlinx.coroutines.delay(kotlin.random.Random.nextLong(2 * 3_600_000L, 6 * 3_600_000L))
         }
     }
     val snackbar = remember { SnackbarHostState() }
@@ -148,7 +154,7 @@ fun AppRoot(app: ImadApp, browser: BrowserController, activity: MainActivity) {
                         canStart = canStart,
                         onQueues = { queues = true },
                     )
-                    Screen.SETTINGS -> SettingsScreen(app.settings, app.browserData, onCheckUpdates = { showUpdate = true; app.updater.check() })
+                    Screen.SETTINGS -> SettingsScreen(app.settings, app.browserData)
                 }
             }
         }

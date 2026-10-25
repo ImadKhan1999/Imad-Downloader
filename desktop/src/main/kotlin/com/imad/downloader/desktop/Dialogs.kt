@@ -521,8 +521,6 @@ private fun AboutDialog(app: AppState, theme: ThemeMode) {
         }
         Spacer(Modifier.weight(1f))
         ButtonRow {
-            TextButton({ Platform.browse("https://github.com/ImadKhan1999/Imad-Downloader") }) { Text("Website") }
-            TextButton({ app.aboutOpen = false; app.checkForUpdates() }) { Text("Check for updates") }
             Button({ app.aboutOpen = false }) { Text("Close") }
         }
     }

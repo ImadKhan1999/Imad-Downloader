@@ -59,7 +59,7 @@ import com.imad.downloader.browser.BrowserData
 import com.imad.downloader.core.Format
 
 @Composable
-fun SettingsScreen(repo: SettingsRepository, browserData: BrowserData, onCheckUpdates: () -> Unit = {}) {
+fun SettingsScreen(repo: SettingsRepository, browserData: BrowserData) {
     val s by repo.settings.collectAsState()
     val context = LocalContext.current
     var folderDialog by remember { mutableStateOf(false) }
@@ -120,11 +120,6 @@ fun SettingsScreen(repo: SettingsRepository, browserData: BrowserData, onCheckUp
                     Text("Hyper Downloader ${BuildConfig.VERSION_NAME}", fontWeight = FontWeight.SemiBold)
                     Text("Multi-connection downloader with built-in browser", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-            }
-            Item("Check for updates", "Version ${BuildConfig.VERSION_NAME}", onCheckUpdates)
-            Toggle("Check for updates automatically", "Once a day", s.autoUpdate) { v -> set { it.copy(autoUpdate = v) } }
-            Item("Project page", "github.com/ImadKhan1999/Imad-Downloader") {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/ImadKhan1999/Imad-Downloader")))
             }
             Spacer(Modifier.height(24.dp))
         }

@@ -16,6 +16,7 @@ import com.imad.downloader.core.JsonFileStore
 import com.imad.downloader.core.ProbeResult
 import com.imad.downloader.core.QueueScheduler
 import com.imad.downloader.core.StreamQuality
+import com.imad.downloader.core.UpdateState
 import com.imad.downloader.core.DownloadKind
 import com.imad.downloader.core.MediaChoice
 import com.imad.downloader.core.MediaInfo
@@ -180,9 +181,16 @@ class AppState(
                 updateSettings(settings.copy(browserSetupShown = true))
             }
         }
-        if (settings.autoUpdate && System.currentTimeMillis() - settings.lastUpdateCheck > 24 * 3_600_000L) {
-            updateSettings(settings.copy(lastUpdateCheck = System.currentTimeMillis()))
-            updater.check { updateDialogOpen = true }
+        // Looks for a new version at startup and then every few hours (at random) while running;
+        // a new version opens the update dialog by itself.
+        scope.launch {
+            while (true) {
+                val st = updater.state.value
+                if (!updateDialogOpen && (st is UpdateState.Idle || st is UpdateState.UpToDate || st is UpdateState.Failed)) {
+                    updater.check { updateDialogOpen = true }
+                }
+                kotlinx.coroutines.delay(kotlin.random.Random.nextLong(2 * 3_600_000L, 6 * 3_600_000L))
+            }
         }
         clipboard.start(scope)
         scheduler.start(ioScope)

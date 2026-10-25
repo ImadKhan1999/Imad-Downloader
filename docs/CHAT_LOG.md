@@ -194,3 +194,18 @@ release left over from an interrupted run.
 
 Added YouTube playlists to both apps with a tick-box list and one quality for all, and removed the
 connections slider from the Android download popup (D-017). Released as 1.5.0.
+
+**12:25, Imad (project chat)**
+
+> ok for update i had to go to setting and click check for update why cant it auto prompt update
+> on startup?
+> also remove project page from the settings and also remove check for updates button and auto
+> check updates we dont need tha the app must check for update on startup and also random
+> internvals.
+> no need to test alot of things just fix it and push update
+
+**Claude**
+
+Both apps now check at startup and every 2-6 hours and open the update dialog themselves; the
+Settings items are gone (D-018). Compiled both apps and released 1.5.1 without the test suites, as
+asked.

@@ -102,7 +102,6 @@ fun OptionsDialog(app: AppState) {
                         CheckRow("Show the file info dialog before downloading", s.showStartDialog) { s = s.copy(showStartDialog = it) }
                         CheckRow("Show the progress window when a download starts", s.showProgressWindow) { s = s.copy(showProgressWindow = it) }
                         CheckRow("Ask before deleting downloads", s.confirmDelete) { s = s.copy(confirmDelete = it) }
-                        CheckRow("Check for app updates automatically (once a day)", s.autoUpdate) { s = s.copy(autoUpdate = it) }
                         CheckRow("Overwrite files with the same name (otherwise rename)", s.overwriteExisting) { s = s.copy(overwriteExisting = it) }
                         VSpace()
                         Text("File types captured from the clipboard and browser", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
