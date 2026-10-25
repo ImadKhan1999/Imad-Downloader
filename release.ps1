@@ -36,12 +36,14 @@ Stop-Process -Name IDMan, IEMonitor, IDMMsgHost, idmBroker, IDMGrHlp, IDMIntegra
 if ($SkipTests) { $SkipDeviceTests = $true }
 if (-not $SkipDeviceTests) {
     # adb complains on stderr while no device is up; that must not stop the script.
-    function Booted { $ErrorActionPreference = "Continue"; ((& $adb shell getprop sys.boot_completed 2>$null) -eq "1") }
+    # Only LDPlayer: Imad's own phone may be plugged in too and must never get the test builds.
+    $env:ANDROID_SERIAL = "emulator-5554"
+    function Booted { $ErrorActionPreference = "Continue"; ((& $adb -s $env:ANDROID_SERIAL shell getprop sys.boot_completed 2>$null) -eq "1") }
     $booted = Booted
     if (-not $booted) {
         # Device tests run on the installed LDPlayer (Imad's choice), not Android Studio's emulator.
         & "F:\LDPlayer\LDPlayer14\ldconsole.exe" launch --index 0
-        & cmd /c "`"$adb`" wait-for-device"
+        & cmd /c "`"$adb`" -s $env:ANDROID_SERIAL wait-for-device"
         $deadline = (Get-Date).AddMinutes(5)
         while (-not (Booted) -and (Get-Date) -lt $deadline) { Start-Sleep 3 }
     }
