@@ -122,3 +122,18 @@ the update out fast). Checked before that:
 | Same app path on the PC (yt-dlp without a JS runtime, like the phone) | Big Buck Bunny 720p, 160 MB, downloaded and joined |
 
 Not run for this release: desktop tests, Android device tests, extension e2e, installed-app smoke test.
+
+## 2026-10-25 Release 1.5.0: YouTube playlists
+
+IDM closed; phone tests on LDPlayer 14.
+
+| Suite | Result |
+| --- | --- |
+| `:core:test` | 64 tests, 0 failures (new: flat playlist parsing without private videos, playlist links, one download per ticked video, audio-only pick, player-style lengths) |
+| `:desktop:test` | 26 tests, 0 failures (new: playlist window render) |
+| `:desktop:test -PrealNetwork=true` playlist test | Real YouTube playlist "Settlers" (8 videos) listed; 2 videos downloaded as audio (17.8 MB, 15.0 MB) |
+| Android unit tests | 9 tests, 0 failures |
+| Android device tests on LDPlayer (real sites included) | 12 tests, 0 failures; new: the same playlist listed and its first video downloaded at 360p (34.9 MB) with video and audio tracks |
+| Manual on LDPlayer | Shared playlist link opens the tick-box list; All/None, ticks and quality chips work; the download popup has no connections slider |
+| Extension e2e (Chromium, Firefox) and installed-app HTTPS smoke test | PASS |
+
