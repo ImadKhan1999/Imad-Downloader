@@ -310,3 +310,6 @@ Imad asked for YouTube and other sites with quality choice, using yt-dlp if need
   ImadLabs quantum dot (Graphics repo apps/downloader). The kit's 1024 px icon and Android
   adaptive layers are used as they are (copied to branding/imadlabs/downloader/).
 - Imad asked not to test the Android app this time, only to build it properly.
+- Same day, Imad's kit replaced the ImadLabs HexaCore cube with a flat "iL" mark everywhere
+  (quantum-dot "i" and Cyber Mint "L"). The new ImadLabs logos are used in the Telegram popup and
+  the README banner (1.7.1); the downloader app icon in the kit did not change.

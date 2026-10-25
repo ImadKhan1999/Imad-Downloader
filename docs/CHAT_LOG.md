@@ -252,3 +252,14 @@ Telegram link and the first-run popup (D-019). Released as 1.6.0.
 Same yt-dlp engine as ytdlnis already bundled (all its sites); more quick-detect sites; YouTube bot
 check handled with fallback clients, QuickJS on Android, in-app browser cookies and a sign-in
 button; new cloud icon (D-020). Android built, not tested, as asked. Released as 1.7.0.
+
+**22:06, Imad (project chat)**
+
+> 1 more thing update the logo i have update the logo in the repo so use that and also it has a
+> folder for downloader think
+> so use the new logos that i generated.
+
+**Claude**
+
+Pulled the kit again: new flat "iL" ImadLabs logo now in the Telegram popup and banner; the
+downloader icon was already the kit's current one. Released 1.7.1 (Android built, not tested).

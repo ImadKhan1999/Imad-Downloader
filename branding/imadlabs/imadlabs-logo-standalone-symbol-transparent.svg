@@ -34,46 +34,6 @@
 
     <g id="hexacore-master-luxury">
         <!-- 3D Shadow Base Elevation -->
-        <polygon points="100,126 180,80 180,170 100,216 20,170 20,80" fill="none" opacity="0.15"/>
-
-        <!-- Top Facet (Data Ingress Diamond) -->
-        <polygon points="100,20 180,66 100,112 20,66" fill="url(#lux_top)" stroke="rgba(255, 255, 255, 0.22)" stroke-width="1.2" stroke-linejoin="round"/>
-        
-        <!-- Left Facet (Structural Mass) -->
-        <polygon points="20,74 100,120 100,212 20,166" fill="url(#lux_left)" stroke="rgba(255, 255, 255, 0.22)" stroke-width="1.2" stroke-linejoin="round"/>
-        
-        <!-- Right Facet (Forward Velocity Plane) -->
-        <polygon points="100,120 180,74 180,166 100,212" fill="url(#lux_right)" stroke="rgba(255, 255, 255, 0.22)" stroke-width="1.2" stroke-linejoin="round"/>
-
-        <!-- Recessed Quantum Well / Aperture on Top Facet -->
-        <polygon points="100,48 146,74 100,100 54,74" fill="#040813" stroke="rgba(0, 245, 160, 0.3)" stroke-width="1.5"/>
-
-        <!-- The Quantum Dot of the 'i' with Multilayer Aura -->
-        <circle cx="100" cy="74" r="18" fill="#00F5A0" opacity="0.25" filter="url(#lux_dot_pulse)"/>
-        <circle cx="100" cy="74" r="14" fill="#00FFC2" filter="url(#lux_mint_glow)"/>
-        <circle cx="100" cy="74" r="7" fill="#FFFFFF"/>
-
-        <!-- The Kinetic 'L' Energy Pathway (Descent + Sweep) -->
-        <!-- Outer Neon Aura -->
-        <path d="M 100 120 L 100 182 L 152 152" 
-              stroke="url(#lux_l_grad)" 
-              stroke-width="13" 
-              stroke-linecap="round" 
-              stroke-linejoin="round" 
-              fill="none" 
-              filter="url(#lux_mint_glow)"/>
-              
-        <!-- Inner Specular Conduit Core -->
-        <path d="M 100 123 L 100 180 L 150 151" 
-              stroke="#FFFFFF" 
-              stroke-width="4.5" 
-              stroke-linecap="round" 
-              stroke-linejoin="round" 
-              fill="none" 
-              opacity="0.9"/>
-
-        <!-- Kinetic Satellite Tip -->
-        <circle cx="152" cy="152" r="5.5" fill="#00FFC2"/>
-        <circle cx="152" cy="152" r="2.5" fill="#FFFFFF"/>
+        <g class="imadlabs-mark" transform="translate(20.00 20.00) scale(1.0000)"><defs><linearGradient id="ilm18g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00FFC2"/><stop offset="1" stop-color="#00D285"/></linearGradient><filter id="ilm18f" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><circle cx="42" cy="28" r="18" fill="#00FFC2" filter="url(#ilm18f)"/><circle cx="42" cy="28" r="8" fill="#FFFFFF"/><path d="M 42 76 L 42 172 L 122 172" fill="none" stroke="url(#ilm18g)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" filter="url(#ilm18f)"/><path d="M 42 80 L 42 168 L 118 168" fill="none" stroke="#FFFFFF" stroke-opacity="0.85" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></g>
     </g>
     </g></svg>
