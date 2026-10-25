@@ -16,5 +16,7 @@
 
 # Audio tools: jump3r (LAME) and JAAD carry javax.sound helpers the app never uses (absent on Android).
 -dontwarn javax.sound.**
+-dontwarn java.awt.**
+-dontwarn javax.imageio.**
 -keep class de.sciss.jump3r.** { *; }
--keep class net.sourceforge.jaad.** { *; }
+-keep class net.sourceforge.jaad.aac.** { *; }
