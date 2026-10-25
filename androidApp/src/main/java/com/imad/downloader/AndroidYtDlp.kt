@@ -6,6 +6,7 @@ import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.imad.downloader.core.MediaExtractor
 import com.imad.downloader.core.MediaInfo
+import com.imad.downloader.core.PlaylistInfo
 import com.imad.downloader.core.YtDlpJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -44,19 +45,25 @@ class AndroidYtDlp(private val context: Context) : MediaExtractor {
         lock.withLock { py().getModule("imad_ytdlp").callAttr("version", overridePath()).toString() }
     }
 
-    override suspend fun extract(url: String, headers: Map<String, String>): MediaInfo = withContext(Dispatchers.IO) {
+    override suspend fun extract(url: String, headers: Map<String, String>): MediaInfo =
+        YtDlpJson.parse(withRetry { call("extract", url, headers) })
+
+    override suspend fun extractPlaylist(url: String, headers: Map<String, String>): PlaylistInfo =
+        YtDlpJson.parsePlaylist(withRetry { call("extract_playlist", url, headers) })
+
+    private suspend fun withRetry(block: suspend () -> String): String = withContext(Dispatchers.IO) {
         try {
-            extractOnce(url, headers)
+            block()
         } catch (e: PyException) {
             // Sites (YouTube above all) change often and a newer yt-dlp usually copes: fetch the
             // newest one now (unless it was fetched in the last hour) and try once more.
             val updated = runCatching { updateIfDue(everyMillis = 3_600_000L) }.getOrDefault(false)
             if (!updated) throw IOException(friendly(e.message.orEmpty()))
-            try { extractOnce(url, headers) } catch (e2: PyException) { throw IOException(friendly(e2.message.orEmpty())) }
+            try { block() } catch (e2: PyException) { throw IOException(friendly(e2.message.orEmpty())) }
         }
     }
 
-    private suspend fun extractOnce(url: String, headers: Map<String, String>): MediaInfo {
+    private suspend fun call(function: String, url: String, headers: Map<String, String>): String {
         val cookie = headers.entries.firstOrNull { it.key.equals("Cookie", true) }?.value
         // yt-dlp picks the right browser identity per site (YouTube's player clients each need
         // their own); the in-app browser's phone User-Agent would override that, so it is not sent.
@@ -67,10 +74,9 @@ class AndroidYtDlp(private val context: Context) : MediaExtractor {
             if (!cookie.isNullOrBlank()) {
                 cookieFile = File.createTempFile("cookies", ".txt", context.cacheDir).apply { writeText(netscape(url, cookie)) }
             }
-            val out = lock.withLock {
-                py().getModule("imad_ytdlp").callAttr("extract", url, headersJson, cookieFile?.path, overridePath()).toString()
+            return lock.withLock {
+                py().getModule("imad_ytdlp").callAttr(function, url, headersJson, cookieFile?.path, overridePath()).toString()
             }
-            return YtDlpJson.parse(out)
         } finally {
             cookieFile?.delete()
         }

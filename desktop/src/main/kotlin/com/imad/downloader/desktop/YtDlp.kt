@@ -2,6 +2,7 @@ package com.imad.downloader.desktop
 
 import com.imad.downloader.core.MediaExtractor
 import com.imad.downloader.core.MediaInfo
+import com.imad.downloader.core.PlaylistInfo
 import com.imad.downloader.core.YtDlpJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -136,11 +137,18 @@ class YtDlpExtractor(
     private val cookiesFromBrowser: () -> String? = { null },
     private val onInstalling: (Long, Long) -> Unit = { _, _ -> },
 ) : MediaExtractor {
-    override suspend fun extract(url: String, headers: Map<String, String>): MediaInfo {
+    override suspend fun extract(url: String, headers: Map<String, String>): MediaInfo =
+        YtDlpJson.parse(run(url, headers, listOf("--no-playlist")))
+
+    override suspend fun extractPlaylist(url: String, headers: Map<String, String>): PlaylistInfo =
+        YtDlpJson.parsePlaylist(run(url, headers, listOf("--yes-playlist", "--flat-playlist")))
+
+    private suspend fun run(url: String, headers: Map<String, String>, mode: List<String>): String {
         tool.ensure(onInstalling)
         val js = runCatching { tool.jsRuntime() }.getOrNull()
         return withContext(Dispatchers.IO) {
-            val args = mutableListOf("-J", "--no-playlist", "--no-warnings", "--no-progress")
+            val args = mutableListOf("-J", "--no-warnings", "--no-progress")
+            args += mode
             js?.let { args += "--js-runtimes"; args += it }
             headers.forEach { (k, v) -> if (!k.equals("Cookie", true)) { args += "--add-header"; args += "$k:$v" } }
             var cookieFile: File? = null
@@ -151,7 +159,7 @@ class YtDlpExtractor(
             } else cookiesFromBrowser()?.takeIf { it.isNotBlank() }?.let { args += "--cookies-from-browser"; args += it }
             args += url
             try {
-                YtDlpJson.parse(tool.run(args, 120))
+                tool.run(args, 180)
             } finally {
                 cookieFile?.delete()
             }

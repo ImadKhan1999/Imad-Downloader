@@ -232,3 +232,25 @@ Imad asked for YouTube and other sites with quality choice, using yt-dlp if need
   restarting the app. The copy built into the APK is pinned to 2026.10.21 (builds had kept a
   2026.08.19 copy). The quality picked first on phones is the best up to 1080p (H.264 where
   offered) instead of 4K AV1, and normal audio is preferred over YouTube's "-drc" copies.
+
+## D-017 YouTube playlists and a simpler download popup (2026-10-25)
+
+- Imad asked for YouTube playlist downloads where people tick which videos to get and choose the
+  quality, and for the connections setting to leave the download popup (it stays in Settings as
+  the default for every download).
+- Both apps: a playlist link (`list=` on youtube.com / youtu.be) is read with
+  `yt-dlp --flat-playlist`, which lists titles and lengths quickly without reading every video.
+  Private and deleted videos are left out. The popup shows every video with a tick box (all ticked
+  at first), "All" / "None", and one quality for the whole playlist: Best, 1080p (default), 720p,
+  480p, 360p or Audio only. A video without the chosen height gets the next lower one.
+- Each ticked video becomes its own download in the list (so it can be paused, retried or removed
+  on its own). The exact format is chosen when it starts, from fresh links. Cookies, referer,
+  folder and queue come from the playlist page, so a signed-in browser session carries over.
+- A video opened from a playlist (`watch?v=...&list=...`) offers "This video" or "Whole playlist";
+  a playlist page goes straight to the list. The phone browser's download button also shows on
+  YouTube playlist pages.
+- The Android download sheet no longer has the connections slider; Windows had none in its
+  download dialog (the per-download Properties window still has it, for an existing download).
+- Seen in testing: after many test downloads YouTube started asking this PC's network to "confirm
+  you're not a bot", for the PC and LDPlayer alike. That is YouTube limiting the address, not the
+  app; signing in to YouTube in the app's browser (or the PC browser with the extension) passes it.

@@ -63,9 +63,35 @@ data class MediaOption(
     val audioOnly: Boolean = false,
 )
 
+/** One video of a playlist (title and page only; formats are read when it downloads). */
+@Serializable
+data class PlaylistEntry(val url: String, val title: String, val durationSeconds: Double = 0.0)
+
+/** A playlist page (YouTube playlists and the like). */
+@Serializable
+data class PlaylistInfo(val title: String, val entries: List<PlaylistEntry>)
+
+/** One quality for a whole playlist: each video takes the best format up to [height]. */
+data class PlaylistQuality(val label: String, val height: Int, val audioOnly: Boolean = false) {
+    /** What goes into [DownloadRequest.mediaFormat] (null = pick by height). */
+    val mediaFormat: String? get() = if (audioOnly) MediaChoice.AUDIO_ONLY else null
+
+    companion object {
+        val all = listOf(
+            PlaylistQuality("Best", 0), PlaylistQuality("1080p", 1080), PlaylistQuality("720p", 720),
+            PlaylistQuality("480p", 480), PlaylistQuality("360p", 360), PlaylistQuality("Audio only", 0, audioOnly = true),
+        )
+        val default = all[1]
+    }
+}
+
 /** Finds the real media behind a page URL (YouTube, Vimeo, X, Facebook, ...). */
 interface MediaExtractor {
     suspend fun extract(url: String, headers: Map<String, String> = emptyMap()): MediaInfo
+
+    /** The videos of a playlist page, without reading each one. */
+    suspend fun extractPlaylist(url: String, headers: Map<String, String> = emptyMap()): PlaylistInfo =
+        throw IOException("Playlists are not supported here")
 }
 
 /** Reads `yt-dlp -J` output. Shared by the Windows (yt-dlp.exe) and Android (youtubedl-android) extractors. */
@@ -87,6 +113,25 @@ object YtDlpJson {
             return fromObject(first)
         }
         return fromObject(root)
+    }
+
+    /** Reads `yt-dlp -J --flat-playlist` output; private and deleted videos are left out. */
+    fun parsePlaylist(text: String): PlaylistInfo {
+        val start = text.indexOf('{')
+        if (start < 0) throw IOException("No playlist found")
+        val root = json.parseToJsonElement(text.substring(start)) as? JsonObject ?: throw IOException("No playlist found")
+        val entries = (root["entries"] as? JsonArray).orEmpty().mapNotNull { e ->
+            val o = e as? JsonObject ?: return@mapNotNull null
+            val title = o.str("title").orEmpty()
+            if (title == "[Private video]" || title == "[Deleted video]") return@mapNotNull null
+            val url = o.str("url")?.takeIf { it.startsWith("http") }
+                ?: o.str("webpage_url")
+                ?: o.str("id")?.takeIf { (o.str("ie_key") ?: o.str("extractor_key") ?: "Youtube").startsWith("Youtube") }?.let { "https://www.youtube.com/watch?v=$it" }
+                ?: return@mapNotNull null
+            PlaylistEntry(url, title.ifBlank { "video" }, o.num("duration") ?: 0.0)
+        }
+        if (entries.isEmpty()) throw IOException("This playlist has no videos that can be downloaded")
+        return PlaylistInfo(root.str("title")?.takeIf { it.isNotBlank() } ?: "Playlist", entries)
     }
 
     private fun format(o: JsonObject, fallbackHeaders: Map<String, String>): MediaFormat? {
@@ -203,6 +248,7 @@ object MediaChoice {
     /** Picks the option matching [height] (0 = best) from a fresh format list, e.g. on resume. */
     fun pick(info: MediaInfo, spec: String?, height: Int): MediaOption? {
         val opts = options(info)
+        if (spec == AUDIO_ONLY) return opts.firstOrNull { it.audioOnly } ?: opts.firstOrNull()
         if (spec != null) {
             val ids = spec.split('+')
             if (ids.all { id -> info.formats.any { it.id == id } }) {
@@ -221,6 +267,34 @@ object MediaChoice {
         "streamable.com", "rumble.com", "ok.ru", "vk.com", "pinterest.com", "linkedin.com", "bandcamp.com",
     )
 
+    /**
+     * One download per chosen playlist video, all in [quality]. They keep [base]'s cookies,
+     * referer, folder and queue; the exact format is chosen when each one starts.
+     */
+    fun playlistRequests(base: DownloadRequest, entries: List<PlaylistEntry>, quality: PlaylistQuality): List<DownloadRequest> =
+        entries.map { e ->
+            base.copy(
+                url = e.url,
+                fileName = safeTitle(e.title) + if (quality.audioOnly) ".m4a" else ".mp4",
+                description = e.title,
+                kind = DownloadKind.MEDIA,
+                mediaFormat = quality.mediaFormat,
+                streamHeight = quality.height,
+                sizeHint = -1,
+            )
+        }
+
+    /** [DownloadRequest.mediaFormat] for "just the sound" (playlists in audio-only mode). */
+    const val AUDIO_ONLY = "audio-only"
+
+    /** YouTube playlist pages, and videos opened from a playlist (their URL carries `list=`). */
+    fun isPlaylist(url: String): Boolean {
+        val u = runCatching { URI(url.trim()) }.getOrNull() ?: return false
+        val host = u.host?.lowercase() ?: return false
+        if (host != "youtube.com" && !host.endsWith(".youtube.com") && host != "youtu.be") return false
+        return u.rawQuery?.split('&')?.any { it.startsWith("list=") && it.length > 5 } == true
+    }
+
     /** False for YouTube pages that are not a single video (home, search, channels), true elsewhere. */
     fun isVideoPage(url: String): Boolean {
         val u = runCatching { URI(url.trim()) }.getOrNull() ?: return false
@@ -229,7 +303,7 @@ object MediaChoice {
         return when {
             host == "youtu.be" -> path.length > 1
             host == "youtube.com" || host.endsWith(".youtube.com") ->
-                (path == "/watch" && u.rawQuery?.contains("v=") == true) ||
+                (path == "/watch" && u.rawQuery?.contains("v=") == true) || (path == "/playlist" && isPlaylist(url)) ||
                     listOf("/shorts/", "/live/", "/embed/").any { path.startsWith(it) && path.length > it.length }
             else -> true
         }

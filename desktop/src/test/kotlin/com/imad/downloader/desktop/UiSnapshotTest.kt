@@ -179,4 +179,17 @@ class UiSnapshotTest {
         a.browserSetupOpen = true
         snap("windows-browser-setup", 640, 520) { AllDialogs(a) }
     }
+
+    @Test fun `playlist dialog`() {
+        val a = app()
+        val entries = listOf("Character Modeling Preparation" to 1103.0, "Character Modeling Setup" to 927.0, "Character Blocking Part 1" to 1928.0,
+            "Character Blocking Part 2" to 1717.0, "Character Blocking Part 3" to 2776.0, "Character Sculpting Part 1" to 1950.0)
+            .mapIndexed { i, (t, d) -> com.imad.downloader.core.PlaylistEntry("https://www.youtube.com/watch?v=v$i", "Settlers - $t", d) }
+        a.fileInfo = FileInfoState(
+            DownloadRequest("https://www.youtube.com/playlist?list=PL1"), probing = false, playlistMode = true,
+            playlist = com.imad.downloader.core.PlaylistInfo("Settlers", entries), picked = setOf(0, 1, 2, 4),
+            saveDir = "C:\\Users\\Imad\\Downloads\\Hyper Downloader\\Video",
+        )
+        snap("windows-playlist", 700, 620) { AllDialogs(a) }
+    }
 }

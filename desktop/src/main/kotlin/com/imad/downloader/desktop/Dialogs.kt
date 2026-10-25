@@ -3,6 +3,7 @@ package com.imad.downloader.desktop
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,6 +48,7 @@ import com.imad.downloader.core.DownloadRequest
 import com.imad.downloader.core.DownloadStatus
 import com.imad.downloader.core.FileNames
 import com.imad.downloader.core.Format
+import com.imad.downloader.core.PlaylistQuality
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Base64
@@ -120,7 +122,8 @@ private fun FileInfoDialog(app: AppState, s: FileInfoState, theme: ThemeMode) {
     val queues = app.engine.queues
     var queue by remember { mutableStateOf(queues.first()) }
     fun update(f: (FileInfoState) -> FileInfoState) { app.fileInfo = app.fileInfo?.let(f) }
-    AppDialog("Download File Info", 620.dp, 380.dp, theme, { app.fileInfo = null }) {
+    if (s.playlistMode) { PlaylistDialog(app, s, theme); return }
+    AppDialog("Download File Info", 620.dp, if (s.playlist != null) 420.dp else 380.dp, theme, { app.fileInfo = null }) {
         Row(verticalAlignment = Alignment.Top) {
             Box(
                 Modifier.size(64.dp).clip(RoundedCornerShape(12.dp)).background(s.category.tint().copy(alpha = 0.12f)),
@@ -129,6 +132,13 @@ private fun FileInfoDialog(app: AppState, s: FileInfoState, theme: ThemeMode) {
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 FormRow("URL", 90.dp) { Field(s.request.url, {}, Modifier.fillMaxWidth(), readOnly = true) }
+                s.playlist?.let { pl ->
+                    FormRow("Playlist", 90.dp) {
+                        OutlinedButton({ update { it.copy(playlistMode = true, saveDir = app.engine.defaultDirFor(Category.VIDEO)) } }) {
+                            Text("Download the whole playlist (${pl.entries.size} videos)...")
+                        }
+                    }
+                }
                 FormRow("Category", 90.dp) {
                     Dropdown(s.category, Category.entries, { it.label }, Modifier.fillMaxWidth()) { c ->
                         update { it.copy(category = c, saveDir = app.engine.defaultDirFor(c)) }
@@ -209,6 +219,84 @@ private fun FileInfoDialog(app: AppState, s: FileInfoState, theme: ThemeMode) {
             Spacer(Modifier.weight(1f))
             TextButton({ app.fileInfo = null }) { Text("Cancel") }
             Button({ app.confirmFileInfo(s, start = true) }, enabled = s.fileName.isNotBlank() && !s.extracting) { Text("Start Download") }
+        }
+    }
+}
+
+/** YouTube playlist: tick the videos, pick one quality, download them all. */
+@Composable
+private fun PlaylistDialog(app: AppState, s: FileInfoState, theme: ThemeMode) {
+    val queues = app.engine.queues
+    var queue by remember { mutableStateOf(queues.first()) }
+    fun update(f: (FileInfoState) -> FileInfoState) { app.fileInfo = app.fileInfo?.let(f) }
+    val pl = s.playlist
+    AppDialog("Download Playlist", 680.dp, 600.dp, theme, { app.fileInfo = null }) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier.size(48.dp).clip(RoundedCornerShape(10.dp)).background(Category.VIDEO.tint().copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center,
+            ) { Icon(Category.VIDEO.icon(), null, Modifier.size(28.dp), tint = Category.VIDEO.tint()) }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                when {
+                    pl != null -> {
+                        Text(pl.title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text("${pl.entries.size} videos", fontSize = 12.sp, color = LocalPalette.current.muted)
+                    }
+                    s.loadingPlaylist -> Row(verticalAlignment = Alignment.CenterVertically) {
+                        CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                        Spacer(Modifier.width(8.dp)); Text("Reading the playlist...", fontSize = 13.sp)
+                    }
+                    else -> Text("Could not read this playlist: ${s.error ?: "unknown error"}", fontSize = 13.sp, color = LocalPalette.current.error)
+                }
+            }
+            if (s.request.url.contains("v=")) TextButton({ update { it.copy(playlistMode = false) } }) { Text("Just this video") }
+        }
+        VSpace(8.dp)
+        FormRow("Quality", 90.dp) {
+            Dropdown(s.playlistQuality, PlaylistQuality.all, { q -> if (q.height > 0) "${q.label} (or the next lower one)" else q.label }, Modifier.width(260.dp)) { q ->
+                update { it.copy(playlistQuality = q, saveDir = app.engine.defaultDirFor(if (q.audioOnly) Category.MUSIC else Category.VIDEO)) }
+            }
+        }
+        FormRow("Save to", 90.dp) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Field(s.saveDir, { v -> update { it.copy(saveDir = v) } }, Modifier.weight(1f))
+                Spacer(Modifier.width(6.dp))
+                OutlinedButton({ Platform.chooseFolder(s.saveDir)?.let { f -> update { it.copy(saveDir = f) } } }, Modifier.height(32.dp)) { Text("...") }
+            }
+        }
+        VSpace(6.dp)
+        if (pl != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("${s.picked.size} of ${pl.entries.size} selected", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                TextButton({ update { it.copy(picked = pl.entries.indices.toSet()) } }) { Text("Select all") }
+                TextButton({ update { it.copy(picked = emptySet()) } }) { Text("Select none") }
+            }
+            Box(Modifier.weight(1f).fillMaxWidth().border(1.dp, LocalPalette.current.gridLine, RoundedCornerShape(6.dp))) {
+                androidx.compose.foundation.lazy.LazyColumn(Modifier.padding(vertical = 2.dp)) {
+                    items(pl.entries.size) { i ->
+                        val e = pl.entries[i]
+                        Row(
+                            Modifier.fillMaxWidth().clickable { update { it.copy(picked = if (i in it.picked) it.picked - i else it.picked + i) } }
+                                .padding(horizontal = 8.dp, vertical = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            androidx.compose.material3.Checkbox(i in s.picked, { on -> update { it.copy(picked = if (on) it.picked + i else it.picked - i) } })
+                            Text("${i + 1}.", fontSize = 12.sp, color = LocalPalette.current.muted, modifier = Modifier.width(34.dp))
+                            Text(e.title, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                            if (e.durationSeconds > 0) Text(Format.clock(e.durationSeconds.toLong()), fontSize = 12.sp, color = LocalPalette.current.muted)
+                        }
+                    }
+                }
+            }
+        } else Spacer(Modifier.weight(1f))
+        VSpace(8.dp)
+        ButtonRow {
+            Dropdown(queue, queues, { it.name }, Modifier.width(150.dp)) { queue = it }
+            OutlinedButton({ app.confirmFileInfo(s, start = false, queueId = queue.id) }, enabled = pl != null && s.picked.isNotEmpty()) { Text("Download Later") }
+            Spacer(Modifier.weight(1f))
+            TextButton({ app.fileInfo = null }) { Text("Cancel") }
+            Button({ app.confirmFileInfo(s, start = true) }, enabled = pl != null && s.picked.isNotEmpty()) { Text("Download ${s.picked.size} videos") }
         }
     }
 }

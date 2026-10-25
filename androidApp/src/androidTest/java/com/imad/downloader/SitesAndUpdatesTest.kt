@@ -99,4 +99,30 @@ class SitesAndUpdatesTest {
         android.util.Log.i("ImadTest", "youtube: ${yt.fold({ "ok ${it.title} ${MediaChoice.options(it).map { o -> o.label }}" }, { "refused: ${it.message}" })}")
         yt.onFailure { assertTrue(it.message!!, it.message!!.contains("signed in") || it.message!!.contains("Sign")) }
     }
+
+    /** YouTube on the phone: a playlist is listed and its first video downloads with sound (realNetwork). */
+    @Test fun youtubePlaylistOnThePhone() {
+        assumeTrue(realNetwork)
+        val dir = File(ctx.cacheDir, "playlist").apply { deleteRecursively(); mkdirs() }
+        val engine = DownloadEngine(EngineConfig(defaultSaveDir = dir.path, categorySubfolders = false), InMemoryStore(), mediaExtractor = AndroidYtDlp(ctx))
+        val url = "https://m.youtube.com/playlist?list=PLa1F2ddGya_8Pn07ZxzgxFRw5iQbovXZv"
+        val pl = runCatching { runBlocking { engine.extractPlaylist(url) } }
+        pl.onFailure { e -> assumeTrue("YouTube asked this network to sign in: ${e.message}", e.message?.contains("signed in") != true) }
+        val playlist = pl.getOrThrow()
+        android.util.Log.i("ImadTest", "playlist ${playlist.title}: ${playlist.entries.size} videos")
+        assertTrue(playlist.entries.size >= 5)
+        val req = MediaChoice.playlistRequests(DownloadRequest(url), playlist.entries.take(1), com.imad.downloader.core.PlaylistQuality.all.first { it.height == 360 }).single()
+        val item = engine.add(req)
+        val done = runBlocking {
+            withTimeout(600_000) { engine.state.first { s -> s.downloads.first { it.id == item.id }.status.let { it == DownloadStatus.COMPLETED || it == DownloadStatus.FAILED } } }
+                .downloads.first { it.id == item.id }
+        }
+        assertEquals(done.error, DownloadStatus.COMPLETED, done.status)
+        val f = File(done.filePath)
+        android.util.Log.i("ImadTest", "saved ${done.fileName} ${f.length()} bytes")
+        val ex = android.media.MediaExtractor().apply { setDataSource(f.path) }
+        val mimes = (0 until ex.trackCount).map { ex.getTrackFormat(it).getString(android.media.MediaFormat.KEY_MIME).orEmpty() }
+        ex.release()
+        assertTrue("tracks $mimes", mimes.any { it.startsWith("video/") } && mimes.any { it.startsWith("audio/") })
+    }
 }

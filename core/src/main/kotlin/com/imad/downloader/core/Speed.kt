@@ -92,4 +92,13 @@ object Format {
             else -> "$s sec"
         }
     }
+
+    /** Video length the way players show it: 4:07, 18:23, 1:02:45. */
+    fun clock(seconds: Long): String {
+        if (seconds < 0) return ""
+        val h = seconds / 3600
+        val m = (seconds % 3600) / 60
+        val s = seconds % 60
+        return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
+    }
 }

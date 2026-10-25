@@ -155,11 +155,17 @@ fun AppRoot(app: ImadApp, browser: BrowserController, activity: MainActivity) {
 
         addRequest?.let { req ->
             AddDownloadSheet(
-                app.engine, req, settings.connections,
+                app.engine, req,
                 onDismiss = { addRequest = null },
-                onAdded = { started ->
+                onAdded = { started, count ->
                     addRequest = null
-                    Toast.makeText(context, if (started) "Download started" else "Added to the list", Toast.LENGTH_SHORT).show()
+                    val msg = when {
+                        count > 1 && started -> "$count downloads started"
+                        count > 1 -> "$count downloads added to the list"
+                        started -> "Download started"
+                        else -> "Added to the list"
+                    }
+                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                 },
                 canStart = { app.canDownloadNow() },
             )

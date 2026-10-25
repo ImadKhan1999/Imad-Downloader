@@ -22,6 +22,7 @@ with a built-in browser). Both apps share one Kotlin download engine.
 - Speed limiter (global and per download), queues, daily scheduler
 - HLS (`.m3u8`) and DASH (`.mpd`) video streams with a quality picker; separate video and audio are joined into one MP4; AES-128 HLS supported
 - YouTube and 1000+ other sites through yt-dlp, with a quality list (video and audio joined into one MP4)
+- YouTube playlists: tick the videos you want, pick one quality (or audio only) for all of them
 - Batch downloads (`file[001-100].jpg`), checksums, smart file names, category folders
 - In-app updates on both apps (download with progress, verified, then installed)
 

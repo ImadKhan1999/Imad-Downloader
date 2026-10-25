@@ -20,6 +20,8 @@ import com.imad.downloader.core.DownloadKind
 import com.imad.downloader.core.MediaChoice
 import com.imad.downloader.core.MediaInfo
 import com.imad.downloader.core.MediaOption
+import com.imad.downloader.core.PlaylistInfo
+import com.imad.downloader.core.PlaylistQuality
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -74,6 +76,12 @@ data class FileInfoState(
     val media: MediaInfo? = null,
     val mediaOptions: List<MediaOption> = emptyList(),
     val mediaOption: MediaOption? = null,
+    /** YouTube playlists: all videos with tick boxes and one quality for all. */
+    val playlist: PlaylistInfo? = null,
+    val playlistMode: Boolean = false,
+    val loadingPlaylist: Boolean = false,
+    val picked: Set<Int> = emptySet(),
+    val playlistQuality: PlaylistQuality = PlaylistQuality.default,
 ) {
     fun withOption(o: MediaOption): FileInfoState = copy(
         mediaOption = o,
@@ -233,6 +241,12 @@ class AppState(
     fun showFileInfo(request: DownloadRequest) {
         val initial = FileInfoState(request)
         fileInfo = initial.copy(saveDir = engine.defaultDirFor(initial.category))
+        if (MediaChoice.isPlaylist(request.url) && request.mediaFormat == null) {
+            // A playlist page lists its videos; a video opened from a playlist offers both.
+            val onlyPlaylist = !request.url.contains("v=")
+            loadPlaylist(request, onlyPlaylist)
+            if (onlyPlaylist) return
+        }
         if (MediaChoice.isKnownSite(request.url) && request.mediaFormat == null) {
             loadMedia(request, quiet = false)
             return
@@ -289,6 +303,24 @@ class AppState(
         }
     }
 
+    private fun loadPlaylist(request: DownloadRequest, show: Boolean) {
+        fileInfo = fileInfo?.copy(
+            loadingPlaylist = true, playlistMode = show, probing = if (show) false else fileInfo?.probing ?: false,
+            saveDir = if (show) engine.defaultDirFor(Category.VIDEO) else fileInfo?.saveDir.orEmpty(),
+        )
+        ioScope.launch {
+            val r = runCatching { engine.extractPlaylist(request.url, buildHeaders(request)) }
+            scope.launch {
+                val cur = fileInfo ?: return@launch
+                if (cur.request != request) return@launch
+                fileInfo = r.fold(
+                    { pl -> cur.copy(loadingPlaylist = false, playlist = pl, picked = pl.entries.indices.toSet(), error = if (cur.playlistMode) null else cur.error) },
+                    { e -> cur.copy(loadingPlaylist = false, error = if (cur.playlistMode) e.message ?: "Could not read this playlist" else cur.error) },
+                )
+            }
+        }
+    }
+
     private fun loadQualities(request: DownloadRequest, url: String) {
         ioScope.launch {
             val q = runCatching { engine.streamQualities(url, buildHeaders(request), request.referer) }.getOrDefault(emptyList())
@@ -307,6 +339,13 @@ class AppState(
 
     fun confirmFileInfo(state: FileInfoState, start: Boolean, queueId: String? = null) {
         fileInfo = null
+        val pl = state.playlist
+        if (state.playlistMode && pl != null) {
+            val chosen = pl.entries.filterIndexed { i, _ -> i in state.picked }
+            val base = state.request.copy(saveDir = state.saveDir, queueId = queueId ?: state.request.queueId)
+            MediaChoice.playlistRequests(base, chosen, state.playlistQuality).forEach { startDownload(it, start) }
+            return
+        }
         val item = startDownload(
             state.request.copy(
                 fileName = state.fileName,

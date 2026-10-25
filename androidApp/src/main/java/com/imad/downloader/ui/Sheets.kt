@@ -2,6 +2,7 @@
 
 package com.imad.downloader.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,7 +42,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -71,8 +71,12 @@ import com.imad.downloader.core.DownloadRequest
 import com.imad.downloader.core.DownloadStatus
 import com.imad.downloader.core.FileNames
 import com.imad.downloader.core.Format
+import com.imad.downloader.core.MediaChoice
+import com.imad.downloader.core.PlaylistInfo
+import com.imad.downloader.core.PlaylistQuality
 import com.imad.downloader.core.ProbeResult
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
@@ -84,15 +88,13 @@ import java.util.Date
 fun AddDownloadSheet(
     engine: DownloadEngine,
     initial: DownloadRequest,
-    defaultConnections: Int,
     onDismiss: () -> Unit,
-    onAdded: (started: Boolean) -> Unit,
+    onAdded: (started: Boolean, count: Int) -> Unit,
     canStart: () -> Boolean,
 ) {
     var url by remember { mutableStateOf(initial.url) }
     var name by remember { mutableStateOf(initial.fileName ?: FileNames.fromUrl(initial.url)?.let(FileNames::sanitize).orEmpty()) }
     var nameEdited by remember { mutableStateOf(initial.fileName != null) }
-    var connections by remember { mutableStateOf(defaultConnections.toFloat()) }
     var probe by remember { mutableStateOf<ProbeResult?>(null) }
     var probing by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -104,6 +106,12 @@ fun AddDownloadSheet(
     var media by remember { mutableStateOf<com.imad.downloader.core.MediaInfo?>(null) }
     var mediaOptions by remember { mutableStateOf<List<com.imad.downloader.core.MediaOption>>(emptyList()) }
     var mediaOption by remember { mutableStateOf<com.imad.downloader.core.MediaOption?>(null) }
+    // YouTube playlists: every video listed with a tick box, one quality for all.
+    var playlist by remember { mutableStateOf<PlaylistInfo?>(null) }
+    var playlistMode by remember { mutableStateOf(false) }
+    var loadingPlaylist by remember { mutableStateOf(false) }
+    var picked by remember { mutableStateOf(setOf<Int>()) }
+    var playlistQuality by remember { mutableStateOf(PlaylistQuality.default) }
     val valid = url.startsWith("http://", true) || url.startsWith("https://", true)
 
     LaunchedEffect(url) {
@@ -115,7 +123,21 @@ fun AddDownloadSheet(
             initial.cookies?.let { put("Cookie", it) }
             initial.userAgent?.let { put("User-Agent", it) }
         }
-        media = null; mediaOptions = emptyList(); mediaOption = null
+        media = null; mediaOptions = emptyList(); mediaOption = null; playlist = null; playlistMode = false
+        if (MediaChoice.isPlaylist(url)) {
+            // A playlist page lists its videos; a video opened from a playlist offers both.
+            val onlyPlaylist = !url.contains("v=")
+            probing = false
+            if (onlyPlaylist) playlistMode = true
+            launch {
+                loadingPlaylist = true
+                val r = withContext(Dispatchers.IO) { runCatching { engine.extractPlaylist(url.trim(), headers) } }
+                loadingPlaylist = false
+                r.onSuccess { pl -> playlist = pl; picked = pl.entries.indices.toSet() }
+                    .onFailure { if (playlistMode) error = it.message ?: "Could not read this playlist" }
+            }
+            if (onlyPlaylist) return@LaunchedEffect
+        }
         suspend fun tryMedia(quiet: Boolean) {
             extracting = true
             val m = withContext(Dispatchers.IO) { runCatching { engine.extractMedia(url.trim(), headers) } }
@@ -146,16 +168,25 @@ fun AddDownloadSheet(
     }
 
     val category = when {
+        playlistMode -> if (playlistQuality.audioOnly) Category.MUSIC else Category.VIDEO
         mediaOption?.audioOnly == true -> Category.MUSIC
         media != null || probe?.isStream == true -> Category.VIDEO
         else -> Category.detect(name, probe?.mimeType)
     }
     val folder = engine.defaultDirFor(category)
     fun add(start: Boolean) {
+        val pl = playlist
+        if (playlistMode && pl != null) {
+            val chosen = pl.entries.filterIndexed { i, _ -> i in picked }
+            val base = initial.copy(queueId = if (start) initial.queueId else queueId)
+            runCatching { MediaChoice.playlistRequests(base, chosen, playlistQuality).forEach { engine.add(it, start = start && canStart()) } }
+                .onSuccess { onAdded(start, chosen.size) }
+                .onFailure { error = it.message }
+            return
+        }
         val req = initial.copy(
             url = url.trim(),
             fileName = name.trim().ifBlank { null }?.takeIf { nameEdited || probe != null },
-            maxConnections = connections.toInt(),
             sizeHint = probe?.totalBytes ?: initial.sizeHint,
             kind = when {
                 mediaOption != null -> DownloadKind.MEDIA
@@ -168,7 +199,7 @@ fun AddDownloadSheet(
             queueId = if (start) initial.queueId else queueId,
         ).let { if (mediaOption != null) it.copy(fileName = name.trim(), sizeHint = mediaOption!!.sizeEstimate) else it }
         runCatching { engine.add(req, start = start && canStart()) }
-            .onSuccess { onAdded(start) }
+            .onSuccess { onAdded(start, 1) }
             .onFailure { error = it.message }
     }
 
@@ -180,6 +211,14 @@ fun AddDownloadSheet(
                 Column(Modifier.weight(1f)) {
                     Text("New download", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
                     when {
+                        playlistMode && playlist != null -> Text(
+                            "Playlist  •  ${playlist!!.title}  •  ${playlist!!.entries.size} videos",
+                            fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                        )
+                        playlistMode && loadingPlaylist -> Row(verticalAlignment = Alignment.CenterVertically) {
+                            CircularProgressIndicator(Modifier.size(14.dp), strokeWidth = 2.dp)
+                            Spacer(Modifier.width(8.dp)); Text("Reading the playlist...", fontSize = 13.sp)
+                        }
                         extracting -> Row(verticalAlignment = Alignment.CenterVertically) {
                             CircularProgressIndicator(Modifier.size(14.dp), strokeWidth = 2.dp)
                             Spacer(Modifier.width(8.dp)); Text("Finding the video...", fontSize = 13.sp)
@@ -208,12 +247,25 @@ fun AddDownloadSheet(
             Spacer(Modifier.height(16.dp))
             OutlinedTextField(url, { url = it.trim() }, Modifier.fillMaxWidth().testTag("url-field"), label = { Text("Link") }, singleLine = true, isError = url.isNotEmpty() && !valid)
             Spacer(Modifier.height(10.dp))
-            OutlinedTextField(name, { name = it; nameEdited = true }, Modifier.fillMaxWidth().testTag("name-field"), label = { Text("File name") }, singleLine = true)
-            Spacer(Modifier.height(10.dp))
+            val pl = playlist
+            if (pl != null && url.contains("v=")) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(!playlistMode, { playlistMode = false }, label = { Text("This video") }, modifier = Modifier.testTag("mode-video"))
+                    FilterChip(playlistMode, { playlistMode = true }, label = { Text("Whole playlist (${pl.entries.size})") }, modifier = Modifier.testTag("mode-playlist"))
+                }
+                Spacer(Modifier.height(10.dp))
+            }
+            if (playlistMode) {
+                PlaylistPicker(pl, picked, { picked = it }, playlistQuality, { playlistQuality = it })
+            } else {
+                OutlinedTextField(name, { name = it; nameEdited = true }, Modifier.fillMaxWidth().testTag("name-field"), label = { Text("File name") }, singleLine = true)
+                Spacer(Modifier.height(10.dp))
+            }
             Text("Save to", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(folder, fontSize = 14.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            val shownFolder = if (playlistMode) engine.defaultDirFor(if (playlistQuality.audioOnly) Category.MUSIC else Category.VIDEO) else folder
+            Text(shownFolder, fontSize = 14.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(12.dp))
-            if (mediaOptions.isNotEmpty()) {
+            if (mediaOptions.isNotEmpty() && !playlistMode) {
                 Text("Quality", fontSize = 14.sp)
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     mediaOptions.forEach { o ->
@@ -246,15 +298,63 @@ fun AddDownloadSheet(
                 }
                 Spacer(Modifier.height(12.dp))
             }
-            Text("Connections: ${connections.toInt()}", fontSize = 14.sp)
-            Slider(connections, { connections = it }, valueRange = 1f..32f)
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
+            val ready = if (playlistMode) playlist != null && picked.isNotEmpty() else valid && name.isNotBlank() && !extracting
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedButton({ add(false) }, Modifier.weight(1f), enabled = valid) { Text("Later") }
-                Button({ add(true) }, Modifier.weight(1f).testTag("start-download"), enabled = valid && name.isNotBlank() && !extracting) { Text("Download") }
+                OutlinedButton({ add(false) }, Modifier.weight(1f), enabled = valid && ready) { Text("Later") }
+                Button({ add(true) }, Modifier.weight(1f).testTag("start-download"), enabled = ready) {
+                    Text(if (playlistMode) "Download ${picked.size}" else "Download")
+                }
             }
         }
     }
+}
+
+/** Playlist videos with tick boxes, select all / none, and one quality for all of them. */
+@Composable
+private fun PlaylistPicker(
+    playlist: PlaylistInfo?, picked: Set<Int>, onPicked: (Set<Int>) -> Unit,
+    quality: PlaylistQuality, onQuality: (PlaylistQuality) -> Unit,
+) {
+    Text("Quality for every video", fontSize = 14.sp)
+    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        PlaylistQuality.all.forEach { q ->
+            FilterChip(quality == q, { onQuality(q) }, label = { Text(q.label) }, modifier = Modifier.testTag("pl-quality-${q.label}"))
+        }
+    }
+    if (quality.height > 0) {
+        Text("Videos without ${quality.label} get the next lower quality.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+    Spacer(Modifier.height(8.dp))
+    if (playlist == null) return
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text("${picked.size} of ${playlist.entries.size} selected", fontSize = 14.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+        TextButton({ onPicked(playlist.entries.indices.toSet()) }, modifier = Modifier.testTag("pl-all")) { Text("All") }
+        TextButton({ onPicked(emptySet()) }, modifier = Modifier.testTag("pl-none")) { Text("None") }
+    }
+    androidx.compose.material3.Surface(
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    ) {
+        Column(Modifier.fillMaxWidth().heightIn(max = 340.dp).verticalScroll(rememberScrollState()).padding(vertical = 4.dp)) {
+            playlist.entries.forEachIndexed { i, e ->
+                Row(
+                    Modifier.fillMaxWidth().clickable { onPicked(if (i in picked) picked - i else picked + i) }
+                        .padding(horizontal = 4.dp).testTag("pl-item-$i"),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Checkbox(i in picked, { on -> onPicked(if (on) picked + i else picked - i) })
+                    Text("${i + 1}.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(30.dp))
+                    Text(e.title, fontSize = 14.sp, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                    if (e.durationSeconds > 0) {
+                        Text(Format.clock(e.durationSeconds.toLong()), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 8.dp))
+                    }
+                }
+            }
+        }
+    }
+    Spacer(Modifier.height(12.dp))
 }
 
 // ------------------------------------------------------------------ details

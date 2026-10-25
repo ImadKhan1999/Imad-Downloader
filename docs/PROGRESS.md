@@ -11,6 +11,8 @@
 | 7. v1.2.0: YouTube and other sites (yt-dlp), in-app updates, release script | Done 2026-10-14 |
 | 8. v1.3.0: extension for Firefox too, app finds your browsers and adds the extension | Done 2026-10-15 |
 | 9. v1.4.0: renamed to Hyper Downloader, new logo, icons and colours | Done 2026-10-15 |
+| 10. v1.4.1: Android browser blank screen fixed, sturdier YouTube | Done 2026-10-23 |
+| 11. v1.5.0: YouTube playlists (tick videos, one quality), no connections in the popup | Done 2026-10-25 |
 
 ## Log
 

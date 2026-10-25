@@ -62,6 +62,26 @@ class YtDlpRealTest {
         return done to opt
     }
 
+    @Test fun `youtube playlist lists its videos and two of them download as audio`() {
+        assumeTrue(enabled)
+        val url = "https://www.youtube.com/playlist?list=PLa1F2ddGya_8Pn07ZxzgxFRw5iQbovXZv"
+        val pl = runBlocking { engine.extractPlaylist(url) }
+        println("[$url] ${pl.title}: ${pl.entries.size} videos, first ${pl.entries.first().title}")
+        assertTrue(pl.entries.size >= 5)
+        val reqs = MediaChoice.playlistRequests(DownloadRequest(url), pl.entries.take(2), com.imad.downloader.core.PlaylistQuality.all.last())
+        val items = reqs.map { engine.add(it) }
+        val done = runBlocking {
+            withTimeout(600_000) {
+                engine.state.first { s -> items.all { i -> s.downloads.first { it.id == i.id }.status.let { it == DownloadStatus.COMPLETED || it == DownloadStatus.FAILED } } }
+            }.downloads.filter { d -> items.any { it.id == d.id } }
+        }
+        done.forEach { d ->
+            assertEquals(DownloadStatus.COMPLETED, d.status, d.error)
+            println("  saved ${d.fileName}: ${File(d.filePath).length()} bytes")
+            assertTrue(d.fileName.endsWith(".m4a") && File(d.filePath).length() > 500_000)
+        }
+    }
+
     @Test fun `archive org progressive video`() {
         assumeTrue(enabled)
         val (done, _) = download("https://archive.org/details/BigBuckBunny_124") { opts -> opts.filter { !it.audioOnly }.minBy { it.sizeEstimate.takeIf { s -> s > 0 } ?: Long.MAX_VALUE } }

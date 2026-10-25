@@ -180,3 +180,17 @@ on inside it; asked Imad to turn it off for testing.
 Tested YouTube in the phone browser on LDPlayer (video with sound), then released 1.4.1 without
 the remaining test suites as asked. release.ps1 got `-SkipTests` for that and now reuses a
 release left over from an interrupted run.
+
+## 2026-10-25
+
+**11:10, Imad (project chat)**
+
+> futhermore, can u make it download yt playlist too
+> and also dont show connections in download popup users can just set in default for downloads,
+> in playlist they will be able to check uncheck which to download or which to now and also
+> quality selection.
+
+**Claude**
+
+Added YouTube playlists to both apps with a tick-box list and one quality for all, and removed the
+connections slider from the Android download popup (D-017). Released as 1.5.0.

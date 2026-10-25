@@ -98,6 +98,9 @@ class DownloadEngine(
     suspend fun extractMedia(url: String, headers: Map<String, String> = emptyMap()): MediaInfo =
         (mediaExtractor ?: throw java.io.IOException("Video sites are not available")).extract(url, headers)
 
+    suspend fun extractPlaylist(url: String, headers: Map<String, String> = emptyMap()): PlaylistInfo =
+        (mediaExtractor ?: throw java.io.IOException("Video sites are not available")).extractPlaylist(url, headers)
+
     /** Qualities offered by an HLS master playlist or DASH manifest (empty when there is no choice). */
     suspend fun streamQualities(url: String, headers: Map<String, String> = emptyMap(), referer: String? = null): List<StreamQuality> {
         val ua = headers.entries.firstOrNull { it.key.equals("User-Agent", true) }?.value ?: config.userAgent

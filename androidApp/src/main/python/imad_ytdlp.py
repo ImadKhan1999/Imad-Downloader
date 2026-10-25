@@ -53,3 +53,26 @@ def extract(url, headers_json, cookie_file, override_path):
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info(url, download=False)
         return json.dumps(ydl.sanitize_info(info))
+
+
+def extract_playlist(url, headers_json, cookie_file, override_path):
+    """Returns `yt-dlp -J --flat-playlist` style JSON: the playlist's videos without their formats."""
+    _use_override(override_path)
+    import yt_dlp
+
+    opts = {
+        "quiet": True,
+        "no_warnings": True,
+        "noplaylist": False,
+        "extract_flat": "in_playlist",
+        "skip_download": True,
+        "noprogress": True,
+    }
+    headers = json.loads(headers_json or "{}")
+    if headers:
+        opts["http_headers"] = headers
+    if cookie_file:
+        opts["cookiefile"] = cookie_file
+    with yt_dlp.YoutubeDL(opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+        return json.dumps(ydl.sanitize_info(info))

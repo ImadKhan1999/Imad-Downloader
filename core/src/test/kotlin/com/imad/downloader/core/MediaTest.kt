@@ -102,6 +102,63 @@ class YtDlpJsonTest {
     }
 }
 
+class PlaylistTest {
+    private val flat = """
+        {"_type":"playlist","title":"Settlers","entries":[
+         {"_type":"url","ie_key":"Youtube","id":"BIRCCQHz-B8","url":"https://www.youtube.com/watch?v=BIRCCQHz-B8","title":"Settlers - Modeling: Prep","duration":1103},
+         {"_type":"url","ie_key":"Youtube","id":"priv1","url":"https://www.youtube.com/watch?v=priv1","title":"[Private video]","duration":null},
+         {"_type":"url","ie_key":"Youtube","id":"x2","title":"Settlers - Setup","duration":927}
+        ]}
+    """.trimIndent()
+
+    @Test fun `reads a flat playlist and skips private videos`() {
+        val pl = YtDlpJson.parsePlaylist("WARNING: x\n$flat")
+        assertEquals("Settlers", pl.title)
+        assertEquals(listOf("https://www.youtube.com/watch?v=BIRCCQHz-B8", "https://www.youtube.com/watch?v=x2"), pl.entries.map { it.url })
+        assertEquals(1103.0, pl.entries[0].durationSeconds)
+        assertFailsWith<java.io.IOException> { YtDlpJson.parsePlaylist("""{"_type":"playlist","entries":[]}""") }
+    }
+
+    @Test fun `knows playlist links`() {
+        assertTrue(MediaChoice.isPlaylist("https://www.youtube.com/playlist?list=PLa1F2ddGya_8Pn07ZxzgxFRw5iQbovXZv"))
+        assertTrue(MediaChoice.isPlaylist("https://m.youtube.com/watch?v=abc&list=PLx1"))
+        assertTrue(!MediaChoice.isPlaylist("https://www.youtube.com/watch?v=abc"))
+        assertTrue(!MediaChoice.isPlaylist("https://example.com/playlist?list=1"))
+        assertTrue(MediaChoice.isVideoPage("https://m.youtube.com/playlist?list=PLx1"))
+    }
+
+    @Test fun `one download per ticked video in the chosen quality`() {
+        val pl = YtDlpJson.parsePlaylist(flat)
+        val base = DownloadRequest("https://www.youtube.com/playlist?list=PL1", cookies = "a=b", queueId = "night")
+        val video = MediaChoice.playlistRequests(base, pl.entries, PlaylistQuality.all.first { it.height == 720 })
+        assertEquals(2, video.size)
+        assertEquals("Settlers - Modeling_ Prep.mp4", video[0].fileName)
+        assertEquals(720, video[0].streamHeight)
+        assertEquals(null, video[0].mediaFormat)
+        assertEquals(DownloadKind.MEDIA, video[0].kind)
+        assertEquals("a=b", video[1].cookies)
+        assertEquals("night", video[1].queueId)
+        val audio = MediaChoice.playlistRequests(base, pl.entries.take(1), PlaylistQuality.all.last())
+        assertEquals("Settlers - Modeling_ Prep.m4a", audio.single().fileName)
+        assertEquals(MediaChoice.AUDIO_ONLY, audio.single().mediaFormat)
+    }
+
+    @Test fun `video lengths read like a player`() {
+        assertEquals("0:07", Format.clock(7))
+        assertEquals("18:23", Format.clock(1103))
+        assertEquals("1:02:45", Format.clock(3765))
+    }
+
+    @Test fun `audio only picks the sound track`() {
+        val info = MediaInfo("t", "u", "Youtube", 10.0, null, listOf(
+            MediaFormat("137", "mp4", "https://g/137", vcodec = "avc1", height = 1080, tbr = 3000.0),
+            MediaFormat("140", "m4a", "https://g/140", acodec = "mp4a.40.2", tbr = 129.0),
+        ))
+        assertEquals("140", MediaChoice.pick(info, MediaChoice.AUDIO_ONLY, 0)!!.formatSpec)
+        assertEquals("137+140", MediaChoice.pick(info, null, 720)!!.formatSpec)
+    }
+}
+
 class MediaDownloadTest {
     private lateinit var server: TestServer
     private lateinit var dir: File
