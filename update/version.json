@@ -1,19 +1,19 @@
 {
     "android":  {
-                    "version":  "1.8.0",
-                    "versionCode":  12,
-                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.8.0/iDownloader-1.8.0.apk",
-                    "sha256":  "de732605637ffdeed3c2e6c09bc471e75c6c6a2dabe0cdf76d932699b54a428f",
-                    "size":  27934983,
-                    "changelog":  "New look with the Hyper Downloader logo and a startup animation on Android. Audio downloads keep their cover picture, title and artist, and there is now an MP3 option. iDownloader shows in the share menu of any app.",
+                    "version":  "1.8.1",
+                    "versionCode":  13,
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.8.1/iDownloader-1.8.1.apk",
+                    "sha256":  "c5e260a4f5eb75f49a54d91ff10d223b3b00baeb8557456e8c0e1bb50744d995",
+                    "size":  27937423,
+                    "changelog":  "Fixes the \u0027zipimport error / bad local header\u0027 when sharing links from TikTok, Instagram and other apps. New downloads are saved in Download/iDownloader.",
                     "mandatory":  false
                 },
     "windows":  {
-                    "version":  "1.8.0",
-                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.8.0/iDownloader-1.8.0.msi",
-                    "sha256":  "00e71d69c5a27f7150428075782781a7254e9cbed524cdc87ff93ab1994007c9",
+                    "version":  "1.8.1",
+                    "url":  "https://github.com/ImadKhan1999/Imad-Downloader/releases/download/v1.8.1/iDownloader-1.8.1.msi",
+                    "sha256":  "363249a8f41581216399a5db92947ef5f75ea1e8951f62420a5b4c8b830b5ce3",
                     "size":  101811256,
-                    "changelog":  "New look with the Hyper Downloader logo and a startup animation on Android. Audio downloads keep their cover picture, title and artist, and there is now an MP3 option. iDownloader shows in the share menu of any app.",
+                    "changelog":  "Fixes the \u0027zipimport error / bad local header\u0027 when sharing links from TikTok, Instagram and other apps. New downloads are saved in Download/iDownloader.",
                     "mandatory":  false
                 }
 }
