@@ -284,3 +284,17 @@ downloader icon was already the kit's current one. Released 1.7.1 (Android built
 
 Hyper Downloader logo, Android startup animation, cover art and MP3 for audio, clearer share
 target (D-021). Released 1.8.0 without tests, as asked.
+
+## 2026-10-27
+
+**08:24, Imad**
+
+> when i share link or something from other apps like tiktok or insta it shows
+> zipimport error
+> bad local heaer and the location of folder for downloader/files?
+> fix it
+
+**Claude**
+
+Fixed the yt-dlp file swap that caused the zipimport error and moved new downloads to
+Download/iDownloader (D-022). Released 1.8.1.

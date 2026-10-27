@@ -50,6 +50,13 @@ class ImadApp : Application() {
         super.onCreate()
         instance = this
         settings = SettingsRepository(File(filesDir, "settings.json"))
+        // The default folder followed the app's old names; new downloads go to Download/iDownloader
+        // (files already saved stay where they are).
+        settings.value.saveDir.let { dir ->
+            if (listOf("Hyper Downloader", "Imad Downloader").any { dir.endsWith("/Download/$it") }) {
+                settings.update { it.copy(saveDir = AppSettings.defaultSaveDir()) }
+            }
+        }
         engine = DownloadEngine(settings.value.toEngineConfig(), JsonFileStore(File(filesDir, "downloads.json")), CoroutineScope(SupervisorJob() + Dispatchers.IO))
         browserData = BrowserData(File(filesDir, "browser.json"))
         notifications = Notifications(this)

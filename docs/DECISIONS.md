@@ -333,3 +333,15 @@ Imad asked for YouTube and other sites with quality choice, using yt-dlp if need
 - Share sheet: the share target is labelled iDownloader with the app icon, accepts any text share
   (text/*, single or multiple) and finds the link in the text, subject or clip data.
 - Imad asked for no tests on PC or Android for this release; only builds.
+
+## D-022 "zipimport error: bad local file header" (2026-10-27)
+
+- Imad got this when sharing TikTok / Instagram links. Cause: the app downloads a newer yt-dlp
+  (one zip file) and, since 1.4.1, switches to it without a restart; it overwrote the same file
+  Python was already importing from, and Python's zip index still pointed at the old file's
+  positions. Now every downloaded yt-dlp gets a new file name, Python's zip caches for the old and
+  new file are cleared when switching, and older copies are deleted at the next start (before
+  Python opens them). Checked on the PC: switching from 2026.08.19 to 2026.10.21 mid-run imports
+  all 1754 extractors.
+- Folder: settings still pointed at Download/Hyper Downloader (the default under the old name);
+  new downloads now go to Download/iDownloader. Files already saved stay where they are.

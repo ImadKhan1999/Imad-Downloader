@@ -38,8 +38,21 @@ def _use_override(path):
         return
     for name in [m for m in sys.modules if m == "yt_dlp" or m.startswith("yt_dlp.")]:
         del sys.modules[name]
-    if path in sys.path:
-        sys.path.remove(path)
+    # Python remembers where every file sits inside a zip it has imported from; after a new
+    # yt-dlp replaced it, those old positions point into the wrong bytes ("zipimport error: bad
+    # local file header"). Forget them for the old and the new file.
+    import importlib
+    import zipimport
+    for old in {p for p in (_loaded_from, path) if p}:
+        try:
+            zipimport._zip_directory_cache.pop(old, None)
+        except Exception:
+            pass
+        for key in [k for k in list(sys.path_importer_cache) if k == old or k.startswith(old + os.sep)]:
+            sys.path_importer_cache.pop(key, None)
+        while old in sys.path:
+            sys.path.remove(old)
+    importlib.invalidate_caches()
     sys.path.insert(0, path)
     _loaded_from, _loaded_stamp = path, stamp
 

@@ -29,7 +29,16 @@ import java.util.concurrent.TimeUnit
  */
 class AndroidYtDlp(private val context: Context) : MediaExtractor {
     private val dir = File(context.filesDir, "ytdlp").apply { mkdirs() }
-    private val override = File(dir, "yt-dlp.zip")
+    // Each downloaded yt-dlp gets its own file name: a zip Python is reading from is never
+    // overwritten (that broke imports with "bad local file header"). Older copies are removed
+    // when the app starts, before Python opens any of them.
+    private fun copies() = dir.listFiles { f -> f.name.startsWith("yt-dlp-") && f.name.endsWith(".zip") && f.length() > 1_000_000 }
+        .orEmpty().sortedByDescending { it.name }
+
+    init {
+        File(dir, "yt-dlp.zip").delete() // the single file older versions used
+        copies().drop(1).forEach { it.delete() }
+    }
     private val stamp = File(dir, "checked")
     private val lock = Mutex()
     private val http = OkHttpClient.Builder().readTimeout(60, TimeUnit.SECONDS).build()
@@ -45,7 +54,7 @@ class AndroidYtDlp(private val context: Context) : MediaExtractor {
         return Python.getInstance()
     }
 
-    private fun overridePath(): String? = override.takeIf { it.isFile && it.length() > 1_000_000 }?.path
+    private fun overridePath(): String? = copies().firstOrNull()?.path
 
     suspend fun version(): String = withContext(Dispatchers.IO) {
         lock.withLock { py().getModule("imad_ytdlp").callAttr("version", overridePath()).toString() }
@@ -114,10 +123,7 @@ class AndroidYtDlp(private val context: Context) : MediaExtractor {
         get("$base/yt-dlp").use { r -> tmp.outputStream().use { r.body.byteStream().copyTo(it) } }
         val actual = MessageDigest.getInstance("SHA-256").digest(tmp.readBytes()).joinToString("") { "%02x".format(it) }
         if (actual != expected) { tmp.delete(); throw IOException("yt-dlp update did not match its checksum") }
-        lock.withLock {
-            if (override.exists()) override.delete()
-            tmp.renameTo(override)
-        }
+        lock.withLock { tmp.renameTo(File(dir, "yt-dlp-${System.currentTimeMillis()}.zip")) }
         true
     }
 
