@@ -48,7 +48,8 @@ class YtDlpJsonTest {
 
     @Test fun `builds a quality list with merged mp4, progressive, hls and audio`() {
         val opts = MediaChoice.options(YtDlpJson.parse(sample))
-        assertEquals(listOf("2160p", "1080p", "720p", "480p", "360p", "Audio only (m4a)"), opts.map { it.label })
+        assertEquals(listOf("2160p", "1080p", "720p", "480p", "360p", "Audio only (m4a)", "MP3"), opts.map { it.label })
+        assertEquals("140>mp3", opts.last().formatSpec)
         assertEquals("401+140", opts[0].formatSpec, "4K only exists as AV1 mp4 (VP9 webm cannot be joined)")
         assertEquals("137+140", opts[1].formatSpec)
         assertEquals("136+140", opts[2].formatSpec, "AVC is preferred over AV1 at the same height")
@@ -150,7 +151,8 @@ class PlaylistTest {
         assertEquals(DownloadKind.MEDIA, video[0].kind)
         assertEquals("a=b", video[1].cookies)
         assertEquals("night", video[1].queueId)
-        val audio = MediaChoice.playlistRequests(base, pl.entries.take(1), PlaylistQuality.all.last())
+        val audio = MediaChoice.playlistRequests(base, pl.entries.take(1), PlaylistQuality.all.first { it.label == "Audio only" })
+        assertEquals("Settlers - Modeling_ Prep.mp3", MediaChoice.playlistRequests(base, pl.entries.take(1), PlaylistQuality.all.last()).single().fileName)
         assertEquals("Settlers - Modeling_ Prep.m4a", audio.single().fileName)
         assertEquals(MediaChoice.AUDIO_ONLY, audio.single().mediaFormat)
     }
@@ -252,7 +254,11 @@ class MediaDownloadTest {
         val done = e.await(item.id) { it.status == DownloadStatus.COMPLETED || it.status == DownloadStatus.FAILED }
         assertEquals(DownloadStatus.COMPLETED, done.status, done.error)
         assertEquals(Category.MUSIC, done.category)
-        assertTrue(File(dir, "song.m4a").readBytes().contentEquals(audio(3)))
+        // Same audio, plus the title written into the file's tags.
+        val saved = File(dir, "song.m4a")
+        assertTrue(saved.length() > audio(3).size)
+        assertTrue(String(saved.readBytes(), Charsets.ISO_8859_1).contains("©nam"))
+        assertEquals(Mp4Merge.index(saved).count { it.type == "moof" }, Mp4Merge.index(File.createTempFile("orig", ".m4a").apply { writeBytes(audio(3)) }).count { it.type == "moof" })
 
         val bare = DownloadEngine(EngineConfig(defaultSaveDir = dir.path, categorySubfolders = false), InMemoryStore(), scope)
         val x = bare.add(DownloadRequest("https://www.youtube.com/watch?v=t", mediaFormat = "a"))
