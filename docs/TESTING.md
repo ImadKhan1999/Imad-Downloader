@@ -149,3 +149,18 @@ The final release run skipped the device tests because LDPlayer had been closed;
 the run before. An earlier run picked Imad's phone (LDPlayer off) and Gradle uninstalled the app
 there; release.ps1 now pins ANDROID_SERIAL=emulator-5554 and the app was reinstalled.
 
+
+## 2026-11-24 Code signing (sign.ps1), on Imad's PC
+
+| Check | Result |
+| --- | --- |
+| release.ps1 and sign.ps1 parse (PowerShell parser) | 0 errors |
+| No signing.json | prints "files left unsigned", nothing changed, exit 0 |
+| Temporary self-signed cert "CN=ImadLabs Test" (store mode, signtool 10.0.22621) on copies of iDownloader-1.8.1.msi and .exe | both signed, signer CN=ImadLabs Test, DigiCert RFC 3161 timestamp; status "untrusted root" as expected for a self-signed cert |
+| Wrong thumbprint | signtool fails 3 times, sign.ps1 stops with exit 1 (release would not publish) |
+| Cleanup | test cert removed, test copies deleted |
+
+The test found two problems when the script is started with `powershell -File` (empty
+$PSScriptRoot in the parameter default, and "a.msi,b.exe" arriving as one string). Both are fixed
+in sign.ps1; release.ps1 calls it with `&` and was not affected. The fixed standalone path has not
+been re-run yet.

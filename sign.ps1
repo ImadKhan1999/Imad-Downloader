@@ -20,9 +20,13 @@
 #>
 param(
     [Parameter(Mandatory = $true)][string[]]$Files,
-    [string]$Config = (Join-Path $PSScriptRoot "signing.json")
+    [string]$Config
 )
 $ErrorActionPreference = "Stop"
+# Windows PowerShell 5.1 leaves $PSScriptRoot empty in param defaults under "powershell -File",
+# and -File passes "a.msi,b.exe" as one string; handle both here.
+if (-not $Config) { $Config = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "signing.json" }
+$Files = @($Files -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
 
 if (-not (Test-Path $Config)) {
     "Code signing: no signing.json, files left unsigned (Windows will show 'Unknown publisher')."
