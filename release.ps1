@@ -5,6 +5,7 @@
 
   Steps: every test suite (engine, Windows, Android unit and device tests on LDPlayer, browser
   extension end-to-end, installed-app HTTPS smoke test) -> MSI/EXE/APK/extension zips (Chromium + Firefox) ->
+  code signing of the MSI/EXE when signing.json exists (sign.ps1) ->
   GitHub release with the files -> update/version.json (versions, URLs, SHA-256) pushed to main,
   which is what the apps' "Check for updates" reads. Nothing is published if a test fails.
   The GitHub token comes from Git's credential manager; it is never written anywhere.
@@ -72,6 +73,8 @@ Copy-Item "desktop\build\compose\binaries\main\exe\iDownloader-$version.exe" "di
 Copy-Item "androidApp\build\outputs\apk\release\androidApp-release.apk" "dist\$apkName"
 # extension\build.mjs (run by the Gradle build) makes the store-ready zip for each browser family.
 foreach ($z in $zipNames) { Copy-Item "extension\dist\$z" "dist\$z" }
+# Signs the installers when signing.json is set up (see sign.ps1); otherwise they stay unsigned.
+Step "Code signing" { & .\sign.ps1 -Files "dist\$msiName", "dist\$exeName" }
 
 # ---------------------------------------------------------------- GitHub release
 $tmp = [IO.Path]::GetTempFileName(); [IO.File]::WriteAllText($tmp, "protocol=https`nhost=github.com`n`n")
