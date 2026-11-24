@@ -345,3 +345,27 @@ Imad asked for YouTube and other sites with quality choice, using yt-dlp if need
   all 1754 extractors.
 - Folder: settings still pointed at Download/Hyper Downloader (the default under the old name);
   new downloads now go to Download/iDownloader. Files already saved stay where they are.
+
+## D-023 "Unknown publisher" on Windows, ImadLabs as publisher (2026-11-24)
+
+- Imad saw "Unknown publisher" when installing on Windows and wants ImadLabs shown as the
+  developer, for this and his other projects (Android included).
+- Why: the name in that Windows prompt (UAC / SmartScreen) comes only from an Authenticode
+  signature with a certificate from a trusted certificate authority. A self-signed certificate
+  does not help on other people's PCs. Options given to Imad: Microsoft Store (free for
+  individuals, the Store signs the app), Azure Trusted Signing (about $10/month, identity check,
+  not every country eligible), or an OV code-signing certificate (about $200-400/year, on a USB
+  token or cloud key; Certum has a cheaper open-source one). The certificate shows the verified
+  legal name: "ImadLabs" needs a registered business, an individual certificate says "Imad Khan".
+  SmartScreen can still warn for a while after signing until the file builds reputation.
+- Already in place: the MSI/EXE have vendor "ImadLabs" and copyright "© 2026 ImadLabs"
+  (desktop/build.gradle.kts), so Apps & features and the file properties show ImadLabs.
+- Added sign.ps1, called by release.ps1 right after the release files are made. It signs the
+  MSI and EXE when a git-ignored signing.json exists (certificate in the Windows store / USB
+  token, a .pfx with its password in IDL_SIGN_PFX_PASSWORD, or Azure Trusted Signing), with an
+  RFC 3161 timestamp, and stops the release if signing fails. Without signing.json the release
+  works as before, unsigned. The SHA-256 in update/version.json is taken after signing.
+- Android: APKs are already signed with the release keystore (keystore/, never in git, must never
+  change). Android shows no publisher prompt; the developer name appears only on a store listing
+  (e.g. Google Play's developer account name).
+- Other repos: not changed until Imad says which ones.

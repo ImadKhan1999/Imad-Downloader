@@ -20,6 +20,9 @@ captures/
 dist/
 keystore/*.jks
 keystore/release.properties
+# Windows code-signing settings and certificates (see sign.ps1)
+signing.json
+*.pfx
 
 # Node
 node_modules/
